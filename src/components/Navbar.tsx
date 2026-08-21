@@ -6,7 +6,6 @@ import {
   Building2, 
   Calendar, 
   Leaf, 
-  Compass, 
   Menu, 
   X,
   MapPin
@@ -14,7 +13,7 @@ import {
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useRightSidebar } from "../hooks/useRightSidebar";
-import logoImage from "../images/images-map-logo.png";
+import darshanaLogoFull from "../images/darshana-logo-full.png";
 import RightSidebar from "./RightSidebar";
 
 const Navbar: React.FC = () => {
@@ -36,45 +35,38 @@ const Navbar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md shadow-xs z-50 border-b border-slate-100">
+    <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md shadow-xs z-50 border-b border-stone-200/80">
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20 sm:h-22">
+        <div className="flex justify-between items-center h-16 sm:h-20 py-2 sm:py-2.5">
           
-          {/* Left: Hamburger Drawer Trigger + Logo */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Top-Left Hamburger Trigger */}
+          {/* Left: Top-Left Hamburger Trigger + Final DarShana Lockup Logo */}
+          <div className="flex items-center shrink-0">
+            {/* Hamburger Drawer Trigger */}
             <button
               onClick={openSidebar}
-              className="p-2.5 rounded-2xl text-slate-700 hover:text-amber-700 hover:bg-amber-50/80 border border-stone-200/80 transition-all cursor-pointer shadow-2xs"
+              className="p-2 rounded-xl text-slate-700 hover:text-amber-700 hover:bg-amber-50 border border-stone-200 transition cursor-pointer shadow-2xs"
               title="Open Navigation Menu"
               aria-label="Open Navigation Menu"
             >
               <Menu size={20} />
             </button>
 
-            {/* Logo */}
+            {/* Final Logo (Emblem + Wordmark Baked In - No Duplicate Text) */}
             <Link 
               to="/" 
-              className="flex items-center gap-2 select-none group shrink-0"
+              className="flex items-center ml-3 sm:ml-4 pr-6 select-none shrink-0"
+              aria-label="DarShana Home"
             >
               <img 
-                src={logoImage} 
-                alt="DarShana Logo" 
-                className="h-14 sm:h-18 w-auto object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-300 shrink-0"
+                src={darshanaLogoFull} 
+                alt="DarShana" 
+                className="h-[32px] sm:h-[40px] w-auto object-contain transition-transform duration-300 hover:scale-[1.02] shrink-0"
+                loading="eager"
               />
-              
-              <div className="text-lg sm:text-2xl font-extrabold font-serif tracking-tight whitespace-nowrap shrink-0">
-                <span className="bg-gradient-to-r from-orange-700 via-orange-600 to-amber-600 bg-clip-text text-transparent">
-                  Dar
-                </span>
-                <span className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-700 bg-clip-text text-transparent">
-                  Shana
-                </span>
-              </div>
             </Link>
           </div>
 
-          {/* Desktop Menu */}
+          {/* Desktop Nav Items */}
           <div className="hidden lg:flex items-center space-x-1 xl:space-x-1.5 text-xs whitespace-nowrap">
             {navLinks.map((link) => {
               const Icon = link.icon;
@@ -106,7 +98,7 @@ const Navbar: React.FC = () => {
             </div>
           </div>
 
-          {/* Mobile Right Menu Button */}
+          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="lg:hidden p-2 text-gray-700 hover:text-orange-600"
