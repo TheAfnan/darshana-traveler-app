@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useEcoRewards } from '../context/EcoRewardsContext';
 import type { LocationSuggestion } from '../services/locationApi';
 import { formatLocationLabel, searchLocations } from '../services/locationApi';
 
@@ -70,6 +71,7 @@ const getRouteSummary = (routes: RouteOption[]) => {
 };
 
 const Sustainable: React.FC = () => {
+  const { points, tier } = useEcoRewards();
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [loading, setLoading] = useState(false);
@@ -287,6 +289,36 @@ const Sustainable: React.FC = () => {
           <div className="hidden md:flex items-center gap-2 px-5 py-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors">
             <span className="font-semibold text-white">Try Now</span>
             <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
+          </div>
+        </div>
+      </Link>
+
+      {/* Eco Rewards & Level Progress Hub Card */}
+      <Link 
+        to="/rewards"
+        className="block mb-8 p-5 bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 rounded-2xl border border-emerald-500/30 text-white shadow-md hover:shadow-lg transition group"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center text-2xl shrink-0">
+              🌱
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-base text-white">Eco Rewards Store & Rank Progress</h3>
+                <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-400/30">
+                  {points} pts • {tier} Tier
+                </span>
+              </div>
+              <p className="text-xs text-emerald-100/80 mt-0.5">
+                Earn points on green travel choices and redeem 5-10% booking discounts & free guide tours!
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shrink-0 group-hover:translate-x-0.5 shadow-xs">
+            <span>Open Rewards Store</span>
+            <ArrowRight size={14} />
           </div>
         </div>
       </Link>
