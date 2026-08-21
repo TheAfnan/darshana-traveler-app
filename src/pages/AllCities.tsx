@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, MapPin, ArrowRight, Sparkles } from 'lucide-react';
+import lucknowRumiImg from '../images/lucknow-rumi-darwaza.jpg';
 
 interface CityItem {
   id: string;
@@ -21,7 +22,7 @@ const CITIES_DATA: CityItem[] = [
     region: 'North',
     isPopular: true,
     desc: 'Tehzeeb, timeless Awadhi heritage, Rumi Darwaza, and legendary Galouti Kebabs.',
-    img: 'https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=800&auto=format&fit=crop&q=80',
+    img: lucknowRumiImg,
     tag: 'Awadhi Heritage'
   },
   {
