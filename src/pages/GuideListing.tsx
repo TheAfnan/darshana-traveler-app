@@ -17,7 +17,11 @@ import {
   Phone,
   Mail,
   Clock,
-  Filter
+  Filter,
+  ExternalLink,
+  Zap,
+  RotateCcw,
+  Check
 } from 'lucide-react';
 import { fetchAllGuides, submitGuideRequest, type Guide } from '../api/guides';
 
@@ -45,9 +49,35 @@ const SPECIALTIES_LIST = [
   'Photography'
 ];
 
+// Shimmer Skeleton Card Component
+const GuideCardSkeleton: React.FC = () => (
+  <div className="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-xs animate-pulse flex flex-col justify-between h-[480px]">
+    <div>
+      <div className="h-56 bg-stone-200" />
+      <div className="p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="h-4 bg-stone-200 rounded w-1/3" />
+          <div className="h-4 bg-stone-200 rounded w-1/4" />
+        </div>
+        <div className="h-3 bg-stone-200 rounded w-full" />
+        <div className="h-3 bg-stone-200 rounded w-4/5" />
+        <div className="flex gap-2 pt-2">
+          <div className="h-5 bg-stone-200 rounded-md w-16" />
+          <div className="h-5 bg-stone-200 rounded-md w-20" />
+        </div>
+      </div>
+    </div>
+    <div className="p-4 bg-stone-50 border-t border-stone-100 flex items-center justify-between">
+      <div className="h-6 bg-stone-200 rounded w-20" />
+      <div className="h-8 bg-stone-200 rounded-xl w-24" />
+    </div>
+  </div>
+);
+
 export const GuideListing: React.FC = () => {
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDestination, setSelectedDestination] = useState('All India');
   const [selectedSpecialty, setSelectedSpecialty] = useState('All Specialties');
@@ -68,17 +98,19 @@ export const GuideListing: React.FC = () => {
 
   const loadGuides = async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await fetchAllGuides();
       setGuides(data);
     } catch (err) {
       console.warn('Error loading guides:', err);
+      setError('Unable to load guides directory. Please check your internet connection.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Extract unique languages from all guides
+  // Extract unique languages
   const availableLanguages = useMemo(() => {
     const langSet = new Set<string>();
     guides.forEach(g => (g.languages || []).forEach(l => langSet.add(l)));
@@ -88,7 +120,6 @@ export const GuideListing: React.FC = () => {
   // Filtered & Sorted Guides
   const filteredGuides = useMemo(() => {
     return guides.filter(guide => {
-      // 1. Search Query (matches name, location, specialties, bio, or languages)
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch = !q || (
         guide.name.toLowerCase().includes(q) ||
@@ -98,17 +129,14 @@ export const GuideListing: React.FC = () => {
         guide.languages.some(l => l.toLowerCase().includes(q))
       );
 
-      // 2. City / Destination Filter
       const matchesCity = selectedDestination === 'All India' || (
         guide.location.toLowerCase().includes(selectedDestination.toLowerCase())
       );
 
-      // 3. Specialty Filter
       const matchesSpecialty = selectedSpecialty === 'All Specialties' || (
         guide.specialties.some(s => s.toLowerCase().includes(selectedSpecialty.toLowerCase()))
       );
 
-      // 4. Language Filter
       const matchesLanguage = selectedLanguage === 'All Languages' || (
         guide.languages.includes(selectedLanguage)
       );
@@ -132,7 +160,7 @@ export const GuideListing: React.FC = () => {
       await submitGuideRequest(
         selectedGuideForBooking._id,
         'official_booking',
-        bookingMessage || `Interested in hiring ${selectedGuideForBooking.name} on ${bookingDate || 'upcoming dates'} for ${travelersCount} travelers.`,
+        bookingMessage || `Interested in booking ${selectedGuideForBooking.name} on ${bookingDate || 'upcoming dates'} for ${travelersCount} travelers.`,
         localStorage.getItem('token') || '',
         {
           name: selectedGuideForBooking.name,
@@ -147,7 +175,7 @@ export const GuideListing: React.FC = () => {
         setSelectedGuideForBooking(null);
         setBookingMessage('');
         setBookingDate('');
-      }, 2400);
+      }, 2200);
     } catch (err) {
       console.warn('Booking inquiry submit error:', err);
     } finally {
@@ -156,7 +184,7 @@ export const GuideListing: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#faf9f6] text-slate-800 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen bg-[#faf9f6] text-slate-800 py-8 px-4 sm:px-6 lg:px-8 font-sans selection:bg-amber-500 selection:text-white">
       <div className="max-w-7xl mx-auto space-y-8">
 
         {/* Page Hero Header */}
@@ -169,11 +197,11 @@ export const GuideListing: React.FC = () => {
             Certified Indian Local Guides
           </h1>
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            Connect directly with licensed archaeologists, native historians, and storytellers who bring India's monuments, folklore, and street culture to life.
+            Connect directly with licensed archaeologists, native historians, and storytellers who bring India's monuments, folklore, and living traditions to life.
           </p>
         </div>
 
-        {/* Search & Comprehensive Filters Bar */}
+        {/* Search & SaaS Filter Controls */}
         <div className="bg-white rounded-3xl border border-stone-200 p-5 sm:p-6 shadow-xs space-y-5">
           
           {/* Main Search Input */}
@@ -203,7 +231,9 @@ export const GuideListing: React.FC = () => {
                 <MapPin size={13} className="text-amber-600" />
                 Filter by Region / City:
               </span>
-              <span className="text-stone-400">{filteredGuides.length} Verified Guides Available</span>
+              <span className="text-stone-400 font-medium">
+                {filteredGuides.length} Verified Guides Available
+              </span>
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
               {POPULAR_DESTINATIONS.map((dest) => (
@@ -222,9 +252,8 @@ export const GuideListing: React.FC = () => {
             </div>
           </div>
 
-          {/* Secondary Filters: Specialty, Language, Sort */}
+          {/* Secondary Filters */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-stone-100">
-            {/* Specialty Dropdown */}
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 mb-1">Specialization</label>
               <select
@@ -238,7 +267,6 @@ export const GuideListing: React.FC = () => {
               </select>
             </div>
 
-            {/* Language Dropdown */}
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 mb-1">Spoken Language</label>
               <select
@@ -252,7 +280,6 @@ export const GuideListing: React.FC = () => {
               </select>
             </div>
 
-            {/* Sort Order */}
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 mb-1">Sort By</label>
               <select
@@ -270,19 +297,38 @@ export const GuideListing: React.FC = () => {
 
         </div>
 
-        {/* Guides Grid */}
+        {/* Guides Grid / Shimmer Loading State */}
         {loading ? (
-          <div className="py-20 text-center space-y-3">
-            <div className="w-10 h-10 border-3 border-amber-600 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-xs text-slate-500 font-medium">Loading verified Indian guides directory...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((k) => (
+              <GuideCardSkeleton key={k} />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="py-16 text-center bg-white rounded-3xl border border-rose-200 p-8 space-y-4 shadow-xs">
+            <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+              <RotateCcw size={22} />
+            </div>
+            <div className="space-y-1 max-w-md mx-auto">
+              <h3 className="text-base font-bold text-slate-900">Failed to Load Guides</h3>
+              <p className="text-xs text-slate-500">{error}</p>
+            </div>
+            <button
+              onClick={loadGuides}
+              className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition cursor-pointer"
+            >
+              Try Again
+            </button>
           </div>
         ) : filteredGuides.length === 0 ? (
-          <div className="py-16 text-center bg-white rounded-3xl border border-stone-200 p-8 space-y-3">
+          <div className="py-16 text-center bg-white rounded-3xl border border-stone-200 p-8 space-y-4 shadow-xs">
             <MapPin size={36} className="text-amber-500/60 mx-auto" />
-            <h3 className="text-base font-bold text-slate-900">No Guides Found</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              We couldn't find guides matching your exact filters. Try clearing your search or switching regions.
-            </p>
+            <div className="space-y-1 max-w-sm mx-auto">
+              <h3 className="text-base font-bold text-slate-900">No Guides Found</h3>
+              <p className="text-xs text-slate-500">
+                We couldn't find guides matching your exact filters. Try broadening your search or resetting filters.
+              </p>
+            </div>
             <button
               onClick={() => {
                 setSearchQuery('');
@@ -290,19 +336,20 @@ export const GuideListing: React.FC = () => {
                 setSelectedSpecialty('All Specialties');
                 setSelectedLanguage('All Languages');
               }}
-              className="px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl transition cursor-pointer"
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition cursor-pointer"
             >
               Reset All Filters
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGuides.map((guide) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredGuides.map((guide, idx) => (
               <motion.div
                 key={guide._id}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+                transition={{ duration: 0.3, delay: idx * 0.04 }}
+                className="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group"
               >
                 {/* Guide Card Header */}
                 <div>
@@ -310,37 +357,54 @@ export const GuideListing: React.FC = () => {
                     <img
                       src={guide.profileImage}
                       alt={guide.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-95"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
                     
-                    {/* Govt Verified Badge */}
-                    <div className="absolute top-3 left-3 bg-emerald-500/90 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                    {/* Govt Verified Shield Badge */}
+                    <div className="absolute top-3 left-3 bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
                       <ShieldCheck size={12} />
                       <span>Govt Certified</span>
                     </div>
 
                     {/* Rating Pill */}
-                    <div className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md text-amber-300 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/10 shadow-sm">
+                    <div className="absolute top-3 right-3 bg-slate-950/85 backdrop-blur-md text-amber-300 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/10 shadow-sm">
                       <Star size={12} className="fill-amber-400 text-amber-400" />
-                      <span>{guide.rating.toFixed(1)}</span>
+                      <span>{guide.rating.toFixed(2)}</span>
                       {guide.reviews > 0 && (
                         <span className="text-[10px] text-slate-300 font-normal">({guide.reviews})</span>
                       )}
                     </div>
 
+                    {/* Photographer Attribution (Per Unsplash/Pexels API Guidelines) */}
+                    {guide.photoAttribution && (
+                      <div className="absolute top-12 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <a
+                          href={guide.photoAttribution.photographerUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[9px] text-white/90 bg-slate-950/80 backdrop-blur-xs px-2 py-0.5 rounded-md hover:underline flex items-center gap-1"
+                        >
+                          Photo by {guide.photoAttribution.photographerName} on {guide.photoAttribution.platform}
+                        </a>
+                      </div>
+                    )}
+
                     {/* Name & Location Overlay */}
-                    <div className="absolute bottom-3 left-4 right-4 text-white">
-                      <h3 className="text-lg font-bold font-serif leading-tight">{guide.name}</h3>
-                      <p className="text-xs text-slate-200 flex items-center gap-1 mt-0.5 opacity-90">
+                    <div className="absolute bottom-3 left-4 right-4 text-white space-y-0.5">
+                      <h3 className="text-base sm:text-lg font-bold font-serif leading-tight">{guide.name}</h3>
+                      <p className="text-xs text-slate-200 flex items-center gap-1 opacity-90 font-medium">
                         <MapPin size={12} className="text-amber-400 shrink-0" />
                         <span>{guide.location}</span>
                       </p>
                     </div>
                   </div>
 
-                  {/* Card Content */}
-                  <div className="p-5 space-y-4">
+                  {/* Card Body */}
+                  <div className="p-4 sm:p-5 space-y-3.5">
+                    
                     {/* Bio */}
                     <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
                       {guide.bio}
@@ -351,33 +415,47 @@ export const GuideListing: React.FC = () => {
                       {guide.specialties.slice(0, 3).map((spec, i) => (
                         <span
                           key={i}
-                          className="px-2.5 py-0.5 bg-amber-50 border border-amber-200/60 text-amber-900 text-[11px] font-medium rounded-lg"
+                          className="px-2 py-0.5 bg-amber-50 border border-amber-200/60 text-amber-900 text-[10px] font-semibold rounded-md"
                         >
                           {spec}
                         </span>
                       ))}
                     </div>
 
+                    {/* Tour Formats & Response Time Badge */}
+                    <div className="space-y-1.5 pt-1">
+                      {guide.tourFormats && guide.tourFormats.length > 0 && (
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
+                          <Check size={12} className="text-emerald-600 shrink-0" />
+                          <span className="truncate">{guide.tourFormats[0]}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                        <Zap size={12} className="text-amber-600 shrink-0" />
+                        <span>Responds in {guide.responseTime || '< 1 hour'}</span>
+                      </div>
+                    </div>
+
                     {/* Languages & Experience stats */}
-                    <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-slate-500">
-                      <div className="flex items-center gap-1">
-                        <Languages size={13} className="text-stone-400" />
-                        <span className="truncate max-w-[140px]">{guide.languages.join(', ')}</span>
+                    <div className="pt-2.5 border-t border-stone-100 flex items-center justify-between text-xs text-slate-500">
+                      <div className="flex items-center gap-1 truncate max-w-[130px]" title={guide.languages.join(', ')}>
+                        <Languages size={13} className="text-stone-400 shrink-0" />
+                        <span className="truncate">{guide.languages.join(', ')}</span>
                       </div>
                       {guide.experience && (
-                        <div className="flex items-center gap-1 font-semibold text-slate-700">
+                        <div className="flex items-center gap-1 font-semibold text-slate-700 shrink-0">
                           <Clock size={12} className="text-amber-600" />
-                          <span>{guide.experience} yrs exp</span>
+                          <span>{guide.experience}y exp</span>
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Card Footer with Price & Booking Button */}
+                {/* Card Footer with Daily Rate & CTA */}
                 <div className="p-4 bg-stone-50 border-t border-stone-100 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Daily Rate</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">From</span>
                     <p className="text-sm font-bold text-slate-900">
                       ₹{guide.pricePerDay || 1500}
                       <span className="text-[11px] font-normal text-slate-500"> / day</span>
@@ -401,11 +479,11 @@ export const GuideListing: React.FC = () => {
         <div className="bg-gradient-to-br from-slate-900 to-stone-900 text-white rounded-3xl p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
             <span className="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold rounded-full inline-block">
-              For Certified Historians & Local Experts
+              For Certified Historians & Tour Leaders
             </span>
-            <h3 className="text-2xl font-serif font-bold">Are you a Certified Tour Guide in India?</h3>
+            <h3 className="text-2xl font-serif font-bold">Are you a Licensed Guide in India?</h3>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Join DarShana's verified heritage network. Register your profile, connect with global cultural travelers, and manage your bookings seamlessly.
+              Join DarShana's verified heritage network. Showcase your storytelling credentials, set your daily rates, and connect with cultural travelers worldwide.
             </p>
           </div>
           <Link
@@ -419,7 +497,7 @@ export const GuideListing: React.FC = () => {
 
       </div>
 
-      {/* Direct Booking Modal */}
+      {/* Direct Booking & Inquiry Modal */}
       <AnimatePresence>
         {selectedGuideForBooking && (
           <motion.div
@@ -468,7 +546,7 @@ export const GuideListing: React.FC = () => {
                   </div>
                   <h4 className="text-lg font-bold text-slate-900">Inquiry Sent Successfully!</h4>
                   <p className="text-xs text-slate-600 max-w-sm mx-auto">
-                    {selectedGuideForBooking.name} has received your booking request and will confirm availability via email/phone shortly.
+                    {selectedGuideForBooking.name} has received your booking inquiry and will confirm availability via email/phone within {selectedGuideForBooking.responseTime || '1 hour'}.
                   </p>
                 </div>
               ) : (
@@ -509,15 +587,25 @@ export const GuideListing: React.FC = () => {
                       rows={3}
                       value={bookingMessage}
                       onChange={(e) => setBookingMessage(e.target.value)}
-                      placeholder="e.g. We are visiting the Taj Mahal at sunrise, interested in architecture and local food trails..."
+                      placeholder="e.g. Visiting Taj Mahal at sunrise, interested in architecture, acoustics, and heritage bazaar walk..."
                       className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs text-slate-800 placeholder:text-stone-400 focus:outline-none"
                     />
                   </div>
 
                   <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl flex items-center justify-between text-xs text-amber-900">
-                    <span className="font-medium">Estimated Guide Fee:</span>
+                    <div>
+                      <span className="font-semibold block">Official Guide Fee:</span>
+                      <span className="text-[10px] text-amber-800 opacity-90">Govt ID: {selectedGuideForBooking.govtId}</span>
+                    </div>
                     <span className="font-bold text-sm">₹{selectedGuideForBooking.pricePerDay || 1500} / day</span>
                   </div>
+
+                  {/* Photo Attribution Footer */}
+                  {selectedGuideForBooking.photoAttribution && (
+                    <p className="text-[10px] text-slate-400 text-center">
+                      Portrait photo by {selectedGuideForBooking.photoAttribution.photographerName} on {selectedGuideForBooking.photoAttribution.platform}
+                    </p>
+                  )}
 
                   <div className="pt-2 flex items-center justify-end gap-2.5">
                     <button
@@ -532,7 +620,7 @@ export const GuideListing: React.FC = () => {
                       disabled={bookingSubmitting}
                       className="px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                     >
-                      <span>{bookingSubmitting ? 'Sending Request...' : 'Confirm Inquiry'}</span>
+                      <span>{bookingSubmitting ? 'Submitting...' : 'Confirm Inquiry'}</span>
                       <ArrowRight size={14} />
                     </button>
                   </div>
