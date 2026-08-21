@@ -1,3 +1,17 @@
+import React from 'react';
+import { 
+  Sparkles, 
+  ShieldCheck, 
+  Star, 
+  Compass, 
+  MapPin, 
+  ArrowRight, 
+  Calendar, 
+  Search,
+  CheckCircle2
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 import BlogHighlightsSection from '../components/travelhub/BlogHighlightsSection';
 import ContactSupportSection from '../components/travelhub/ContactSupportSection';
 import DestinationsSection from '../components/travelhub/DestinationsSection';
@@ -8,57 +22,113 @@ import SpecialFeaturesSection from '../components/travelhub/SpecialFeaturesSecti
 import TourPackagesSection from '../components/travelhub/TourPackagesSection';
 import TravelCategoriesSection from '../components/travelhub/TravelCategoriesSection';
 
-const TravelHub = () => {
+const TravelHub: React.FC = () => {
+  const scrollToPackages = () => {
+    document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div className="min-h-screen relative overflow-x-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-      {/* Soft World Map Background */}
-      <div className="fixed inset-0 pointer-events-none">
-        {/* World Map Pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 500'%3E%3Cpath fill='%230ea5e9' d='M170 120c20-10 45-5 60 15 10 15 5 35-10 45-20 15-50 10-65-10-10-20 0-40 15-50zm100 50c15-5 35 5 40 25 5 15-5 30-20 35-20 5-40-10-40-30 0-15 10-25 20-30zm-80 100c25-15 55-5 70 20 10 20 0 45-25 55-30 15-65-5-70-35-5-20 10-30 25-40zm200-80c30 0 55 25 55 55 0 25-20 50-50 50-35 0-60-30-55-60 5-25 25-45 50-45zm150 30c20 10 30 35 20 55-15 25-45 30-65 15-25-20-20-55 5-70 15-10 30-5 40 0zM450 250c35-10 70 15 75 50 5 30-20 60-55 65-40 5-75-25-70-65 5-30 30-45 50-50zm100-100c25 5 45 30 40 55-5 30-35 50-65 40-25-10-40-40-30-65 10-20 35-35 55-30zm-350 200c20-5 45 10 50 35 5 20-10 40-35 45-30 5-55-20-50-50 5-15 20-25 35-30zm500-50c30 10 50 40 40 70-10 35-50 50-80 35-25-15-35-50-20-75 15-20 40-35 60-30zm-200 100c25 0 50 20 50 50 0 25-20 50-50 50-35 0-55-30-50-60 5-25 30-40 50-40zm300-150c20 15 25 45 10 65-20 25-55 25-75 5-15-20-10-50 15-65 15-10 35-15 50-5z'/%3E%3Cpath fill='%2306b6d4' d='M600 80c25-5 50 15 55 40 5 30-20 55-50 55-35 0-60-30-50-60 5-20 25-30 45-35zm150 120c30 5 55 35 45 65-10 35-50 55-85 40-30-15-40-55-20-80 15-20 40-30 60-25zM100 350c20 0 40 20 40 45 0 20-15 40-40 40-30 0-50-25-45-50 5-20 25-35 45-35zm750-100c25 10 40 40 30 65-15 30-50 40-75 20-20-15-25-45-10-65 15-15 35-25 55-20zm-600 150c30-5 60 20 60 55 0 30-25 55-60 55-40 0-70-35-60-70 10-25 35-35 60-40zm400 50c20 5 35 25 30 50-10 30-45 45-70 30-20-15-25-45-5-65 15-15 30-20 45-15z'/%3E%3Cpath fill='%23fb923c' opacity='0.6' d='M300 50c15 0 30 15 30 35 0 15-15 30-30 30-20 0-35-20-30-40 5-15 15-25 30-25zm500 350c20-5 40 10 45 35 5 20-10 40-35 45-30 5-55-20-50-50 5-20 25-30 40-30zm-400 50c15 5 25 20 20 40-5 20-30 30-50 20-15-10-20-30-10-45 10-15 25-20 40-15z'/%3E%3C/svg%3E")`,
-            backgroundSize: '100% auto',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        />
+    <div className="min-h-screen relative overflow-x-hidden bg-stone-50/60 font-sans">
+      
+      {/* 1. HERO HEADER SECTION */}
+      <div className="relative bg-slate-950 text-white pt-24 pb-20 overflow-hidden border-b border-stone-800">
+        {/* Background Image with Atmospheric Gradient */}
+        <div className="absolute inset-0 opacity-40 mix-blend-luminosity">
+          <img 
+            src="https://images.unsplash.com/photo-1548013146-72479768bbaa?w=1600&auto=format&fit=crop&q=80" 
+            alt="DarShana Indian Heritage" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(245,158,11,0.15),_transparent_50%)]" />
 
-        {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white opacity-80" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(6,182,212,0.08),_transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_rgba(251,146,60,0.06),_transparent_50%)]" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          
+          <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-400/30 px-4 py-1.5 rounded-full backdrop-blur-md shadow-xs">
+            <Sparkles size={14} className="text-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-widest text-amber-300">
+              DARSHANA TRAVEL HUB & EXPEDITIONS
+            </span>
+          </div>
 
-        {/* Floating Travel Elements */}
-        <div className="absolute top-[15%] left-[10%] w-3 h-3 bg-[#06b6d4]/20 rounded-full blur-sm animate-pulse" />
-        <div className="absolute top-[25%] right-[15%] w-2 h-2 bg-[#06d6a0]/25 rounded-full blur-sm animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-[60%] left-[20%] w-2.5 h-2.5 bg-[#fb923c]/20 rounded-full blur-sm animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-[40%] right-[25%] w-2 h-2 bg-[#0ea5e9]/20 rounded-full blur-sm animate-pulse" style={{ animationDelay: '0.5s' }} />
-        <div className="absolute bottom-[30%] left-[30%] w-1.5 h-1.5 bg-[#a855f7]/15 rounded-full blur-sm animate-pulse" style={{ animationDelay: '1.5s' }} />
-        <div className="absolute bottom-[20%] right-[10%] w-2 h-2 bg-[#06b6d4]/15 rounded-full blur-sm animate-pulse" style={{ animationDelay: '2.5s' }} />
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold font-serif tracking-tight text-white max-w-4xl mx-auto leading-[1.15]">
+            Authentic Indian Cultural Journeys & Heritage Tours
+          </h1>
 
-        {/* Dotted Route Lines */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.03]" preserveAspectRatio="none">
-          <path d="M100,200 Q300,100 500,250 T900,150" stroke="#06b6d4" strokeWidth="2" fill="none" strokeDasharray="8,8" />
-          <path d="M50,400 Q250,300 450,350 T850,300" stroke="#fb923c" strokeWidth="2" fill="none" strokeDasharray="8,8" />
-          <path d="M200,100 Q400,200 600,150 T1000,250" stroke="#06d6a0" strokeWidth="1.5" fill="none" strokeDasharray="6,6" />
-        </svg>
+          <p className="text-stone-300 text-base sm:text-lg max-w-2xl mx-auto font-light leading-relaxed">
+            Reserve curated cultural packages, book certified local historians, and experience India through all-inclusive royal stays, sacred circuits, and culinary trails.
+          </p>
+
+          {/* Action CTAs */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button 
+              onClick={scrollToPackages}
+              className="px-7 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm transition-all duration-200 shadow-lg shadow-amber-500/20 flex items-center gap-2 cursor-pointer"
+            >
+              <span>Explore Tour Packages</span>
+              <ArrowRight size={16} />
+            </button>
+
+            <Link 
+              to="/planner"
+              className="px-7 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/20 backdrop-blur-md transition-all duration-200 flex items-center gap-2"
+            >
+              <Compass size={16} className="text-amber-400" />
+              <span>Custom AI Itinerary</span>
+            </Link>
+          </div>
+
+          {/* Trust Value Badges */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-8 border-t border-white/10 text-xs text-stone-300">
+            <div className="flex items-center justify-center gap-2 bg-white/5 p-3 rounded-2xl border border-white/10">
+              <ShieldCheck size={16} className="text-amber-400" />
+              <span>100% Verified Boutique Stays</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 bg-white/5 p-3 rounded-2xl border border-white/10">
+              <Star size={16} className="text-amber-400 fill-amber-400" />
+              <span>4.95/5 Traveler Satisfaction</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 bg-white/5 p-3 rounded-2xl border border-white/10">
+              <CheckCircle2 size={16} className="text-emerald-400" />
+              <span>Transparent INR Pricing</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 bg-white/5 p-3 rounded-2xl border border-white/10">
+              <Calendar size={16} className="text-amber-400" />
+              <span>Free Date Rescheduling</span>
+            </div>
+          </div>
+
+        </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 space-y-16">
+      {/* 2. MAIN CONTENT SECTIONS */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20 space-y-16">
+        
+        {/* Travel Themes */}
         <TravelCategoriesSection />
-        <RouteMapSection />
-        <DestinationsSection />
+        
+        {/* Curated Tour Packages with Real Booking Engine */}
         <TourPackagesSection />
+
+        {/* Popular Destinations */}
+        <DestinationsSection />
+
+        {/* Route Map & Visuals */}
+        <RouteMapSection />
         <GallerySection />
         <SpecialFeaturesSection />
 
-        <section id="map" className="pt-16">
-          <div className="text-center space-y-3 mb-10">
-            <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Interactive map</p>
-            <h2 className="text-3xl font-semibold text-[#0f172a]">Explore India on hover</h2>
+        {/* Interactive India Map */}
+        <section id="map" className="pt-8">
+          <div className="text-center space-y-2 mb-8 max-w-2xl mx-auto">
+            <span className="text-xs font-bold uppercase tracking-widest text-amber-800 bg-amber-50 border border-amber-200/80 px-3 py-1 rounded-full inline-flex items-center gap-1.5 self-center">
+              📍 NATIONAL EXPLORER
+            </span>
+            <h2 className="text-3xl font-bold font-serif text-stone-900">Explore India Live Interactive Map</h2>
+            <p className="text-xs sm:text-sm text-stone-500">Pan and zoom across historical routes and cultural stops</p>
           </div>
-          <div className="rounded-3xl overflow-hidden border border-slate-100 shadow-sm">
+          <div className="rounded-3xl overflow-hidden border border-stone-200 shadow-sm">
             <iframe
               title="TravelHub Destinations Map"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30711283.003947686!2d64.43760646358283!3d20.01140817566828!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30635ff06b92b791%3A0xd78c4fa1854213a6!2sIndia!5e0!3m2!1sen!2sin!4v1689612345678!5m2!1sen!2sin"
@@ -70,10 +140,12 @@ const TravelHub = () => {
           </div>
         </section>
 
+        {/* Social Proof & Reviews */}
         <ReviewsSection />
         <BlogHighlightsSection />
         <ContactSupportSection />
       </div>
+
     </div>
   );
 };
