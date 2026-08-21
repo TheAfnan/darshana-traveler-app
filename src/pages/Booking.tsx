@@ -22,9 +22,11 @@ import {
   CreditCard,
   Building,
   Plane,
-  RotateCcw
+  RotateCcw,
+  Leaf
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useEcoRewards } from '../context/EcoRewardsContext';
 import { bookingApi } from '../services/api';
 import { createRazorpayOrder } from '../services/razorpay';
 
@@ -38,6 +40,7 @@ interface PackageOption {
   id: string;
   name: string;
   pricePerPerson: number;
+  ecoPoints: number;
   badge?: string;
   badgeType?: 'popular' | 'premium' | 'value';
   description: string;
@@ -49,6 +52,7 @@ const PACKAGES: PackageOption[] = [
     id: 'slot-hold',
     name: 'Quick Slot Hold',
     pricePerPerson: 500,
+    ecoPoints: 30,
     badge: 'Best Value',
     badgeType: 'value',
     description: 'Lock in your travel dates immediately and finalize itinerary details later.',
@@ -58,6 +62,7 @@ const PACKAGES: PackageOption[] = [
     id: 'guided-day',
     name: 'Guided Cultural Day Tour',
     pricePerPerson: 1200,
+    ecoPoints: 60,
     badge: 'Most Picked',
     badgeType: 'popular',
     description: 'Full day curated monument trails, local storytelling, and food walks.',
@@ -67,6 +72,7 @@ const PACKAGES: PackageOption[] = [
     id: 'weekend-heritage',
     name: 'All-Inclusive Heritage Weekend',
     pricePerPerson: 2500,
+    ecoPoints: 120,
     badge: 'Premium Experience',
     badgeType: 'premium',
     description: 'Immersive multi-day expedition with artisan workshops and evening riverfront/ghat walks.',
@@ -89,6 +95,7 @@ const DESTINATIONS = [
 
 export const Booking: React.FC = () => {
   const { user } = useAuth();
+  const { earnPoints } = useEcoRewards();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -192,7 +199,6 @@ export const Booking: React.FC = () => {
     });
 
     if (!validateForm()) {
-      // Scroll to first error
       window.scrollTo({ top: 300, behavior: 'smooth' });
       return;
     }
@@ -206,7 +212,6 @@ export const Booking: React.FC = () => {
       const isLoaded = await loadRazorpay();
 
       if (isLoaded && razorpayKey) {
-        // Try backend order generation
         const order = await createRazorpayOrder(grandTotal * 100, 'INR');
 
         const options = {
@@ -228,7 +233,7 @@ export const Booking: React.FC = () => {
             travelDate: travelDate
           },
           theme: {
-            color: '#EA580C' // DarShana brand orange
+            color: '#EA580C'
           },
           handler: async (response: any) => {
             await finalizeBooking(response?.razorpay_payment_id || `RZP-PAY-${Math.floor(100000 + Math.random() * 900000)}`);
@@ -248,14 +253,12 @@ export const Booking: React.FC = () => {
         });
         rzp.open();
       } else {
-        // Direct confirmation fallback if Razorpay key is in test demo mode
         setTimeout(async () => {
           await finalizeBooking(`DEMO-TXN-${Math.floor(100000 + Math.random() * 900000)}`);
         }, 1200);
       }
     } catch (err: any) {
       console.warn('Payment initialization error:', err);
-      // Still complete reservation cleanly
       await finalizeBooking(`CONF-${Math.floor(100000 + Math.random() * 900000)}`);
     }
   };
@@ -285,7 +288,10 @@ export const Booking: React.FC = () => {
       console.warn('API sync warning, cached locally:', e);
     }
 
-    // Cache to user's local bookings for instant persistence
+    // Award Eco Points upfront on successful booking!
+    const earnedPts = activePackage.ecoPoints * guestCount;
+    earnPoints(earnedPts, `Booked ${activePackage.name} (${guestCount} travelers)`, 'stay', earnedPts * 0.4);
+
     try {
       const existing = JSON.parse(localStorage.getItem('darshana_my_trips') || '[]');
       existing.unshift(bookingPayload);
@@ -305,7 +311,6 @@ export const Booking: React.FC = () => {
       <div className="min-h-screen bg-[#faf9f6] text-slate-900 font-sans pt-24 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto space-y-6">
           
-          {/* Celebratory Banner */}
           <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-10 shadow-sm text-center space-y-4">
             <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-xs">
               <CheckCircle2 size={36} />
@@ -319,14 +324,12 @@ export const Booking: React.FC = () => {
               </p>
             </div>
 
-            {/* Booking ID Pill */}
             <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-stone-50 border border-stone-200 rounded-2xl">
               <span className="text-xs text-slate-500 font-semibold">Booking ID:</span>
               <span className="font-mono font-bold text-base text-slate-900">{bookingSuccessData.bookingCode}</span>
             </div>
           </div>
 
-          {/* Receipt Breakdown Card */}
           <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-sm space-y-6">
             <div className="flex items-center justify-between border-b border-stone-100 pb-4">
               <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
@@ -382,6 +385,13 @@ export const Booking: React.FC = () => {
               >
                 <span>View in My Trips</span>
                 <ArrowRight size={14} />
+              </Link>
+              <Link
+                to="/rewards"
+                className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+              >
+                <Leaf size={14} />
+                <span>View Earned Eco Rewards</span>
               </Link>
               <Link
                 to="/"
@@ -515,6 +525,14 @@ export const Booking: React.FC = () => {
                         <div>
                           <span className="text-xl font-extrabold text-slate-900">₹{pkg.pricePerPerson}</span>
                           <span className="text-[11px] text-slate-500 font-medium"> / person</span>
+                        </div>
+
+                        {/* Upfront Eco Point Badge */}
+                        <div className="pt-0.5">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold rounded-md">
+                            <Leaf size={11} className="text-emerald-600" />
+                            <span>+{pkg.ecoPoints} pts · Eco Choice</span>
+                          </span>
                         </div>
 
                         <p className="text-xs text-slate-600 leading-relaxed">{pkg.description}</p>
@@ -792,6 +810,15 @@ export const Booking: React.FC = () => {
                     <span className="text-[10px] text-slate-400 block">All inclusive</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Upfront Eco Points Award Notice */}
+              <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between text-xs text-emerald-900 font-bold">
+                <span className="flex items-center gap-1.5">
+                  <Leaf size={14} className="text-emerald-600" />
+                  <span>Eco-Points You'll Earn:</span>
+                </span>
+                <span className="text-emerald-700 font-mono font-extrabold">+{activePackage.ecoPoints * guestCount} pts</span>
               </div>
 
               {/* Main Pay Button */}

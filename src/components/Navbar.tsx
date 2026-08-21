@@ -8,17 +8,20 @@ import {
   Leaf, 
   Menu, 
   X,
-  MapPin
+  MapPin,
+  Gift
 } from "lucide-react";
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useRightSidebar } from "../hooks/useRightSidebar";
+import { useEcoRewards } from "../context/EcoRewardsContext";
 import darshanaLogoFull from "../images/darshana-logo-full.png";
 import RightSidebar from "./RightSidebar";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { isOpen: sidebarIsOpen, openSidebar, closeSidebar } = useRightSidebar();
+  const { points, tier } = useEcoRewards();
   const location = useLocation();
 
   const navLinks = [
@@ -54,7 +57,7 @@ const Navbar: React.FC = () => {
             {/* Final Logo (Emblem + Wordmark Baked In - No Duplicate Text) */}
             <Link 
               to="/" 
-              className="flex items-center ml-3 sm:ml-4 pr-6 select-none shrink-0"
+              className="flex items-center ml-3 sm:ml-4 pr-4 sm:pr-6 select-none shrink-0"
               aria-label="DarShana Home"
             >
               <img 
@@ -85,8 +88,20 @@ const Navbar: React.FC = () => {
               );
             })}
 
-            {/* CTA Book Trip */}
+            {/* Persistent Eco Points Counter Pill + Book Trip CTA */}
             <div className="ml-2 xl:ml-3 flex items-center gap-2 shrink-0">
+              
+              {/* Eco Points Pill */}
+              <Link
+                to="/rewards"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-bold transition shadow-2xs group"
+                title={`You have ${points} Eco-Points (${tier} Tier)`}
+              >
+                <Leaf size={14} className="text-emerald-600 group-hover:rotate-12 transition-transform" />
+                <span className="font-mono font-extrabold">{points}</span>
+                <span className="text-[10px] text-emerald-700 uppercase">pts</span>
+              </Link>
+
               <Link
                 to="/booking"
                 className={`group relative px-3.5 py-1.5 xl:px-4 xl:py-2 rounded-full text-[12px] xl:text-[13px] font-semibold transition-all duration-200 whitespace-nowrap shrink-0
@@ -98,14 +113,24 @@ const Navbar: React.FC = () => {
             </div>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 text-gray-700 hover:text-orange-600"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile Right: Eco Points Badge + Mobile Menu Button */}
+          <div className="lg:hidden flex items-center gap-2">
+            <Link
+              to="/rewards"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold shadow-2xs"
+            >
+              <Leaf size={13} className="text-emerald-600" />
+              <span className="font-mono">{points}</span>
+            </Link>
+
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 text-gray-700 hover:text-orange-600"
+              aria-label="Toggle menu"
+            >
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -132,11 +157,19 @@ const Navbar: React.FC = () => {
               );
             })}
 
-            <div className="pt-2 border-t border-slate-100">
+            <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
+              <Link
+                to="/rewards"
+                onClick={() => setIsOpen(false)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl font-bold text-xs"
+              >
+                <Leaf size={15} className="text-emerald-600" />
+                <span>Eco Rewards Store ({points} pts • {tier})</span>
+              </Link>
               <Link
                 to="/booking"
                 onClick={() => setIsOpen(false)}
-                className="w-full block text-center py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl font-bold shadow-md"
+                className="w-full block text-center py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl font-bold shadow-md text-sm"
               >
                 Book Trip
               </Link>

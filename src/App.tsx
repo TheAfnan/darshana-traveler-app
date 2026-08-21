@@ -7,6 +7,8 @@ import { HashRouter, Route, Routes, useLocation } from "react-router-dom";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import { AuthProvider } from "./context/AuthContext";
+import { EcoRewardsProvider } from "./context/EcoRewardsContext";
+import EcoNotificationOverlay from "./components/EcoRewards/EcoNotificationOverlay";
 
 // Auth Components
 import { GuestOnly, RequireAuth } from "./components/Auth/ProtectedRoute";
@@ -39,12 +41,11 @@ import SafetyDashboard from "./pages/SafetyDashboard";
 import SafetyGuide from "./pages/SafetyGuide";
 import Sustainable from "./pages/Sustainable";
 import TravelEssentials from "./pages/TravelEssentials";
-import TravelHub from "./pages/TravelHub"; // ✔️ Correct Import
+import TravelHub from "./pages/TravelHub";
 import ARGuide from "./pages/ARGuide";
 import MyBookings from "./pages/MyBookings";
 import UIStyleGuide from "./pages/UIStyleGuide";
 import CulturalPlanner from "./pages/CulturalPlanner";
-
 
 // Auto scroll to top when route changes
 const ScrollToTop: React.FC = () => {
@@ -62,72 +63,76 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
-      <HashRouter>
-        <ScrollToTop />
+      <EcoRewardsProvider>
+        <HashRouter>
+          <ScrollToTop />
 
-        {/* Page Wrapper */}
-        <div className="min-h-screen flex flex-col bg-primary-50 text-primary-900 font-sans">
+          {/* Page Wrapper */}
+          <div className="min-h-screen flex flex-col bg-primary-50 text-primary-900 font-sans">
 
-          {/* Navbar */}
-          <Navbar />
+            {/* Navbar */}
+            <Navbar />
 
-          {/* Page Content */}
-          <main className="flex-grow pt-20 sm:pt-24">
-            <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<GuestOnly><><Home /><Login isModal={true} /></></GuestOnly>} />
-            <Route path="/register" element={<GuestOnly><><Home /><Login isModal={true} /></></GuestOnly>} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/planner" element={<CulturalPlanner />} />
-            <Route path="/cultural-engine" element={<CulturalPlanner />} />
-            <Route path="/ar-guide" element={<ARGuide />} />
-            <Route path="/ar" element={<ARGuide />} />
-            <Route path="/travelhub" element={<TravelHub />} />
-            <Route path="/travel-hub" element={<TravelHub />} />
-            <Route path="/cities" element={<AllCities />} />
-            <Route path="/city/lucknow" element={<Lucknow />} />
-            <Route path="/festivals" element={<Festivals />} />
-            <Route path="/sustainable" element={<Sustainable />} />
-            <Route path="/green-route-planner" element={<GreenRoutePlanner />} />
-            <Route path="/safety" element={<SafetyDashboard />} />
-            <Route path="/safety-guide" element={<SafetyGuide />} />
-            <Route path="/travel-essentials" element={<TravelEssentials />} />
-            <Route path="/assistant" element={<Assistant />} />
-            <Route path="/festival-alerts" element={<FestivalAlerts />} />
-            <Route path="/language" element={<LanguageSelector />} />
-            <Route path="/guides" element={<GuideListing />} />
-            <Route path="/style-guide" element={<UIStyleGuide />} />
-            <Route path="/not-authorized" element={<NotAuthorized />} />
+            {/* Page Content */}
+            <main className="flex-grow pt-20 sm:pt-24">
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<GuestOnly><><Home /><Login isModal={true} /></></GuestOnly>} />
+                <Route path="/register" element={<GuestOnly><><Home /><Login isModal={true} /></></GuestOnly>} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/planner" element={<CulturalPlanner />} />
+                <Route path="/cultural-engine" element={<CulturalPlanner />} />
+                <Route path="/ar-guide" element={<ARGuide />} />
+                <Route path="/ar" element={<ARGuide />} />
+                <Route path="/travelhub" element={<TravelHub />} />
+                <Route path="/travel-hub" element={<TravelHub />} />
+                <Route path="/cities" element={<AllCities />} />
+                <Route path="/city/lucknow" element={<Lucknow />} />
+                <Route path="/festivals" element={<Festivals />} />
+                <Route path="/sustainable" element={<Sustainable />} />
+                <Route path="/green-route-planner" element={<GreenRoutePlanner />} />
+                <Route path="/safety" element={<SafetyDashboard />} />
+                <Route path="/safety-guide" element={<SafetyGuide />} />
+                <Route path="/travel-essentials" element={<TravelEssentials />} />
+                <Route path="/assistant" element={<Assistant />} />
+                <Route path="/festival-alerts" element={<FestivalAlerts />} />
+                <Route path="/language" element={<LanguageSelector />} />
+                <Route path="/guides" element={<GuideListing />} />
+                <Route path="/style-guide" element={<UIStyleGuide />} />
+                <Route path="/rewards" element={<EcoRewardsDashboard />} />
+                <Route path="/not-authorized" element={<NotAuthorized />} />
+                
+                {/* Guest Only Routes */}
+                <Route path="/forgot-password" element={<GuestOnly><ForgotPassword /></GuestOnly>} />
+                <Route path="/reset-password/:token" element={<GuestOnly><ResetPassword /></GuestOnly>} />
+                
+                {/* Protected Routes */}
+                <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+                <Route path="/my-trips" element={<RequireAuth><MyTrips /></RequireAuth>} />
+                <Route path="/my-bookings" element={<RequireAuth><MyBookings /></RequireAuth>} />
+                <Route path="/become-guide" element={<BecomeGuide />} />
+                <Route path="/guide-dashboard" element={<LocalGuideDashboard />} />
+                <Route path="/booking" element={<Booking />} />
+                
+                {/* Admin Dashboard */}
+                <Route path="/admin" element={<AdminDashboard />} />
+              </Routes>
+            </main>
             
-            {/* Guest Only Routes (redirect if logged in) */}
-            <Route path="/forgot-password" element={<GuestOnly><ForgotPassword /></GuestOnly>} />
-            <Route path="/reset-password/:token" element={<GuestOnly><ResetPassword /></GuestOnly>} />
-            
-            {/* Protected Routes (require authentication) */}
-            <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
-            <Route path="/my-trips" element={<RequireAuth><MyTrips /></RequireAuth>} />
-            <Route path="/my-bookings" element={<RequireAuth><MyBookings /></RequireAuth>} />
-            <Route path="/rewards" element={<RequireAuth><EcoRewardsDashboard /></RequireAuth>} />
-            <Route path="/become-guide" element={<BecomeGuide />} />
-            <Route path="/guide-dashboard" element={<LocalGuideDashboard />} />
-            <Route path="/booking" element={<Booking />} />
-            
-            {/* Admin Dashboard */}
-            <Route path="/admin" element={<AdminDashboard />} />
-          </Routes>
-        </main>
-        {/* Footer */}
-        <Footer />
-        <YatraShayak onSafetyClick={() => setIsSafetyOpen(true)} />
-        <SpeedInsights />
-        <Analytics />
+            {/* Footer & Global Overlays */}
+            <Footer />
+            <YatraShayak onSafetyClick={() => setIsSafetyOpen(true)} />
+            <EcoNotificationOverlay />
+            <SpeedInsights />
+            <Analytics />
 
-        <SafetyModal isOpen={isSafetyOpen} onClose={() => setIsSafetyOpen(false)} />
-        <LoginOverlay />
+            <SafetyModal isOpen={isSafetyOpen} onClose={() => setIsSafetyOpen(false)} />
+            <LoginOverlay />
 
-      </div>
-    </HashRouter>
+          </div>
+        </HashRouter>
+      </EcoRewardsProvider>
     </AuthProvider>
   );
 };
