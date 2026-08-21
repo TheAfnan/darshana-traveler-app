@@ -42,6 +42,7 @@ interface AuthContextType {
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  loginAsGuest: () => void;
   setAuth: (token: string, user: User) => void; // Direct auth setter
   register: (name: string, email: string, phone: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -207,6 +208,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('user', JSON.stringify(newUser));
   };
 
+  const loginAsGuest = () => {
+    const guestUser: User = {
+      id: 'guest_' + Date.now(),
+      name: 'Darshana Traveler (Guest)',
+      email: 'traveler@darshana.com',
+      role: 'user',
+      profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+      notificationPreferences: {
+        emailNotifications: true,
+        festivalAlerts: true,
+        smsNotifications: false
+      }
+    };
+    const guestToken = 'demo_token_' + Date.now();
+    setToken(guestToken);
+    setUser(guestUser);
+    localStorage.setItem('token', guestToken);
+    localStorage.setItem('user', JSON.stringify(guestUser));
+  };
+
   const register = async (name: string, email: string, phone: string, password: string) => {
     setIsLoading(true);
     try {
@@ -296,6 +317,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         token,
         login,
         loginWithGoogle,
+        loginAsGuest,
         setAuth,
         register,
         logout,

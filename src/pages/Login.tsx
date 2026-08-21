@@ -13,7 +13,7 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, register, loginWithGoogle } = useAuth();
+  const { login, register, loginWithGoogle, loginAsGuest } = useAuth();
 
   const [isLoginView, setIsLoginView] = useState(true);
   const [loginStep, setLoginStep] = useState(1);
@@ -124,10 +124,26 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
       if (onClose) onClose();
       else navigate("/travelhub");
     } catch (err: any) {
-      setError(err?.message || "Google sign-in failed");
+      console.warn("Google Sign-In caught error:", err);
+      if (err?.code === 'auth/unauthorized-domain' || err?.message?.includes('unauthorized-domain')) {
+        setError("Domain not whitelisted in Firebase Console yet. Logging in with Demo Traveler Access...");
+        setTimeout(() => {
+          loginAsGuest();
+          if (onClose) onClose();
+          else navigate("/travelhub");
+        }, 1200);
+      } else {
+        setError(err?.message || "Google sign-in failed");
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDemoLogin = () => {
+    loginAsGuest();
+    if (onClose) onClose();
+    else navigate("/travelhub");
   };
 
   const handleClose = () => {
@@ -321,18 +337,29 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                   </div>
                 </div>
 
-                {/* Google Login */}
-                <button
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  className="w-full bg-white border border-gray-200 py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 text-sm"
-                >
-                  <img
-                    src="https://www.svgrepo.com/show/475656/google-color.svg"
-                    className="w-4 h-4"
-                  />
-                  Sign in with Google
-                </button>
+                {/* Google Login & Demo Login */}
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    className="w-full bg-white border border-gray-200 py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 text-sm font-medium text-gray-700 shadow-xs transition"
+                  >
+                    <img
+                      src="https://www.svgrepo.com/show/475656/google-color.svg"
+                      className="w-4 h-4"
+                      alt="Google"
+                    />
+                    Sign in with Google
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDemoLogin}
+                    className="w-full bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 py-2 rounded-lg flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-900 transition"
+                  >
+                    <span>⚡ Instant Demo Login (1-Click Guest)</span>
+                  </button>
+                </div>
 
                 <p className="text-center text-[10px] mt-2">
                   Don’t have an account?{" "}
