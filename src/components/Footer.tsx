@@ -167,10 +167,10 @@ const Footer: React.FC = () => {
         <div>
           <h3 className="text-white font-semibold mb-4">Explore</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href="#/mood" className="hover:text-primary-400">Mood Analyzer</a></li>
+            <li><a href="#/ar-guide" className="hover:text-primary-400">AR Monument Guide</a></li>
+            <li><a href="#/planner" className="hover:text-primary-400">Cultural Planner</a></li>
             <li><a href="#/festivals" className="hover:text-primary-400">Festival Calendar</a></li>
             <li><a href="#/sustainable" className="hover:text-primary-400">Eco-Planner</a></li>
-            <li><a href="#/register" className="hover:text-primary-400">Book Now</a></li>
           </ul>
         </div>
 

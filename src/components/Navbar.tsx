@@ -1,7 +1,7 @@
 import { 
   Home, 
   Sparkles, 
-  Smile, 
+  Camera, 
   Plane, 
   Building2, 
   Calendar, 
@@ -25,7 +25,7 @@ const Navbar: React.FC = () => {
   const navLinks = [
     { name: "Home", path: "/", icon: Home },
     { name: "AI Planner", path: "/planner", icon: Sparkles },
-    { name: "Mood AI", path: "/mood", icon: Smile },
+    { name: "AR Scan", path: "/ar-guide", icon: Camera },
     { name: "Travel Hub", path: "/travelhub", icon: Plane },
     { name: "All Cities", path: "/cities", icon: Building2 },
     { name: "Cultural Odyssey", path: "/festivals", icon: Calendar },

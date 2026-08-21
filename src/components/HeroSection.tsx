@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, Calendar, Compass, Landmark, MapPin, Mountain, Sparkles } from 'lucide-react';
+import { ArrowRight, Calendar, Camera, Compass, Landmark, MapPin, Mountain, Sparkles } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -47,13 +47,13 @@ const slides = [
   },
   {
     id: 4,
-    title: "Spiritual Journeys",
-    subtitle: "Find inner peace in sacred spaces and ancient temples.",
-    image: "https://tripcosmos.co/wp-content/uploads/2025/06/v5-1024x605.jpg.webp", // Varanasi
-    ctaLink: "/mood",
-    ctaText: "Find My Vibe",
-    icon: Sparkles,
-    color: "from-purple-500 to-indigo-500"
+    title: "AR Monument Scanner",
+    subtitle: "Identify Indian landmarks in real-time and uncover centuries of architecture and history.",
+    image: "https://images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=2070&auto=format&fit=crop", // Taj Mahal
+    ctaLink: "/ar-guide",
+    ctaText: "Scan Monuments",
+    icon: Camera,
+    color: "from-amber-600 to-indigo-600"
   },
   {
     id: 5,

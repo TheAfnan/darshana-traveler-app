@@ -1,38 +1,19 @@
 /**
- * AR Guide Types
- * Interfaces for AR overlay, mood analysis, and destination data
+ * AR Monument Guide Types
+ * Interfaces for Monument Image Recognition, Architecture Analysis & Historical Insights
  */
 
-import type { Destination, EmotionScores } from './moodAnalyzer';
-
-export interface ARResult {
-  detectedMood: string;
-  confidence: number;
-  emotions: EmotionScores;
-  energyLevel: number;
-  socialScore: number;
-  adventureScore: number;
-  recommendations: ARDestination[];
-  reasoning: string;
-}
-
-export interface ARDestination extends Destination {
-  arOverlayUrl?: string; // URL for AR asset if available
-  matchScore: number;
-  distance?: string; // Distance from user
-}
-
-export interface ARGuideResponse {
-  success: boolean;
-  data?: ARResult;
-  error?: string;
-}
-
-export interface FacePosition {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  centerX: number;
-  centerY: number;
+export interface MonumentResult {
+  name: string;
+  location: string;
+  era: string;
+  builtBy: string;
+  architectureStyle: string;
+  history: string;
+  funFacts: string[];
+  confidence: 'high' | 'medium' | 'low';
+  isLiveAI: boolean;
+  imageUrl?: string;
+  nearbySpots?: string[];
+  travelHubTag?: string;
 }

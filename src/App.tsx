@@ -31,7 +31,6 @@ import LanguageSelector from "./pages/LanguageSelector";
 import LocalGuideDashboard from "./pages/LocalGuideDashboard";
 import Login from "./pages/Login";
 import Lucknow from "./pages/Lucknow";
-import MoodAnalyzer from "./pages/MoodAnalyzer";
 import MyTrips from "./pages/MyTrips";
 import NotAuthorized from "./pages/NotAuthorized";
 import Profile from "./pages/Profile";
@@ -82,8 +81,8 @@ const App: React.FC = () => {
             <Route path="/home" element={<Home />} />
             <Route path="/planner" element={<CulturalPlanner />} />
             <Route path="/cultural-engine" element={<CulturalPlanner />} />
-            <Route path="/mood" element={<MoodAnalyzer />} />
             <Route path="/ar-guide" element={<ARGuide />} />
+            <Route path="/ar" element={<ARGuide />} />
             <Route path="/travelhub" element={<TravelHub />} />
             <Route path="/travel-hub" element={<TravelHub />} />
             <Route path="/cities" element={<AllCities />} />

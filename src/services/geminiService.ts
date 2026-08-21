@@ -55,8 +55,8 @@ function getOfflineFallbackAnswer(userInput: string, isKeyProvided = false): str
   if (query.includes('book') || query.includes('flight') || query.includes('train') || query.includes('hotel')) {
     return "You can explore and plan your travel options in our 'Travel Hub' or 'Booking' section. We offer smart suggestions for flights, trains, and stays.";
   }
-  if (query.includes('mood') || query.includes('recommend')) {
-    return "Try our 'Mood AI' analyzer! Upload or take a picture, and Sarthi will match your mood with top destinations across India.";
+  if (query.includes('monument') || query.includes('scan') || query.includes('history') || query.includes('ar') || query.includes('landmark')) {
+    return "Try our 'AR Monument Guide'! Point your camera or upload a photo of any Indian landmark or temple to discover its architecture and centuries of history.";
   }
   if (query.includes('sustainable') || query.includes('green') || query.includes('eco')) {
     return "Explore our 'Green Route Planner' to find low-carbon transport options and earn Eco-Rewards on your travels!";

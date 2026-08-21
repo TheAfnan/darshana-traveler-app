@@ -1,7 +1,6 @@
 /**
  * Comprehensive Indian Destinations Database
- * Used by MoodAnalyzer and LocalGuidesPortal
- * Extended with mood/energy/social/adventure matching
+ * Used across Travel Hub and Local Guides Portal
  */
 
 export type DestinationLocation = {
