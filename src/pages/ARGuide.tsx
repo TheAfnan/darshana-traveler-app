@@ -187,7 +187,7 @@ export const ARGuide: React.FC = () => {
           <Landmark size={13} className="text-orange-500" />
           <span>Heritage Lens & Monument Identifier</span>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-serif font-bold text-white tracking-tight">
+        <h1 className="text-3xl sm:text-5xl font-sans font-extrabold text-white tracking-tight">
           Monument Scan & History Guide
         </h1>
         <p className="text-slate-400 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
@@ -407,7 +407,7 @@ export const ARGuide: React.FC = () => {
                     </span>
                   </div>
 
-                  <h2 className="text-2xl sm:text-4xl font-serif font-bold text-white">
+                  <h2 className="text-2xl sm:text-4xl font-sans font-extrabold text-white tracking-tight">
                     {monumentResult.name}
                   </h2>
                 </div>
