@@ -14,21 +14,27 @@ import {
   ThumbsUp, 
   Sparkles,
   Globe,
-  ChevronRight
+  Key,
+  CheckCircle2,
+  X,
+  RefreshCw,
+  Copy,
+  Check
 } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { ASSISTANT_QA } from '../data/assistantQA';
 import { auth } from '../firebase.config';
 import { fetchQuestionsFromDB, saveChatToDB, saveFeedback } from '../services/databaseService';
-import { getChatResponse } from '../services/geminiService';
+import { getApiKey, getChatResponse, setCustomApiKey, translateText } from '../services/geminiService';
 import darshanaIcon from '../images/darshana-icon-only.png';
 
 interface Message {
   id: number;
   role: 'user' | 'model';
   text: string;
+  translatedText?: string;
+  isTranslating?: boolean;
   liked?: boolean;
   disliked?: boolean;
   mapLocation?: string;
@@ -41,324 +47,99 @@ interface QuickCategory {
   questions: string[];
 }
 
-interface KnowledgeBaseEntry {
-  _id?: string;
-  category?: string;
-  categoryLabel?: string;
-  question: string;
-  questionHi?: string;
-  answer: string;
-  answerHi?: string;
-  tags?: string[];
-}
-
-interface StaticKnowledgeEntry {
-  id: string;
-  variants: string[];
-  answer: string;
-}
-
-const STATIC_KNOWLEDGE_BASE: StaticKnowledgeEntry[] = [
-  {
-    id: 'greeting',
-    variants: ['hello', 'hi', 'hey', 'namaste', 'greetings'],
-    answer: 'Namaste! I am Sarthi, your personal travel assistant. How can I help you plan your journey today?'
-  },
-  {
-    id: 'identity',
-    variants: ['who are you', 'what is your name', 'what do you do'],
-    answer: 'I am Sarthi, an AI-powered travel assistant designed to help you explore India, find festivals, ensure safety, and plan your trips.'
-  },
-  {
-    id: 'booking',
-    variants: ['how to book a trip', 'booking', 'book ticket', 'reservation'],
-    answer: "To book a trip, navigate to the 'Travel Hub' or click on the 'Book Trip' button in the navigation bar. You can choose from trains, flights, and hotels."
-  },
-  {
-    id: 'safety',
-    variants: ['safety', 'is it safe', 'emergency', 'help', 'sos'],
-    answer: "Your safety is our priority. You can access the 'Safety Dashboard' for emergency contacts, live alerts, and safety guides. In case of emergency, use the SOS button."
-  },
-  {
-    id: 'festivals',
-    variants: ['festivals', 'events', 'what is happening', 'culture'],
-    answer: "India is a land of festivals! Check out the 'Cultural Odyssey' section to see upcoming festivals, their significance, and dates."
-  },
-  {
-    id: 'sustainable',
-    variants: ['sustainable travel', 'eco friendly', 'green travel'],
-    answer: "We promote sustainable tourism. Visit the 'Eco Travel' section to find eco-friendly stays, green routes, and tips to reduce your carbon footprint."
-  },
-  {
-    id: 'guides',
-    variants: ['local guides', 'find a guide', 'hire guide'],
-    answer: "You can connect with verified local guides in the 'Local Guides' section to get an authentic experience of the place you are visiting."
-  },
-  {
-    id: 'login',
-    variants: ['login', 'sign in', 'register', 'sign up', 'account'],
-    answer: "You can login or create an account by clicking on the 'Sign In' button in the top right corner or accessing the 'Profile' section."
-  },
-  {
-    id: 'support',
-    variants: ['contact support', 'customer care', 'help desk'],
-    answer: "You can reach our support team via the 'Contact Us' page or email us at support@darshana.com."
-  },
-  {
-    id: 'best-time',
-    variants: ['best time to visit', 'weather', 'season'],
-    answer: 'The best time to visit depends on the destination. Generally, October to March is great for most of India. Check specific destination details for more info.'
-  }
-];
-
-const normalizeText = (value: string): string =>
-  value
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-const toTokenSet = (value: string): Set<string> => {
-  const normalized = normalizeText(value);
-  if (!normalized) {
-    return new Set();
-  }
-  return new Set(normalized.split(' ').filter(Boolean));
-};
-
-const tokenOverlapScore = (inputTokens: Set<string>, targetTokens: Set<string>): number => {
-  if (inputTokens.size === 0 || targetTokens.size === 0) {
-    return 0;
-  }
-  let shared = 0;
-  targetTokens.forEach((token) => {
-    if (inputTokens.has(token)) {
-      shared += 1;
-    }
-  });
-  const precision = shared / targetTokens.size;
-  const recall = shared / inputTokens.size;
-  return Math.max(precision, recall);
-};
-
-const findDynamicKnowledge = (
-  normalizedInput: string,
-  inputTokens: Set<string>,
-  entries: KnowledgeBaseEntry[],
-): { entry: KnowledgeBaseEntry; matchedLanguage: 'en' | 'hi'; score: number } | null => {
-  let bestEntry: KnowledgeBaseEntry | null = null;
-  let bestLanguage: 'en' | 'hi' = 'en';
-  let bestScore = 0;
-
-  const considerCandidate = (entry: KnowledgeBaseEntry, rawQuestion?: string, language: 'en' | 'hi' = 'en') => {
-    if (!rawQuestion) {
-      return;
-    }
-
-    const normalizedCandidate = normalizeText(rawQuestion);
-    if (!normalizedCandidate) {
-      return;
-    }
-
-    if (
-      normalizedCandidate === normalizedInput ||
-      normalizedInput.includes(normalizedCandidate) ||
-      normalizedCandidate.includes(normalizedInput)
-    ) {
-      bestEntry = entry;
-      bestLanguage = language;
-      bestScore = 1;
-      return;
-    }
-
-    const score = tokenOverlapScore(inputTokens, toTokenSet(rawQuestion));
-    if (score > bestScore) {
-      bestEntry = entry;
-      bestLanguage = language;
-      bestScore = score;
-    }
-  };
-
-  for (const entry of entries) {
-    considerCandidate(entry, entry.question, 'en');
-    considerCandidate(entry, entry.questionHi, 'hi');
-  }
-
-  if (!bestEntry || bestScore < 0.6) {
-    return null;
-  }
-
-  return { entry: bestEntry, matchedLanguage: bestLanguage, score: bestScore };
-};
-
-const tryStaticKnowledge = (
-  normalizedInput: string,
-  inputTokens: Set<string>,
-): { answer: string; score: number } | null => {
-  let best: { answer: string; score: number } | null = null;
-
-  for (const entry of STATIC_KNOWLEDGE_BASE) {
-    for (const variant of entry.variants) {
-      const normalizedVariant = normalizeText(variant);
-      if (!normalizedVariant) {
-        continue;
-      }
-
-      if (
-        normalizedVariant === normalizedInput ||
-        normalizedInput.includes(normalizedVariant) ||
-        normalizedVariant.includes(normalizedInput)
-      ) {
-        return { answer: entry.answer, score: 1 };
-      }
-
-      const score = tokenOverlapScore(inputTokens, toTokenSet(variant));
-      if (!best || score > best.score) {
-        best = { answer: entry.answer, score };
-      }
-    }
-  }
-
-  return best && best.score >= 0.6 ? best : null;
-};
-
-const findExtendedQA = (
-  normalizedInput: string,
-  inputTokens: Set<string>,
-): { answer: string; score: number } | null => {
-  let best: { answer: string; score: number } | null = null;
-
-  for (const entry of ASSISTANT_QA) {
-    const normalizedQuestion = normalizeText(entry.question);
-    if (!normalizedQuestion) {
-      continue;
-    }
-
-    if (
-      normalizedQuestion === normalizedInput ||
-      normalizedInput.includes(normalizedQuestion) ||
-      normalizedQuestion.includes(normalizedInput)
-    ) {
-      return { answer: entry.answer, score: 1 };
-    }
-
-    const score = tokenOverlapScore(inputTokens, toTokenSet(entry.question));
-    if (!best || score > best.score) {
-      best = { answer: entry.answer, score };
-    }
-  }
-
-  return best && best.score >= 0.6 ? best : null;
-};
-
-const extractMapLocation = (text: string): string | undefined => {
-  const match = text.match(/(?:in|at|near|visit|place)\s+([A-Za-z\s]+?)(?:\.|,|\?|$)/i);
-  return match?.[1]?.trim();
-};
-
 const Assistant: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([
     { 
       id: 0, 
       role: 'model', 
-      text: 'नमस्ते! मैं सारथी हूँ, आपका AI यात्रा साथी। 🙏\n\nHello! I\'m Sarthi, your AI travel companion. Select a category below or ask me anything about traveling across India!' 
+      text: i18n.language === 'hi'
+        ? 'नमस्ते! मैं सारथी हूँ, आपका AI यात्रा साथी। 🙏\n\nभारत के पर्यटन स्थलों, यात्रा मार्गों, खान-पान या सुरक्षा के बारे में कुछ भी पूछें!'
+        : 'Namaste! I am Sarthi, your AI travel companion. 🙏\n\nAsk me anything about traveling across India, cultural destinations, safety, local food, or itineraries!' 
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [listening, setListening] = useState(false);
-  const [isDemoMode, setIsDemoMode] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
+  // API Key Modal State
+  const [showApiModal, setShowApiModal] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState(getApiKey());
+  const [apiKeySaved, setApiKeySaved] = useState(false);
+
+  // Quick Translator Box State
+  const [showTranslatorBox, setShowTranslatorBox] = useState(false);
+  const [transSourceText, setTransSourceText] = useState('');
+  const [transResultText, setTransResultText] = useState('');
+  const [isTranslatingBox, setIsTranslatingBox] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const categories: QuickCategory[] = [
     {
       id: 'itinerary',
-      label: 'Yatrika (Itinerary)',
+      label: i18n.language === 'hi' ? 'यात्रा योजना' : 'Yatrika (Itinerary)',
       icon: Compass,
       questions: [
-        'Plan a 7-day North India itinerary',
-        'Best South India tour route',
-        'Best time to visit Rajasthan?',
-        'Budget itinerary for 5 days'
+        i18n.language === 'hi' ? 'उत्तर भारत का 7 दिवसीय यात्रा प्लान' : 'Plan a 7-day North India itinerary',
+        i18n.language === 'hi' ? 'राजस्थान घूमने का सर्वोत्तम समय' : 'Best time to visit Rajasthan?',
+        i18n.language === 'hi' ? 'कम बजट में 5 दिन का टूर' : 'Budget itinerary for 5 days'
       ]
     },
     {
       id: 'safety',
-      label: 'Safety & Security',
+      label: i18n.language === 'hi' ? 'सुरक्षा एवं टिप्स' : 'Safety & Security',
       icon: Shield,
       questions: [
-        'Safety tips for solo travelers',
-        'Is it safe to travel at night?',
-        'Emergency precautions'
+        i18n.language === 'hi' ? 'अकेले यात्रा करने वालों के लिए सुरक्षा टिप्स' : 'Safety tips for solo travelers',
+        i18n.language === 'hi' ? 'आपातकालीन सावधानियां' : 'Emergency precautions in India'
       ]
     },
     {
       id: 'emergency',
-      label: 'Emergency Numbers',
+      label: i18n.language === 'hi' ? 'हेल्पलाइन नंबर' : 'Emergency Numbers',
       icon: AlertCircle,
       questions: [
-        'Emergency numbers in India',
-        'Tourist helpline numbers',
-        'Medical emergency services'
+        i18n.language === 'hi' ? 'भारत में आपातकालीन नंबर' : 'Emergency helpline numbers in India',
+        i18n.language === 'hi' ? 'पर्यटक सहायता नंबर' : 'Tourist helpline numbers'
       ]
     },
     {
       id: 'culture',
-      label: 'Culture & Language',
+      label: i18n.language === 'hi' ? 'संस्कृति व खानपान' : 'Culture & Language',
       icon: Languages,
       questions: [
-        'Essential Hindi phrases',
-        'Major festivals in India',
-        'Indian dining etiquette'
+        i18n.language === 'hi' ? 'भारत के प्रमुख सांस्कृतिक त्योहार' : 'Major cultural festivals in India',
+        i18n.language === 'hi' ? 'प्रसिद्ध भारतीय व्यंजन व स्ट्रीट फूड' : 'Famous Indian street food & cuisines'
       ]
     },
     {
       id: 'experience',
-      label: 'Experiences',
+      label: i18n.language === 'hi' ? 'रोमांचक अनुभव' : 'Experiences',
       icon: Heart,
       questions: [
-        'Best adventure activities',
-        'Top 10 must-visit destinations',
-        'Cultural experiences'
+        i18n.language === 'hi' ? 'भारत के शीर्ष 10 दर्शनीय स्थल' : 'Top 10 must-visit destinations in India',
+        i18n.language === 'hi' ? 'सांस्कृतिक धरोहर यात्रा' : 'Best heritage & cultural experiences'
       ]
     },
     {
       id: 'practical',
-      label: 'Practical Info',
+      label: i18n.language === 'hi' ? 'व्यावहारिक जानकारी' : 'Practical Info',
       icon: MessageSquare,
       questions: [
-        'Train vs Bus vs Flight',
-        'Currency & payment methods',
-        'Visa requirements'
+        i18n.language === 'hi' ? 'ट्रेन और फ्लाइट बुकिंग के तरीके' : 'Train vs Bus vs Flight travel in India',
+        i18n.language === 'hi' ? 'भुगतान और मुद्रा संबंधी जानकारी' : 'Currency & digital payment methods (UPI)'
       ]
     }
   ];
 
-  const [dbQuestions, setDbQuestions] = useState<KnowledgeBaseEntry[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-
-  const allowAccess = isDemoMode || Boolean(user);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
     return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const loadQuestions = async () => {
-      try {
-        const data = await fetchQuestionsFromDB();
-        setDbQuestions(data);
-      } catch {
-        // Fallback
-      }
-    };
-    loadQuestions();
   }, []);
 
   const scrollToBottom = () => {
@@ -369,9 +150,10 @@ const Assistant: React.FC = () => {
     scrollToBottom();
   }, [messages, isLoading]);
 
+  // Handle Send Message
   const handleSend = async (messageText?: string) => {
     const textToSend = messageText || input;
-    if (!textToSend.trim()) return;
+    if (!textToSend.trim() || isLoading) return;
 
     const userMessage: Message = { id: Date.now(), role: 'user', text: textToSend };
     setMessages((prev) => [...prev, userMessage]);
@@ -383,49 +165,17 @@ const Assistant: React.FC = () => {
         await saveChatToDB(user.uid, userMessage);
       }
 
-      const inputTokens = toTokenSet(textToSend);
-      const normalizedInput = normalizeText(textToSend);
-      let reply = '';
-      let detectedLocation: string | undefined;
-
-      const dynamicMatch = findDynamicKnowledge(normalizedInput, inputTokens, dbQuestions);
-      if (dynamicMatch) {
-        const { entry, matchedLanguage } = dynamicMatch;
-        if (matchedLanguage === 'hi') {
-          reply = entry.answerHi || entry.answer;
-        } else {
-          reply = entry.answer || entry.answerHi || '';
-        }
-      }
-
-      if (!reply) {
-        const staticMatch = tryStaticKnowledge(normalizedInput, inputTokens);
-        if (staticMatch) {
-          reply = staticMatch.answer;
-        }
-      }
-
-      if (!reply) {
-        const extendedMatch = findExtendedQA(normalizedInput, inputTokens);
-        if (extendedMatch) {
-          reply = extendedMatch.answer;
-        }
-      }
-
-      if (!reply) {
-        reply = await getChatResponse(
-          messages.map((m) => ({ text: m.text, role: m.role })),
-          textToSend
-        );
-      }
-
-      detectedLocation = extractMapLocation(reply) || extractMapLocation(textToSend);
+      const activeLang = (i18n.language === 'hi' ? 'hi' : 'en') as 'en' | 'hi';
+      const reply = await getChatResponse(
+        messages.map((m) => ({ text: m.text, role: m.role })),
+        textToSend,
+        activeLang
+      );
 
       const botMessage: Message = {
         id: Date.now() + 1,
         role: 'model',
-        text: reply,
-        mapLocation: detectedLocation
+        text: reply
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -439,12 +189,59 @@ const Assistant: React.FC = () => {
         {
           id: Date.now() + 1,
           role: 'model',
-          text: 'I apologize, but I am having trouble connecting. Please check your connection or try again.'
+          text: i18n.language === 'hi'
+            ? 'क्षमा करें, कनेक्शन में समस्या आ रही है। कृपया पुनः प्रयास करें।'
+            : 'I apologize, but I am having trouble connecting. Please check your API key or connection.'
         }
       ]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Toggle Language Handler
+  const handleLanguageToggle = () => {
+    const newLang = i18n.language === 'hi' ? 'en' : 'hi';
+    i18n.changeLanguage(newLang);
+    localStorage.setItem('language', newLang);
+  };
+
+  // In-Chat Translation Handler
+  const handleTranslateMessage = async (msgId: number, currentText: string) => {
+    const targetLang = i18n.language === 'hi' ? 'English' : 'Hindi';
+    
+    setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isTranslating: true } : m));
+
+    try {
+      const translated = await translateText(currentText, targetLang);
+      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, translatedText: translated, isTranslating: false } : m));
+    } catch (err) {
+      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isTranslating: false } : m));
+    }
+  };
+
+  // Quick Translator Box Handler
+  const handleQuickTranslate = async () => {
+    if (!transSourceText.trim()) return;
+    setIsTranslatingBox(true);
+    try {
+      const targetLang = i18n.language === 'hi' ? 'English' : 'Hindi';
+      const res = await translateText(transSourceText, targetLang);
+      setTransResultText(res);
+    } finally {
+      setIsTranslatingBox(false);
+    }
+  };
+
+  // Save API Key Handler
+  const handleSaveApiKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCustomApiKey(apiKeyInput);
+    setApiKeySaved(true);
+    setTimeout(() => {
+      setApiKeySaved(false);
+      setShowApiModal(false);
+    }, 1500);
   };
 
   const handleFeedback = async (id: number, feedback: 'like' | 'dislike') => {
@@ -492,12 +289,87 @@ const Assistant: React.FC = () => {
     }
   };
 
+  const hasApiKey = Boolean(getApiKey());
+
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 min-h-[calc(100vh-90px)] flex flex-col font-sans">
+      
+      {/* API Key Configuration Modal */}
+      {showApiModal && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-stone-200 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-amber-100 text-amber-800 rounded-xl">
+                  <Key size={18} />
+                </div>
+                <h3 className="text-base font-bold text-slate-900">Google Gemini API Setup</h3>
+              </div>
+              <button onClick={() => setShowApiModal(false)} className="p-1 rounded-lg text-slate-400 hover:text-slate-700">
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Enter your personal Google Gemini API key for fast, high-limit AI travel planning and real-time multi-language translation.
+            </p>
+
+            <form onSubmit={handleSaveApiKey} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Gemini API Key (starts with AIzaSy...)</label>
+                <input
+                  type="password"
+                  value={apiKeyInput}
+                  onChange={(e) => setApiKeyInput(e.target.value)}
+                  placeholder="Paste your Gemini API key..."
+                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs text-slate-900 font-mono focus:outline-none focus:border-amber-600"
+                />
+              </div>
+
+              <div className="text-[11px] text-slate-500">
+                <span>Free key link: </span>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-amber-700 font-semibold underline">
+                  Google AI Studio (Get Free Key)
+                </a>
+              </div>
+
+              {apiKeySaved && (
+                <div className="p-2.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs flex items-center gap-1.5 font-medium">
+                  <CheckCircle2 size={15} />
+                  <span>API Key saved & active!</span>
+                </div>
+              )}
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setApiKeyInput('');
+                    setCustomApiKey('');
+                    setApiKeySaved(true);
+                    setTimeout(() => { setApiKeySaved(false); setShowApiModal(false); }, 1000);
+                  }}
+                  className="px-3.5 py-2 border border-stone-200 text-xs font-semibold text-slate-600 rounded-xl hover:bg-stone-50"
+                >
+                  Reset Default
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition shadow-xs"
+                >
+                  Save API Key
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Main Chat Container */}
       <div className="flex-1 bg-white rounded-3xl shadow-sm border border-stone-200 overflow-hidden flex flex-col">
         
-        {/* Header with DarShana Brand Mark & Language Toggle */}
-        <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 px-5 py-4 flex items-center justify-between gap-3 text-white">
+        {/* Header with DarShana Brand Mark, API Setup, and Working Language Translator */}
+        <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 px-4 sm:px-6 py-4 flex items-center justify-between gap-3 text-white">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-white/10 p-0.5 border border-white/20 flex items-center justify-center shrink-0 shadow-inner">
               <img src={darshanaIcon} alt="Sarthi" className="w-full h-full rounded-2xl object-cover" />
@@ -506,27 +378,99 @@ const Assistant: React.FC = () => {
               <div className="flex items-center gap-2">
                 <h2 className="font-serif font-bold text-base sm:text-lg text-white">Sarthi AI</h2>
                 <span className="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                  GEMINI POWERED
+                  GEMINI 1.5
                 </span>
               </div>
-              <p className="text-xs text-emerald-200">Your Cultural Travel Companion</p>
+              <p className="text-xs text-emerald-200">Bilingual Cultural Travel Assistant</p>
             </div>
           </div>
 
-          {/* Restyled Language Toggle Pill */}
-          <button
-            onClick={() => {
-              const newLang = i18n.language === 'en' ? 'hi' : 'en';
-              i18n.changeLanguage(newLang);
-              localStorage.setItem('language', newLang);
-            }}
-            className="px-3.5 py-1.5 bg-white/15 hover:bg-white/25 border border-white/20 rounded-full text-xs font-semibold text-white transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            title="Toggle Language"
-          >
-            <Globe size={13} className="text-emerald-300" />
-            <span>{i18n.language === 'en' ? 'हिन्दी' : 'English'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Quick Live Translator Tool Button */}
+            <button
+              onClick={() => setShowTranslatorBox(!showTranslatorBox)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${
+                showTranslatorBox ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-white/15 hover:bg-white/25 text-white border border-white/20'
+              }`}
+              title="Open Language Translator Box"
+            >
+              <Languages size={13} />
+              <span className="hidden sm:inline">Translator</span>
+            </button>
+
+            {/* API Setup Button */}
+            <button
+              onClick={() => setShowApiModal(true)}
+              className="px-3 py-1.5 bg-white/15 hover:bg-white/25 border border-white/20 rounded-full text-xs font-semibold text-white transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              title="Configure API Key"
+            >
+              <Key size={13} className={hasApiKey ? 'text-emerald-400' : 'text-amber-300'} />
+              <span className="hidden sm:inline">API Setup</span>
+              <span className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
+            </button>
+
+            {/* Language Toggle Button (हिन्दी / English) */}
+            <button
+              onClick={handleLanguageToggle}
+              className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-full text-xs font-extrabold transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+              title="Toggle App & Assistant Language"
+            >
+              <Globe size={13} className="text-slate-950" />
+              <span>{i18n.language === 'hi' ? 'हिन्दी (Hindi)' : 'English'}</span>
+            </button>
+          </div>
         </div>
+
+        {/* Real-time Translator Quick Tray (if opened) */}
+        {showTranslatorBox && (
+          <div className="bg-amber-50/90 border-b border-amber-200 px-4 sm:px-6 py-3 space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-amber-950 flex items-center gap-1.5">
+                <Languages size={14} className="text-amber-700" />
+                <span>Instant Travel Language Translator ({i18n.language === 'hi' ? 'Hindi ➔ English' : 'English ➔ Hindi'})</span>
+              </span>
+              <button onClick={() => setShowTranslatorBox(false)} className="text-amber-800 hover:text-amber-950">
+                <X size={15} />
+              </button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                value={transSourceText}
+                onChange={(e) => setTransSourceText(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleQuickTranslate()}
+                placeholder="Type word or travel phrase to translate (e.g. How much is the ticket?)..."
+                className="flex-1 px-3 py-2 bg-white border border-amber-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-amber-600"
+              />
+              <button
+                onClick={handleQuickTranslate}
+                disabled={isTranslatingBox || !transSourceText.trim()}
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition cursor-pointer shrink-0 disabled:opacity-50 flex items-center justify-center gap-1.5"
+              >
+                {isTranslatingBox ? <RefreshCw size={13} className="animate-spin" /> : <Languages size={13} />}
+                <span>Translate</span>
+              </button>
+            </div>
+
+            {transResultText && (
+              <div className="p-2.5 bg-white border border-amber-200 rounded-xl flex items-center justify-between text-slate-900 font-medium">
+                <span className="text-xs">{transResultText}</span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(transResultText);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="p-1 text-slate-500 hover:text-amber-700 transition"
+                  title="Copy translation"
+                >
+                  {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Messages Scroll Area */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3.5 bg-[#faf9f6]">
@@ -543,6 +487,14 @@ const Assistant: React.FC = () => {
                 >
                   <p className="whitespace-pre-wrap">{msg.text}</p>
                   
+                  {/* Translated Text In-Bubble Display */}
+                  {msg.translatedText && (
+                    <div className="mt-2.5 pt-2 border-t border-stone-200/80 bg-amber-50/60 p-2.5 rounded-xl text-xs text-amber-950 font-medium">
+                      <span className="text-[10px] uppercase font-bold text-amber-700 block mb-0.5">Translation:</span>
+                      {msg.translatedText}
+                    </div>
+                  )}
+
                   {msg.mapLocation && (
                     <div className="mt-2.5 flex items-center gap-1.5 text-orange-600 font-semibold text-xs">
                       <MapPin size={14} />
@@ -550,27 +502,43 @@ const Assistant: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Feedback Buttons: ONLY for actual AI answers (NOT for initial greeting msg.id === 0) */}
-                  {isAi && msg.id !== 0 && (
-                    <div className="mt-2.5 pt-2 border-t border-stone-100 flex items-center gap-3">
+                  {/* Actions: Translate Button + Feedback (AI only) */}
+                  {isAi && (
+                    <div className="mt-2.5 pt-2 border-t border-stone-100 flex items-center justify-between text-xs">
+                      {/* 1-Click Translation Action */}
                       <button
-                        aria-label="Helpful"
-                        onClick={() => handleFeedback(msg.id, 'like')}
-                        className={`p-1 rounded-md transition cursor-pointer ${
-                          msg.liked ? 'text-orange-600 bg-orange-50' : 'text-stone-400 hover:text-stone-700'
-                        }`}
+                        onClick={() => handleTranslateMessage(msg.id, msg.text)}
+                        disabled={msg.isTranslating}
+                        className="text-stone-500 hover:text-amber-800 font-semibold flex items-center gap-1 text-[11px] hover:bg-stone-50 px-2 py-1 rounded-md transition cursor-pointer"
+                        title="Translate this response"
                       >
-                        <ThumbsUp size={14} />
+                        <Languages size={12} className={msg.isTranslating ? 'animate-spin text-amber-600' : 'text-amber-600'} />
+                        <span>{msg.isTranslating ? 'Translating...' : (i18n.language === 'hi' ? 'Translate to English' : 'Translate to हिन्दी')}</span>
                       </button>
-                      <button
-                        aria-label="Not helpful"
-                        onClick={() => handleFeedback(msg.id, 'dislike')}
-                        className={`p-1 rounded-md transition cursor-pointer ${
-                          msg.disliked ? 'text-stone-700 bg-stone-100' : 'text-stone-400 hover:text-stone-700'
-                        }`}
-                      >
-                        <ThumbsDown size={14} />
-                      </button>
+
+                      {/* Feedback Buttons (Only for non-greeting AI messages) */}
+                      {msg.id !== 0 && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            aria-label="Helpful"
+                            onClick={() => handleFeedback(msg.id, 'like')}
+                            className={`p-1 rounded-md transition cursor-pointer ${
+                              msg.liked ? 'text-orange-600 bg-orange-50' : 'text-stone-400 hover:text-stone-700'
+                            }`}
+                          >
+                            <ThumbsUp size={13} />
+                          </button>
+                          <button
+                            aria-label="Not helpful"
+                            onClick={() => handleFeedback(msg.id, 'dislike')}
+                            className={`p-1 rounded-md transition cursor-pointer ${
+                              msg.disliked ? 'text-stone-700 bg-stone-100' : 'text-stone-400 hover:text-stone-700'
+                            }`}
+                          >
+                            <ThumbsDown size={13} />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -584,38 +552,29 @@ const Assistant: React.FC = () => {
                 <span className="w-2 h-2 bg-orange-500 rounded-full animate-bounce"></span>
                 <span className="w-2 h-2 bg-orange-500 rounded-full animate-bounce delay-75"></span>
                 <span className="w-2 h-2 bg-orange-500 rounded-full animate-bounce delay-150"></span>
-                <span className="ml-1 text-slate-600 font-medium">Sarthi is typing...</span>
+                <span className="ml-1 text-slate-600 font-medium">Sarthi is thinking...</span>
               </div>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Compact Quick Categories Section (Neutral Cards + Brand Orange/Green Icons) */}
+        {/* Compact Quick Suggestions */}
         {messages.length < 5 && (
           <div className="px-4 py-3 bg-white border-t border-stone-200 space-y-2">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-              Quick Suggestions
+              {i18n.language === 'hi' ? 'त्वरित सुझाव' : 'Quick Suggestions'}
             </span>
             
-            {/* Horizontal Scrollable Compact Chips */}
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
               {categories.map((cat, idx) => {
                 const Icon = cat.icon;
                 const iconColor = idx % 2 === 0 ? 'text-orange-600' : 'text-emerald-700';
-                const isExpanded = selectedCategory === cat.id;
                 
                 return (
                   <button
                     key={cat.id}
-                    onClick={() => {
-                      if (isExpanded) {
-                        setSelectedCategory(null);
-                      } else {
-                        setSelectedCategory(cat.id);
-                        handleSend(cat.questions[0]);
-                      }
-                    }}
+                    onClick={() => handleSend(cat.questions[0])}
                     className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 hover:border-orange-300 text-xs font-semibold text-slate-800 transition shrink-0 cursor-pointer shadow-2xs group"
                   >
                     <Icon size={15} className={`${iconColor} group-hover:scale-110 transition-transform shrink-0`} />
@@ -645,7 +604,7 @@ const Assistant: React.FC = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder={t('Ask Sarthi about routes, monuments, culture, safety...')}
+              placeholder={i18n.language === 'hi' ? 'सारथी से पर्यटन, खानपान या सुरक्षा के बारे में पूछें...' : 'Ask Sarthi about routes, monuments, culture, safety...'}
               className="flex-1 bg-transparent border-none focus:outline-none text-slate-800 placeholder-stone-400 text-xs sm:text-sm"
             />
             <button

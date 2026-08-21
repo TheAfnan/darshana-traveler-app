@@ -1,9 +1,21 @@
 import type { Content } from "@google/generative-ai";
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 
-// Get Gemini API Key from environment
-const getApiKey = (): string => {
-  return import.meta.env.VITE_GEMINI_API_KEY?.trim() || "";
+// Get Gemini API Key from custom localStorage or environment
+export const getApiKey = (): string => {
+  return (
+    localStorage.getItem('darshana_gemini_api_key')?.trim() ||
+    import.meta.env.VITE_GEMINI_API_KEY?.trim() ||
+    ""
+  );
+};
+
+export const setCustomApiKey = (key: string): void => {
+  if (key && key.trim()) {
+    localStorage.setItem('darshana_gemini_api_key', key.trim());
+  } else {
+    localStorage.removeItem('darshana_gemini_api_key');
+  }
 };
 
 // Safety Settings
@@ -38,47 +50,55 @@ function getGenerativeModel(modelName = "gemini-1.5-flash") {
 }
 
 /**
- * Offline intelligent fallback for travel assistant when API key is missing or backend fails
+ * Intelligent fallback for travel assistant when API key is not provided or network is offline
  */
-function getOfflineFallbackAnswer(userInput: string, isKeyProvided = false): string {
+function getOfflineFallbackAnswer(userInput: string, preferredLang: 'en' | 'hi' = 'en'): string {
   const query = userInput.toLowerCase();
   
+  if (preferredLang === 'hi') {
+    if (query.includes('hi') || query.includes('hello') || query.includes('namaste') || query.includes('नमस्ते') || query.includes('सारथी')) {
+      return "नमस्ते! 🙏 मैं **सारथी** हूँ, आपका AI यात्रा साथी। आज मैं आपकी भारत यात्रा में क्या सहायता कर सकता हूँ?";
+    }
+    if (query.includes('safety') || query.includes('सुरक्षा') || query.includes('emergency') || query.includes('sos')) {
+      return "🛡️ **सुरक्षा सुझाव**: हमेशा अपनी लाइव लोकेशन विश्वसनीय संपर्कों के साथ साझा करें। आपातकालीन नंबर: पुलिस (112 / 100), महिला हेल्पलाइन (1091), पर्यटक हेल्पलाइन (1363)।";
+    }
+    if (query.includes('festival') || query.includes('त्योहार') || query.includes('diwali') || query.includes('holi')) {
+      return "🎉 **सांस्कृतिक उत्सव**: भारत त्योहारों की भूमि है! आगामी त्योहारों की तिथियों और स्थानों के लिए हमारा 'Cultural Odyssey' अनुभाग देखें।";
+    }
+    if (query.includes('guide') || query.includes('गाइड') || query.includes('booking')) {
+      return "🏛️ **स्थानीय गाइड**: आप हमारे 'Local Guides' सेक्शन में भारत भर के सत्यापित, सरकारी प्रमाणित टूर गाइड बुक कर सकते हैं।";
+    }
+    return `नमस्ते! आपकी यात्रा योजना के लिए मैं हमेशा तैयार हूँ। आप मुझसे यात्रा मार्ग, प्रसिद्ध स्मारकों, खान-पान या सुरक्षा के बारे में पूछ सकते हैं। (सुझाव: फुल AI रिस्पॉन्स के लिए API Key सेट करें)`;
+  }
+
   if (query.includes('hi') || query.includes('hello') || query.includes('namaste') || query.includes('hey')) {
-    return "Namaste! I am Sarthi, your travel companion. How can I assist you with your Indian travel plans today?";
+    return "Namaste! 🙏 I am **Sarthi**, your AI travel companion. How can I help you plan your journey across India today?";
   }
   if (query.includes('safety') || query.includes('safe') || query.includes('emergency') || query.includes('sos')) {
-    return "Safety Tip: Always share your live location with trusted contacts, keep emergency numbers (112 / 1091) handy, and check safety scores in our Safety Dashboard!";
+    return "🛡️ **Safety Tip**: Always share your live location with trusted contacts. Emergency numbers: Police (112), Women Helpline (1091), Tourist Helpline (1363). Check our Safety Dashboard for real-time safety scores!";
   }
   if (query.includes('festival') || query.includes('event') || query.includes('diwali') || query.includes('holi')) {
-    return "India is rich in cultural festivals! Check out our 'Cultural Odyssey' section for upcoming festival dates, locations, and travel tips.";
+    return "🎉 **Cultural Festivals**: Check out our 'Cultural Odyssey' section to explore vibrant Indian festivals, rituals, dates, and destinations.";
+  }
+  if (query.includes('guide') || query.includes('tour')) {
+    return "🏛️ **Verified Local Guides**: You can book certified local guides across Agra, Varanasi, Jaipur, and 20+ cities in our 'Local Guides' directory.";
   }
   if (query.includes('book') || query.includes('flight') || query.includes('train') || query.includes('hotel')) {
-    return "You can explore and plan your travel options in our 'Travel Hub' or 'Booking' section. We offer smart suggestions for flights, trains, and stays.";
-  }
-  if (query.includes('monument') || query.includes('scan') || query.includes('history') || query.includes('ar') || query.includes('landmark')) {
-    return "Try our 'AR Monument Guide'! Point your camera or upload a photo of any Indian landmark or temple to discover its architecture and centuries of history.";
-  }
-  if (query.includes('sustainable') || query.includes('green') || query.includes('eco')) {
-    return "Explore our 'Green Route Planner' to find low-carbon transport options and earn Eco-Rewards on your travels!";
+    return "✈️ **Travel Hub**: Visit our 'Travel Hub' to plan and book trains, flights, eco-stays, and personalized heritage itineraries.";
   }
 
-  if (isKeyProvided) {
-    return "I'm ready to help you explore India! (Your API key is active. Ask me about travel routes, safety, festivals, bookings, or destinations).";
-  }
-
-  return "I'm ready to help you explore India! (Tip: Set VITE_GEMINI_API_KEY in your .env file for AI-powered responses, or ask me about safety, festivals, bookings, and destinations).";
+  return "I am ready to help you explore India! Ask me about itineraries, hidden gems, street food, verified local guides, or emergency safety precautions. (Tip: You can add your Gemini API Key in the top header setup for unlimited AI queries).";
 }
 
 // ----------------------------------------------
 // 1️⃣ FUNCTION → Chatbot reply for Assistant & YatraShayak
 // ----------------------------------------------
-export async function getChatResponse(history: any[], userInput: string): Promise<string> {
+export async function getChatResponse(history: any[], userInput: string, lang: 'en' | 'hi' = 'en'): Promise<string> {
   const apiKey = getApiKey();
   const model = getGenerativeModel("gemini-1.5-flash");
 
   if (!model || !apiKey) {
-    console.warn("⚠️ VITE_GEMINI_API_KEY is not set in .env. Using fallback response.");
-    return getOfflineFallbackAnswer(userInput, false);
+    return getOfflineFallbackAnswer(userInput, lang);
   }
 
   try {
@@ -108,26 +128,57 @@ export async function getChatResponse(history: any[], userInput: string): Promis
       history: formattedHistory,
     });
 
-    const result = await chatSession.sendMessage(userInput);
+    const langInstruction = lang === 'hi' ? " (Please respond in polite, clear Hindi / हिन्दी)" : "";
+    const result = await chatSession.sendMessage(userInput + langInstruction);
     return result.response.text();
   } catch (error: any) {
     const errMessage = error?.message || String(error);
     console.error("Gemini chat error:", errMessage);
 
     if (errMessage.includes("429") || errMessage.includes("Quota exceeded") || errMessage.includes("quota")) {
-      return "⚠️ **Gemini API Quota Exceeded (Error 429)**: The API key provided has run out of free request quota on Google AI Studio (limit: 0). Please generate a fresh, free key at [Google AI Studio](https://aistudio.google.com/app/apikey) and update your `VITE_GEMINI_API_KEY`.";
+      return lang === 'hi' 
+        ? "⚠️ **Gemini API कोटा समाप्त**: इस API Key का फ्री कोटा समाप्त हो गया है। कृपया [Google AI Studio](https://aistudio.google.com/app/apikey) से नई फ्री API Key जनरेट करें और हेडर में 'API Setup' पर क्लिक करके अपडेट करें।"
+        : "⚠️ **Gemini API Quota Exceeded (Error 429)**: The API key has reached its free request quota. Please generate a new key from [Google AI Studio](https://aistudio.google.com/app/apikey) and add it via the 'API Setup' button in the header.";
     }
 
-    if (errMessage.includes("API key not valid") || errMessage.includes("400") || errMessage.includes("403")) {
-      return "⚠️ **Invalid Gemini API Key**: The key provided is invalid or disabled for standard Gemini models. Please get a valid API key starting with `AIzaSy...` from [Google AI Studio](https://aistudio.google.com/app/apikey).";
-    }
-
-    return getOfflineFallbackAnswer(userInput, true);
+    return getOfflineFallbackAnswer(userInput, lang);
   }
 }
 
 // -----------------------------------------------------
-// 2️⃣ FUNCTION → Festival Insight for Festivals
+// 2️⃣ FUNCTION → Real-Time AI Language Translator
+// -----------------------------------------------------
+export async function translateText(text: string, targetLang: 'Hindi' | 'English'): Promise<string> {
+  if (!text || !text.trim()) return '';
+
+  const model = getGenerativeModel();
+  if (!model) {
+    // Quick localized fallback for standard travel terms
+    if (targetLang === 'Hindi') {
+      if (text.toLowerCase().includes('hello') || text.toLowerCase().includes('welcome')) return 'नमस्ते! दर्शना में आपका स्वागत है।';
+      if (text.toLowerCase().includes('safety')) return 'सुरक्षा सुझाव: हमेशा सतर्क रहें और आपातकालीन नंबर 112 डायल करें।';
+      return `[अनुवाद - हिन्दी]: ${text}`;
+    } else {
+      if (text.includes('नमस्ते')) return 'Namaste! Welcome to DarShana.';
+      return `[Translation - English]: ${text}`;
+    }
+  }
+
+  try {
+    const prompt = `Translate the following text into natural, fluent ${targetLang}. Keep emojis and proper names intact. Output ONLY the translated text without explanations:\n\n"${text}"`;
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      safetySettings,
+    });
+    return result.response.text().trim();
+  } catch (err) {
+    console.warn("Translation fallback:", err);
+    return targetLang === 'Hindi' ? `[अनुवाद]: ${text}` : `[Translation]: ${text}`;
+  }
+}
+
+// -----------------------------------------------------
+// 3️⃣ FUNCTION → Festival Insight for Festivals
 // -----------------------------------------------------
 export async function getFestivalDetails(festivalName: string): Promise<string> {
   const model = getGenerativeModel();
@@ -151,7 +202,7 @@ export async function getFestivalDetails(festivalName: string): Promise<string> 
 }
 
 // -----------------------------------------------------
-// 3️⃣ FUNCTION → Sustainable Route Options
+// 4️⃣ FUNCTION → Sustainable Route Options
 // -----------------------------------------------------
 export async function getSustainableRouteOptions(from: string, to: string): Promise<string> {
   const model = getGenerativeModel();
