@@ -39,20 +39,6 @@
 }
 
 /* ----------------------------------------
-   Dark mode
------------------------------------------ */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text-color: #ffffffd9;
-    --bg-color: #18181b;
-    --accent: #818cf8;
-    /* ensure palette works in dark mode */
-    --color-bg-hero: #041021;
-    --text-on-dark: #e6eef4;
-  }
-}
-
-/* ----------------------------------------
    Global Styles
 ----------------------------------------- */
 
@@ -61,8 +47,8 @@ body {
   padding: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: var(--bg-color);
-  color: var(--text-color);
+  background-color: #faf9f6;
+  color: #0f172a;
 }
 
 /* Hard-reset any stray global pseudo overlays (fixes random circles overlaying pages) */
