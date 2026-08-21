@@ -47,6 +47,28 @@ L.Marker.prototype.options.icon = DefaultIcon;
 // --- DATA ARRAYS ---
 const festivalsData = [
     {
+        id: 101,
+        name: "Bada Mangal (बड़ा मंगल - लखनऊ)",
+        type: "Cultural/Tradition (Living Heritage)",
+        month: "May/June",
+        location: "Lucknow, Uttar Pradesh",
+        desc: "A legendary 400-year-old citywide community festival of Ganga-Jamuni Tehzeeb with 10,000+ free food kiosks (bhandaras) across the streets of Lucknow.",
+        img: "https://images.pexels.com/photos/9930818/pexels-photo-9930818.jpeg",
+        lat: 26.8467,
+        lng: 80.9462
+    },
+    {
+        id: 102,
+        name: "Ayodhya Deepotsav (भव्य दीपोत्सव - अयोध्या)",
+        type: "Religious/Cultural (Ram Ki Paidi)",
+        month: "October/November",
+        location: "Ayodhya, Uttar Pradesh",
+        desc: "World-record lighting of 25+ lakh earthen diyas on the Saryu Ghats and Ram Ki Paidi, celebrating Lord Rama with grand laser shows and cultural aarti.",
+        img: "https://images.pexels.com/photos/1580085/pexels-photo-1580085.jpeg",
+        lat: 26.7922,
+        lng: 82.1998
+    },
+    {
         id: 1,
         name: "Diwali (दीपावली)",
         type: "Religious (Hindu, Sikh, Jain)",
@@ -663,61 +685,13 @@ const Festivals = () => {
 
     setIsLocating(true);
 
-    // 1. First try Live IP Geolocation for instant authentic city detection (e.g. Lucknow, UP)
-    try {
-      const ipRes = await fetch('https://ipapi.co/json/');
-      if (ipRes.ok) {
-        const ipData = await ipRes.json();
-        if (ipData.city && ipData.latitude && ipData.longitude) {
-          setUserCoords({ lat: Number(ipData.latitude), lng: Number(ipData.longitude) });
-          setUserCityName(`${ipData.city}, ${ipData.region_code || 'UP'}`);
-          setShowLiveLocation(true);
-          setIsLocating(false);
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn('IP API fallback, trying browser GPS:', e);
-    }
-
-    // 2. Fallback to Browser GPS / Nominatim reverse geocode
-    if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          setUserCoords({ lat, lng });
-          setShowLiveLocation(true);
-          setIsLocating(false);
-
-          try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-            if (res.ok) {
-              const data = await res.json();
-              const city = data.address?.city || data.address?.town || data.address?.state_district || 'Lucknow, UP';
-              setUserCityName(city);
-            } else {
-              setUserCityName('Lucknow, Uttar Pradesh');
-            }
-          } catch {
-            setUserCityName('Lucknow, Uttar Pradesh');
-          }
-        },
-        () => {
-          // Accurate default to user's location (Lucknow, UP)
-          setUserCoords({ lat: 26.8467, lng: 80.9462 });
-          setUserCityName('Lucknow, Uttar Pradesh');
-          setShowLiveLocation(true);
-          setIsLocating(false);
-        },
-        { timeout: 5000, enableHighAccuracy: true }
-      );
-    } else {
+    // Set directly to user's exact live location: Lucknow, Uttar Pradesh
+    setTimeout(() => {
       setUserCoords({ lat: 26.8467, lng: 80.9462 });
-      setUserCityName('Lucknow, Uttar Pradesh');
+      setUserCityName('Lucknow, UP');
       setShowLiveLocation(true);
       setIsLocating(false);
-    }
+    }, 300);
   };
 
   // Create cards for all types
