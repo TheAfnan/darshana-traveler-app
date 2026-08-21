@@ -4,31 +4,18 @@ import {
   ShieldCheck, 
   Star, 
   Compass, 
-  MapPin, 
   ArrowRight, 
-  Calendar, 
-  Search,
-  CheckCircle2,
-  Users,
-  Award,
-  Clock,
-  Navigation
+  CheckCircle2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import BlogHighlightsSection from '../components/travelhub/BlogHighlightsSection';
-import ContactSupportSection from '../components/travelhub/ContactSupportSection';
 import DestinationsSection from '../components/travelhub/DestinationsSection';
-import GallerySection from '../components/travelhub/GallerySection';
 import ReviewsSection from '../components/travelhub/ReviewsSection';
-import RouteMapSection from '../components/travelhub/RouteMapSection';
-import SpecialFeaturesSection from '../components/travelhub/SpecialFeaturesSection';
 import TourPackagesSection, { TourCategory } from '../components/travelhub/TourPackagesSection';
 import TravelCategoriesSection from '../components/travelhub/TravelCategoriesSection';
 
 const TravelHub: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<TourCategory>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const scrollToPackages = () => {
     document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' });
@@ -154,54 +141,27 @@ const TravelHub: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. MAIN CONTENT SECTIONS */}
+      {/* 2. MAIN FOCUSED CONTENT SECTIONS */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-20 space-y-16">
         
-        {/* Travel Themes with Active Filter State */}
+        {/* 1. Travel Themes with Active Filter State */}
         <TravelCategoriesSection 
           activeCategory={activeCategory}
           onSelectCategory={handleSelectCategory}
         />
         
-        {/* Curated Tour Packages with Real Booking Engine & Reactive Filtering */}
+        {/* 2. Curated Tour Packages with Real Booking Engine & Reactive Filtering */}
         <TourPackagesSection 
           activeCategory={activeCategory}
           onSelectCategory={setActiveCategory}
         />
 
-        {/* Popular Destinations */}
+        {/* 3. Popular Destinations */}
         <DestinationsSection />
 
-        {/* Route Map & Visuals */}
-        <RouteMapSection />
-        <GallerySection />
-        <SpecialFeaturesSection />
-
-        {/* Interactive India Map */}
-        <section id="map" className="pt-8">
-          <div className="text-center space-y-2 mb-8 max-w-2xl mx-auto">
-            <span className="text-xs font-bold uppercase tracking-widest text-amber-800 bg-amber-50 border border-amber-200/80 px-3 py-1 rounded-full inline-flex items-center gap-1.5 self-center shadow-2xs">
-              📍 NATIONAL EXPLORER
-            </span>
-            <h2 className="text-3xl font-bold font-serif text-stone-900">Explore India Live Interactive Map</h2>
-            <p className="text-xs sm:text-sm text-stone-500">Pan and zoom across historical routes and cultural stops</p>
-          </div>
-          <div className="rounded-3xl overflow-hidden border border-stone-200 shadow-sm">
-            <iframe
-              title="TravelHub Destinations Map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30711283.003947686!2d64.43760646358283!3d20.01140817566828!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30635ff06b92b791%3A0xd78c4fa1854213a6!2sIndia!5e0!3m2!1sen!2sin!4v1689612345678!5m2!1sen!2sin"
-              className="h-[420px] w-full"
-              loading="lazy"
-              allowFullScreen
-              referrerPolicy="no-referrer-when-downgrade"
-            ></iframe>
-          </div>
-        </section>
-
-        {/* Social Proof & Reviews */}
+        {/* 4. Verified Traveler Reviews */}
         <ReviewsSection />
-        <BlogHighlightsSection />
-        <ContactSupportSection />
+
       </div>
 
     </div>
