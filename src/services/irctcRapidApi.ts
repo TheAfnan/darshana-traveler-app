@@ -1,4 +1,4 @@
-﻿// src/services/irctcRapidApi.ts
+// src/services/irctcRapidApi.ts
 
 export interface LiveTrainOption {
   trainNumber: string;
@@ -23,10 +23,37 @@ const STATION_CODES: Record<string, string> = {
   'jaipur': 'JP',
   'agra': 'AGC',
   'goa': 'MAO',
-  'kolkata': 'HWH'
+  'kolkata': 'HWH',
+  'noida': 'GZB/ANVT'
 };
 
 const AUTHENTIC_TRAIN_SCHEDULES: Record<string, LiveTrainOption[]> = {
+  'lucknow_noida': [
+    {
+      trainNumber: '82501',
+      trainName: 'Lucknow-NCR Tejas Express',
+      departureTime: '06:10 AM',
+      arrivalTime: '12:25 PM',
+      duration: '6h 15m',
+      fromStationCode: 'LJN (Lucknow)',
+      toStationCode: 'GZB (Noida Gateway)',
+      trainType: 'Tejas Express',
+      co2SavedKg: 5.6,
+      classes: ['CC', 'EC']
+    },
+    {
+      trainNumber: '12003',
+      trainName: 'Lucknow Shatabdi Express',
+      departureTime: '03:30 PM',
+      arrivalTime: '10:15 PM',
+      duration: '6h 45m',
+      fromStationCode: 'LKO (Lucknow)',
+      toStationCode: 'ANVT (Noida Direct)',
+      trainType: 'Shatabdi Express',
+      co2SavedKg: 5.2,
+      classes: ['CC', 'EC']
+    }
+  ],
   'delhi_lucknow': [
     {
       trainNumber: '22426',

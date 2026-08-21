@@ -1,9 +1,95 @@
-﻿// src/services/aiPlannerService.ts
+// src/services/aiPlannerService.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getCulturalTripPlan, type CulturalPlan } from "../data/culturalTripData";
 
 // Major City Expansions with Authentic Real-world Data
 const EXPANDED_CITY_DATABASE: Record<string, Partial<CulturalPlan>> = {
+  'noida': {
+    destination: 'Noida (Gautam Buddha Nagar)',
+    state: 'Uttar Pradesh',
+    tagline: 'Modern NCR Gateway, Yamuna Ecological Sanctuaries & UP Mastercraft Haats',
+    bestMonths: 'October to March (Pleasant weather, migratory birds & cultural melas)',
+    bgImage: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=1200&auto=format&fit=crop&q=80',
+    currentMonthHighlight: {
+      title: 'Noida Shilp Utsav & Okhla Bird Sanctuary Eco-Circuit',
+      badge: 'Living Craft & Nature Odyssey',
+      description: 'Explore over 300+ master craftsmen showcasing brassware, terracotta, and handloom silks at Noida Haat, followed by sunrise migratory bird watching along Yamuna riverbanks.',
+      whereToExperience: 'Noida Haat (Sector 33) & Okhla Bird Sanctuary (Sector 95)',
+      whySpecial: 'Blends UP rich rural artisan heritage with contemporary urban green corridors and ecological conservation.'
+    },
+    festivals: [
+      {
+        name: 'Noida National Craft Mela & Shilpotsav',
+        dates: 'November / February-March',
+        description: 'Pan-Indian artisan assembly featuring folk dancers, terracotta potters from Gorakhpur, and live Awadhi musical evenings.',
+        insiderTip: 'Visit in the early evening for live open-air Ghazal baithaks and authentic clay-tandoor stalls.',
+        significance: 'Celebrates UP State handicraft preservation and direct artisan-to-consumer trade.'
+      },
+      {
+        name: 'Chhath Puja on Yamuna & Hindon Riverfronts',
+        dates: 'October / November',
+        description: 'Vibrant sunrise and sunset riverfront prayers offering Arghya to Sun God amidst thousands of devotional earthen lamps.',
+        insiderTip: 'Visit Kalindi Kunj Ghat at dawn for peaceful devotional hymns and sacred thekua offerings.',
+        significance: 'Ancient Vedic festival expressing gratitude to the Sun and nature.'
+      }
+    ],
+    hiddenGems: [
+      {
+        title: 'Okhla Bird Sanctuary Protected Wetland Trail',
+        category: 'Secret Trails',
+        location: 'Sector 95 on Yamuna River Canal, Noida',
+        description: 'Serene 4 sq km wetland hosting over 300 species of migratory flamingos, pelicans, and Siberian waterfowl.',
+        bestTimeToVisit: '6:30 AM – 9:30 AM (Best morning light)'
+      },
+      {
+        title: 'Rashtriya Dalit Prerna Sthal & Stupa Monument',
+        category: 'Ancient Architecture',
+        location: 'Sector 95, Noida Expressway',
+        description: 'Sprawling 84-acre architectural memorial park carved from rare Mirzapur pink sandstone with colossal stone stupas.',
+        bestTimeToVisit: '4:30 PM – 6:30 PM'
+      },
+      {
+        title: 'Stupa 18 Contemporary Studio & Ceramic Haat',
+        category: 'Artisans & Crafts',
+        location: 'Sector 104, Boutique Artisan Alley',
+        description: 'Hands-on pottery workshops, studio ceramics, and local tribal handmade jewelry exhibits.',
+        bestTimeToVisit: '11:00 AM – 3:00 PM'
+      }
+    ],
+    seasonalFoods: [
+      {
+        name: 'Sector 29 Brahmaputra Market Street Food Trail',
+        type: 'Street Food Legend',
+        famousSpot: 'BP Market (Sector 29) & Chanda Food Hub',
+        priceRange: '₹80 – ₹200',
+        description: 'Famous charcoal-grilled Galouti kebabs, Kathi rolls, spicy momos, and hot saffron kulhad milk.'
+      },
+      {
+        name: 'Amritsari Chur Chur Naan with Shahi Dal Makhani',
+        type: 'Must-Try Specialty',
+        famousSpot: 'Sector 18 Market & Atta Food Lane',
+        priceRange: '₹120 – ₹220',
+        description: 'Flaky crushed tandoori naan dripping with desi butter served with slow-simmered black lentils.'
+      }
+    ],
+    budgetStays: [
+      {
+        name: 'Noida Green City Homestay & Villa',
+        type: 'Eco-Homestay',
+        pricePerNight: 1350,
+        rating: 4.8,
+        ecoScore: 'A+ (Solar Powered & Rainwater Harvesting)',
+        amenities: ['Home-Cooked North Indian Breakfast', 'Metro Connectivity (Aqua Line)', 'High-Speed WiFi', 'RO Water']
+      }
+    ],
+    sustainability: {
+      co2SavedKg: 5.6,
+      ecoRewardPoints: 110,
+      greenRoute: 'Tejas/Shatabdi Express Rail (Lucknow to Anand Vihar) + Noida Aqua Line Metro Transit',
+      recommendedTransit: 'Direct Electric Express Rail + Aqua/Blue Line Metro',
+      localInitiative: 'Yamuna Floodplain Eco-Restoration and Clean Riverfront Community Project.'
+    }
+  },
   'amritsar': {
     destination: 'Amritsar',
     state: 'Punjab',
