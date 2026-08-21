@@ -674,7 +674,47 @@ const Festivals = () => {
     setShowLiveLocation(true);
   };
 
-  // Live Location Toggle & Dual Detection (GPS + IP Geolocation)
+  // Helper for Geoapify RapidAPI Reverse Geocode
+  const fetchReverseGeocodeCity = async (lat: number, lng: number): Promise<string> => {
+    const apiKey = import.meta.env.VITE_RAPIDAPI_KEY || 'a2392822c7mshb631d872f755723p1e1f2fjsnfbe892df2e57';
+    
+    // 1. Try Geoapify Reverse Geocoding (RapidAPI)
+    try {
+      const res = await fetch(`https://geoapify-reverse-geocoding.p.rapidapi.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&limit=1&lang=en`, {
+        headers: {
+          'x-rapidapi-key': apiKey,
+          'x-rapidapi-host': 'geoapify-reverse-geocoding.p.rapidapi.com'
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.features?.[0]?.properties) {
+          const prop = data.features[0].properties;
+          const city = prop.city || prop.suburb || prop.county || prop.state_district || 'Lucknow';
+          const state = prop.state_code || 'UP';
+          return `${city}, ${state}`;
+        }
+      }
+    } catch (e) {
+      console.warn('Geoapify RapidAPI failed, trying BigDataCloud:', e);
+    }
+
+    // 2. High-Accuracy Hardware GPS Reverse Geocoder (BigDataCloud)
+    try {
+      const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+      if (res.ok) {
+        const data = await res.json();
+        const city = data.city || data.locality || data.principalSubdivision || 'Lucknow';
+        return `${city}, ${data.principalSubdivisionCode || 'UP'}`;
+      }
+    } catch (e) {
+      console.warn('BigDataCloud fallback:', e);
+    }
+
+    return 'Lucknow, UP';
+  };
+
+  // Live Location Toggle (Hardware GPS + Geoapify RapidAPI)
   const handleToggleLiveLocation = async () => {
     if (showLiveLocation) {
       setShowLiveLocation(false);
@@ -685,13 +725,33 @@ const Festivals = () => {
 
     setIsLocating(true);
 
-    // Set directly to user's exact live location: Lucknow, Uttar Pradesh
-    setTimeout(() => {
+    if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          setUserCoords({ lat, lng });
+
+          const detectedCity = await fetchReverseGeocodeCity(lat, lng);
+          setUserCityName(detectedCity);
+          setShowLiveLocation(true);
+          setIsLocating(false);
+        },
+        async (err) => {
+          console.warn('GPS denied or timed out, using Lucknow GPS coordinates:', err);
+          setUserCoords({ lat: 26.8467, lng: 80.9462 });
+          setUserCityName('Lucknow, UP');
+          setShowLiveLocation(true);
+          setIsLocating(false);
+        },
+        { timeout: 7000, enableHighAccuracy: true, maximumAge: 0 }
+      );
+    } else {
       setUserCoords({ lat: 26.8467, lng: 80.9462 });
       setUserCityName('Lucknow, UP');
       setShowLiveLocation(true);
       setIsLocating(false);
-    }, 300);
+    }
   };
 
   // Create cards for all types
