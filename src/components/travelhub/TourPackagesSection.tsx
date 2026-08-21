@@ -18,11 +18,13 @@ import {
   Utensils
 } from 'lucide-react';
 
+export type TourCategory = 'all' | 'royal' | 'spiritual' | 'himalayan' | 'wellness' | 'workcation' | 'family';
+
 export type TourPackage = {
   id: string;
   title: string;
   subtitle: string;
-  category: 'royal' | 'spiritual' | 'himalayan' | 'backwaters' | 'wildlife';
+  category: 'royal' | 'spiritual' | 'himalayan' | 'wellness' | 'workcation' | 'family';
   duration: string;
   days: number;
   nights: number;
@@ -45,69 +47,128 @@ export type TourPackage = {
   }[];
 };
 
-const PACKAGES_DATA: TourPackage[] = [
+export const PACKAGES_DATA: TourPackage[] = [
+  // --- 1. WELLNESS & AYURVEDA ---
   {
-    id: 'kashmir-paradise',
-    title: 'Kashmir Paradise & Houseboat Expedition',
-    subtitle: 'Snow-capped peaks, shikara twilight, and authentic pine valley retreats',
-    category: 'himalayan',
+    id: 'kerala-ayurveda-wellness',
+    title: 'Kerala Ayurvedic Rejuvenation & Yoga Sanctuary',
+    subtitle: 'Doctor-supervised daily herbal therapies, sunrise yoga, and organic Sattvic dining',
+    category: 'wellness',
     duration: '5 Days / 4 Nights',
     days: 5,
     nights: 4,
-    hotel: 'Boutique Resort & Luxury Nigeen Houseboat',
-    transport: 'Private Dedicated AC Innova',
-    meals: 'Daily Royal Breakfast & Authentic Kashmiri Dinners',
-    pricePerPerson: 18500,
-    rating: 4.95,
-    reviewCount: 340,
-    image: 'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?w=800&auto=format&fit=crop&q=80',
-    badge: 'Bestseller',
-    placesCovered: ['Srinagar', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Dal Lake'],
+    hotel: 'Heritage Ayurvedic Wellness Retreat & Backwater Eco-Resort',
+    transport: 'Private Dedicated AC Sedan',
+    meals: 'Curated Daily Organic Sattvic Ayurvedic Cuisine & Detox Teas',
+    pricePerPerson: 21500,
+    rating: 4.97,
+    reviewCount: 310,
+    image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800&auto=format&fit=crop&q=80',
+    badge: 'Holistic Wellness',
+    placesCovered: ['Kumarakom', 'Marari Beach', 'Vembanad Lake', 'Kochi'],
     includes: [
-      'Deluxe Houseboat Stay with Shikara Cruise',
-      'Gulmarg Gondola Phase 1 Fast-track Pass',
-      'Pahalgam Betaab Valley Sightseeing',
-      'Traditional Wazwan 4-Course Dinner Experience',
-      'All Tolls, Fuel, Driver Allowances & Permits'
+      'Daily 90-min Doctor-Prescribed Abhyanga & Shirodhara Therapies',
+      'Morning Sunset Pranayama & Asana Sessions with Master Yogi',
+      'Herbal Oil Treatments & Consultation with Chief Vaidya',
+      'Quiet Canoe Boat Meditation on Vembanad Lotus Canals',
+      'Exclusive Ayurvedic Wellness Gift Kit with Certified Herbal Oils'
     ],
     excludes: [
-      'Domestic Airfare to Srinagar',
-      'Gondola Phase 2 High Altitude Peak Ride',
-      'Pony rides or personal shopping expenses'
+      'Flights to Cochin International Airport',
+      'Optional personalized Panchakarma extended kits',
+      'Personal laundry & dry cleaning'
     ],
     itinerary: [
       {
         day: 1,
-        title: 'Arrival in Srinagar & Sunset Shikara on Dal Lake',
-        description: 'Warm Kashmiri welcome at Srinagar Airport. Check-in to heritage houseboat on Nigeen Lake followed by a sunset Shikara ride across floating gardens.',
-        highlights: ['Nigeen Lake Houseboat', 'Char Chinar Shikara Cruise', 'Kahwa Welcome Drink']
+        title: 'Arrival in Kumarakom & Initial Vaidya (Doctor) Consultation',
+        description: 'Warm herbal welcome. Personalized pulse diagnosis (Nadi Pariksha) by the chief Ayurvedic doctor to curate your customized dosha diet and therapy plan.',
+        highlights: ['Nadi Pariksha Pulse Diagnosis', 'Herbal Welcome Ritual', 'Evening Yoga Nidra']
       },
       {
         day: 2,
-        title: 'Gulmarg Meadow of Flowers & Gondola Ride',
-        description: 'Scenic pine drive to Gulmarg (2,730m). Experience Asia’s highest cable car gondola ride to Apharwat peak and alpine meadows.',
-        highlights: ['Gondola Cable Car', 'Apharwat Alpine Snow', 'St. Mary’s Church']
+        title: 'Abhyanga Oil Massage & Backwater Meditation',
+        description: 'Morning sunrise yoga on the wooden lake deck. Full-body herbal oil Abhyanga massage followed by therapeutic steam bath and quiet canoe meditation.',
+        highlights: ['Full-body Abhyanga', 'Herbal Steam Bath', 'Canoe Canal Meditation']
       },
       {
         day: 3,
-        title: 'Pahalgam Valley of Shepherds & Lidder River',
-        description: 'Drive through saffron fields of Pampore to Pahalgam. Explore Lidder river banks, Aru valley views, and Betaab valley pine trails.',
-        highlights: ['Pampore Saffron Farms', 'Lidder River Rapids', 'Betaab Valley']
+        title: 'Shirodhara Mind Relaxation & Organic Cooking Workshop',
+        description: 'Experience authentic Shirodhara (warm medicated oil poured gently over the third eye) for deep nervous relaxation. Afternoon Satvik culinary workshop.',
+        highlights: ['Authentic Shirodhara Therapy', 'Satvik Cooking Masterclass', 'Sunset Herbal Tea']
       },
       {
         day: 4,
-        title: 'Mughal Gardens & Old City Artisan Walks',
-        description: 'Heritage exploration of Shalimar Bagh, Nishat Bagh, and Old Srinagar papier-mâché and pashmina weaving artisan quarters.',
-        highlights: ['Shalimar Royal Gardens', 'Pashmina Weavers Walk', 'Jamia Masjid Srinagar']
+        title: 'Marari Beach Walk & Sound Healing Session',
+        description: 'Drive to secluded Marari Beach for a mindful barefoot sandy walk. Evening crystal singing bowl sound healing session under palm groves.',
+        highlights: ['Marari Barefoot Beach Walk', 'Crystal Bowl Sound Healing', 'Rejuvenation Dinner']
       },
       {
         day: 5,
-        title: 'Morning Floating Market & Departure',
-        description: 'Early morning vegetable floating market shikara ride, breakfast, and private transfer to Srinagar Airport for departure.',
-        highlights: ['Floating Vegetable Market', 'Airport Transfer']
+        title: 'Final Health Debrief & Departure',
+        description: 'Morning yoga, personalized take-home lifestyle regimen by your Vaidya, and private transfer to Cochin Airport.',
+        highlights: ['Personalized Wellness Chart', 'Airport Departure']
       }
     ]
   },
+  {
+    id: 'rishikesh-yoga-retreat',
+    title: 'Rishikesh Himalayan Yoga & Ganga Meditation Retreat',
+    subtitle: 'Vedic chanting, sound healing, beach meditation, and Parmarth Niketan aarti',
+    category: 'wellness',
+    duration: '4 Days / 3 Nights',
+    days: 4,
+    nights: 3,
+    hotel: 'Luxury Riverfront Himalayan Ashrams & Boutique Stay',
+    transport: 'Private AC Innova / SUV',
+    meals: 'Daily Satvik Vegetarian Feasts & Herbal Immunity Drinks',
+    pricePerPerson: 15800,
+    rating: 4.93,
+    reviewCount: 260,
+    image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop&q=80',
+    badge: 'Spiritual Wellness',
+    placesCovered: ['Rishikesh', 'Shivpuri', 'Triveni Ghat', 'Beatles Ashram'],
+    includes: [
+      'Daily 2x Hatha & Vinyasa Yoga Sessions with certified Himalayan gurus',
+      'VIP Seating at Parmarth Niketan Ganga Maha Aarti',
+      'Tibetan Singing Bowl Sound Bath & Chakra Alignment',
+      'Private Sunrise Meditation on White Sand Ganga Beach',
+      'Guided Beatles Ashram Heritage & Graffiti Walk'
+    ],
+    excludes: [
+      'Travel to Dehradun Airport / Haridwar Station',
+      'Optional White Water Rafting charges',
+      'Personal astrology consultations'
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: 'Arrival in Rishikesh & Triveni Ghat Aarti',
+        description: 'Check-in to riverside sanctuary with panoramic views of Shivalik hills. Evening participation in the soul-stirring Ganga Aarti at Triveni Ghat.',
+        highlights: ['Ghatside Welcome', 'Triveni Ghat Aarti', 'Satvik Thali Dinner']
+      },
+      {
+        day: 2,
+        title: 'White Sand Beach Meditation & Sound Bath',
+        description: 'Morning silent walking meditation on Shivpuri white sand beach. Afternoon sound healing therapy with Himalayan bronze bowls.',
+        highlights: ['Beach Sunrise Yoga', 'Sound Healing Bath', 'Chakra Alignment']
+      },
+      {
+        day: 3,
+        title: 'Beatles Ashram & Parmarth Niketan Celebration',
+        description: 'Explore the iconic Maharishi Mahesh Yogi ashram where the Beatles meditated in 1968. Evening Parmarth Niketan Ganga Aarti with Vedic chanting.',
+        highlights: ['Beatles Ashram Domes', 'Parmarth Niketan Aarti', 'Himalayan Herbal Tea']
+      },
+      {
+        day: 4,
+        title: 'Kunjapuri Sunrise Panorama & Departure',
+        description: 'Dawn drive to Kunjapuri Temple (1,645m) for 360-degree snow peaks sunrise view. Breakfast and transfer to Dehradun Jolly Grant Airport.',
+        highlights: ['Kunjapuri Himalayan View', 'Dehradun Transfer']
+      }
+    ]
+  },
+
+  // --- 2. ROYAL & PALACES ---
   {
     id: 'rajasthan-royal',
     title: 'Royal Rajasthan Heritage & Desert Odyssey',
@@ -177,180 +238,6 @@ const PACKAGES_DATA: TourPackage[] = [
     ]
   },
   {
-    id: 'varanasi-ayodhya',
-    title: 'Spiritual Varanasi & Ayodhya Sacred Heritage Trail',
-    subtitle: 'Dawn Ganga rituals, Kashi Vishwanath corridor, and grand Sarayu Deepotsav',
-    category: 'spiritual',
-    duration: '4 Days / 3 Nights',
-    days: 4,
-    nights: 3,
-    hotel: 'Riverfront Heritage Boutique Hotel & 4-Star Ayodhya Stay',
-    transport: 'Private Dedicated AC Vehicle',
-    meals: 'Pure Vegetarian Sattvic Meals & Banarasi Lassi Tastings',
-    pricePerPerson: 14200,
-    rating: 4.98,
-    reviewCount: 510,
-    image: 'https://images.unsplash.com/photo-1505764706515-aa95265c5abc?w=800&auto=format&fit=crop&q=80',
-    badge: 'Spiritual Gem',
-    placesCovered: ['Varanasi (Kashi)', 'Sarnath', 'Ayodhya', 'Sarayu River'],
-    includes: [
-      'Private Hand-Rowed Dawn Boat Ride on River Ganga',
-      'VIP Darshan Assistance at Kashi Vishwanath',
-      'Dashashwamedh Ghat Evening Ganga Maha Aarti Seats',
-      'Ram Janmabhoomi & Hanumangarhi Ayodhya Guided Visit',
-      'Authentic Banarasi Paan, Chaat & Malaiyo Food Trail'
-    ],
-    excludes: [
-      'Travel to Varanasi/Ayodhya from origin city',
-      'Special personal puja samagri',
-      'Souvenirs & Silk saree purchases'
-    ],
-    itinerary: [
-      {
-        day: 1,
-        title: 'Arrival in Varanasi & Grand Evening Ganga Aarti',
-        description: 'Check-in to ghat-view heritage stay. Evening reserved boat seating to witness the world-famous synchronized Ganga Aarti at Dashashwamedh.',
-        highlights: ['Ghatside Welcome', 'Dashashwamedh Maha Aarti', 'Banarasi Street Food']
-      },
-      {
-        day: 2,
-        title: 'Subah-e-Banaras Boat Ride & Kashi Vishwanath Corridor',
-        description: 'Morning boat ride observing thousands bathing at Manikarnika and Assi Ghat. Walk through Kashi Vishwanath Temple corridor and Sarnath Buddhist ruins.',
-        highlights: ['Dawn Boat Rituals', 'Kashi Vishwanath Corridor', 'Sarnath Dhamek Stupa']
-      },
-      {
-        day: 3,
-        title: 'Scenic Drive to Ayodhya & Ram Janmabhoomi Darshan',
-        description: 'Morning drive to holy city of Ayodhya. Visit the magnificent Shri Ram Janmabhoomi Temple, Hanumangarhi, and Kanak Bhawan.',
-        highlights: ['Ram Janmabhoomi Mandir', 'Hanumangarhi 76-Step Temple', 'Kanak Bhawan']
-      },
-      {
-        day: 4,
-        title: 'Sarayu River Aarti & Departure',
-        description: 'Morning prayers at Ram Ki Paidi on the banks of Sarayu river. Transfer to Ayodhya Maharishi Valmiki Airport or Varanasi Junction.',
-        highlights: ['Sarayu Ram Ki Paidi', 'Guptar Ghat', 'Airport Transfer']
-      }
-    ]
-  },
-  {
-    id: 'kerala-backwaters',
-    title: 'Kerala Backwaters & Western Ghats Trail',
-    subtitle: 'Tea carpeted hills of Munnar, spice plantations, and private luxury houseboat cruise',
-    category: 'backwaters',
-    duration: '5 Days / 4 Nights',
-    days: 5,
-    nights: 4,
-    hotel: 'Hillside Plantation Resort & Private Luxury Alleppey Houseboat',
-    transport: 'Private AC Sedan with English/Hindi speaking Chauffeur',
-    meals: 'Daily South Indian Breakfast, Authentic Sadya Lunch & Fresh Seafood Dinners',
-    pricePerPerson: 19800,
-    rating: 4.94,
-    reviewCount: 290,
-    image: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800&auto=format&fit=crop&q=80',
-    badge: 'Tropical Bliss',
-    placesCovered: ['Fort Kochi', 'Munnar', 'Thekkady', 'Alleppey (Alappuzha)'],
-    includes: [
-      '22-Hour Exclusive Private Houseboat Cruise with Chef on Board',
-      'Munnar Kolukkumalai Tea Garden Jeep Trek',
-      'Periyar Spice Plantation Guided Aroma Walk',
-      'Evening Kathakali & Kalaripayattu Martial Art Show',
-      'Kerala Ayurvedic Herbal Rejuvenation Massage Coupon'
-    ],
-    excludes: [
-      'Flight tickets to Kochi Airport',
-      'Optional bamboo rafting in Periyar',
-      'Extra beverage orders on houseboat'
-    ],
-    itinerary: [
-      {
-        day: 1,
-        title: 'Kochi Heritage Walk & Drive to Munnar Hills',
-        description: 'Explore Chinese Fishing Nets and Jewish Synagogue in Fort Kochi. Ascend misty Western Ghats through Cheeyappara waterfalls to Munnar.',
-        highlights: ['Fort Kochi Chinese Nets', 'Cheeyappara Waterfalls', 'Munnar Tea Hills']
-      },
-      {
-        day: 2,
-        title: 'Munnar Tea Museum & Eravikulam National Park',
-        description: 'Visit Tata Tea Museum to witness tea leaf processing. Spot endangered Nilgiri Tahr mountain goats at Eravikulam National Park.',
-        highlights: ['Eravikulam Nilgiri Tahr', 'Mattupetty Dam', 'Echo Point Walk']
-      },
-      {
-        day: 3,
-        title: 'Thekkady Spice Trails & Kalaripayattu Show',
-        description: 'Drive to Thekkady. Walk through organic cardamom, pepper, and cinnamon plantations. Evening martial arts performance.',
-        highlights: ['Spice Plantation Tour', 'Kalaripayattu Martial Show', 'Kathakali Drama']
-      },
-      {
-        day: 4,
-        title: 'Alleppey Private Houseboat Backwater Cruise',
-        description: 'Board your private AC Kettuvallam houseboat. Glide through palm-fringed canals, paddy fields, and serene lagoons with live cooked meals.',
-        highlights: ['Private Houseboat Cruise', 'Vembanad Lake Sunset', 'Karimeen Fish Fry Dinner']
-      },
-      {
-        day: 5,
-        title: 'Alleppey Sunrise & Departure from Kochi',
-        description: 'Morning backwater tranquility breakfast on deck, check-out, and private transfer to Cochin International Airport (COK).',
-        highlights: ['Backwater Village Walk', 'Kochi Airport Transfer']
-      }
-    ]
-  },
-  {
-    id: 'nainital-corbett',
-    title: 'Himalayan Nainital Lake & Corbett Wildlife Circuit',
-    subtitle: 'Emerald lake sailing, Naina Devi blessings, and thrilling Bengal Tiger safari',
-    category: 'wildlife',
-    duration: '4 Days / 3 Nights',
-    days: 4,
-    nights: 3,
-    hotel: 'Heritage Lakeview Villa & Jungle Safari Wilderness Resort',
-    transport: 'Private AC SUV (Innova / Ertiga)',
-    meals: 'Daily Breakfast, Kumaoni Lunch & Campfire Barbeque Dinners',
-    pricePerPerson: 16400,
-    rating: 4.89,
-    reviewCount: 215,
-    image: 'https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=800&auto=format&fit=crop&q=80',
-    badge: 'Himalayan Escape',
-    placesCovered: ['Nainital', 'Bhimtal', 'Pangot Bird Sanctuary', 'Jim Corbett National Park'],
-    includes: [
-      'Private Yacht Sailing on Emerald Naini Lake',
-      'Exclusive 4x4 Gypsy Tiger Safari in Jim Corbett Reserve',
-      'Naina Devi Shaktipeeth VIP Temple Darshan',
-      'Pangot Himalayan Bird Watching Sunrise Trek',
-      'Kumaoni Bal Mithai & Singori Tasting Box'
-    ],
-    excludes: [
-      'Travel from home city to Kathgodam/Delhi',
-      'Camera lens entry permits inside National Park',
-      'Optional paragliding at Bhimtal'
-    ],
-    itinerary: [
-      {
-        day: 1,
-        title: 'Scenic Hill Climb to Nainital & Mall Road Stroll',
-        description: 'Ascend through pine forests to Nainital (2,084m). Check-in to lakeview villa. Evening stroll along Mall Road and local candle markets.',
-        highlights: ['Naini Lake Sunset', 'Mall Road Tibetan Market', 'Kumaoni Dinner']
-      },
-      {
-        day: 2,
-        title: 'Lake Yachting, Naina Devi & Snow View Peak',
-        description: 'Sail on traditional wooden boats across Naini Lake. Visit Naina Devi Temple and take aerial ropeway cable car to Snow View Peak for Nanda Devi panorama.',
-        highlights: ['Naini Lake Yachting', 'Naina Devi Shaktipeeth', 'Nanda Devi Views']
-      },
-      {
-        day: 3,
-        title: 'Pangot Himalayan Ridge to Jim Corbett Jungle',
-        description: 'Morning bird watching drive to Pangot. Descend into dense Sal forests of Jim Corbett National Park. Evening wildlife documentary and campfire.',
-        highlights: ['Pangot Pine Ridge', 'Corbett Resort Check-in', 'Evening Campfire']
-      },
-      {
-        day: 4,
-        title: 'Morning 4x4 Gypsy Tiger Safari & Departure',
-        description: 'Early morning open 4x4 Jeep Safari through Corbett Tiger Reserve. Spot wild Asian elephants, deer, and Royal Bengal Tigers before departure.',
-        highlights: ['4x4 Gypsy Wildlife Safari', 'Kosi River Crossing', 'Kathgodam/Delhi Transfer']
-      }
-    ]
-  },
-  {
     id: 'golden-triangle',
     title: 'Golden Triangle Classic Cultural Trail',
     subtitle: 'Delhi Mughal monuments, Agra Taj Mahal sunrise, and Jaipur Amber Fort',
@@ -411,13 +298,534 @@ const PACKAGES_DATA: TourPackage[] = [
         highlights: ['Hawa Mahal Palace of Winds', 'Jal Mahal Lake', 'Delhi Airport Transfer']
       }
     ]
+  },
+
+  // --- 3. HIMALAYAN EXPEDITIONS ---
+  {
+    id: 'kashmir-paradise',
+    title: 'Kashmir Paradise & Houseboat Expedition',
+    subtitle: 'Snow-capped peaks, shikara twilight, and authentic pine valley retreats',
+    category: 'himalayan',
+    duration: '5 Days / 4 Nights',
+    days: 5,
+    nights: 4,
+    hotel: 'Boutique Resort & Luxury Nigeen Houseboat',
+    transport: 'Private Dedicated AC Innova',
+    meals: 'Daily Royal Breakfast & Authentic Kashmiri Dinners',
+    pricePerPerson: 18500,
+    rating: 4.95,
+    reviewCount: 340,
+    image: 'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?w=800&auto=format&fit=crop&q=80',
+    badge: 'Bestseller',
+    placesCovered: ['Srinagar', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Dal Lake'],
+    includes: [
+      'Deluxe Houseboat Stay with Shikara Cruise',
+      'Gulmarg Gondola Phase 1 Fast-track Pass',
+      'Pahalgam Betaab Valley Sightseeing',
+      'Traditional Wazwan 4-Course Dinner Experience',
+      'All Tolls, Fuel, Driver Allowances & Permits'
+    ],
+    excludes: [
+      'Domestic Airfare to Srinagar',
+      'Gondola Phase 2 High Altitude Peak Ride',
+      'Pony rides or personal shopping expenses'
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: 'Arrival in Srinagar & Sunset Shikara on Dal Lake',
+        description: 'Warm Kashmiri welcome at Srinagar Airport. Check-in to heritage houseboat on Nigeen Lake followed by a sunset Shikara ride across floating gardens.',
+        highlights: ['Nigeen Lake Houseboat', 'Char Chinar Shikara Cruise', 'Kahwa Welcome Drink']
+      },
+      {
+        day: 2,
+        title: 'Gulmarg Meadow of Flowers & Gondola Ride',
+        description: 'Scenic pine drive to Gulmarg (2,730m). Experience Asia’s highest cable car gondola ride to Apharwat peak and alpine meadows.',
+        highlights: ['Gondola Cable Car', 'Apharwat Alpine Snow', 'St. Mary’s Church']
+      },
+      {
+        day: 3,
+        title: 'Pahalgam Valley of Shepherds & Lidder River',
+        description: 'Drive through saffron fields of Pampore to Pahalgam. Explore Lidder river banks, Aru valley views, and Betaab valley pine trails.',
+        highlights: ['Pampore Saffron Farms', 'Lidder River Rapids', 'Betaab Valley']
+      },
+      {
+        day: 4,
+        title: 'Mughal Gardens & Old City Artisan Walks',
+        description: 'Heritage exploration of Shalimar Bagh, Nishat Bagh, and Old Srinagar papier-mâché and pashmina weaving artisan quarters.',
+        highlights: ['Shalimar Royal Gardens', 'Pashmina Weavers Walk', 'Jamia Masjid Srinagar']
+      },
+      {
+        day: 5,
+        title: 'Morning Floating Market & Departure',
+        description: 'Early morning vegetable floating market shikara ride, breakfast, and private transfer to Srinagar Airport for departure.',
+        highlights: ['Floating Vegetable Market', 'Airport Transfer']
+      }
+    ]
+  },
+  {
+    id: 'ladakh-high-passes',
+    title: 'Leh–Ladakh High Passes & Monasteries Odyssey',
+    subtitle: 'Khardung La, starry skies over Pangong Tso, and ancient Buddhist Gompas',
+    category: 'himalayan',
+    duration: '6 Days / 5 Nights',
+    days: 6,
+    nights: 5,
+    hotel: 'Premium Hotel in Leh & Luxury Swiss Geodesic Camp at Pangong',
+    transport: 'Private 4x4 Luxury Scorp / Innova',
+    meals: 'Daily Breakfast & Tibetan Butter Tea / Buffet Dinners',
+    pricePerPerson: 26800,
+    rating: 4.96,
+    reviewCount: 390,
+    image: 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800&auto=format&fit=crop&q=80',
+    badge: 'Trans-Himalaya',
+    placesCovered: ['Leh', 'Nubra Valley', 'Pangong Tso', 'Khardung La', 'Thiksey'],
+    includes: [
+      'Inner Line Permits for Nubra Valley & Pangong Tso',
+      'High-Altitude Geodesic Dome Camp Stay with Stargazing Telescopes',
+      'Double-Humped Bactrian Camel Ride in Hunder Sand Dunes',
+      'Thiksey & Diskit Monastery Morning Prayer Ceremonies',
+      'Oxygen Cylinder Equipped Dedicated Vehicle'
+    ],
+    excludes: [
+      'Flights into Leh Kushok Bakula Airport',
+      'Personal altitude medication & warm gear',
+      'Rafting on Zanskar River'
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: 'Arrival in Leh & Essential Acclimatization',
+        description: 'Arrival at Leh (3,500m). Full day of gentle rest and hydration for altitude acclimatization. Evening sunset walk to Shanti Stupa.',
+        highlights: ['Leh Acclimatization', 'Shanti Stupa Sunset', 'Leh Main Bazaar']
+      },
+      {
+        day: 2,
+        title: 'Sham Valley: Hall of Fame & Magnetic Hill',
+        description: 'Drive along Indus-Zanskar confluence (Sangam), Magnetic Hill optical illusion, and sacred Gurdwara Pathar Sahib.',
+        highlights: ['Sangam Confluence', 'Magnetic Hill', 'Pathar Sahib Gurdwara']
+      },
+      {
+        day: 3,
+        title: 'Khardung La Pass to Nubra Valley Dunes',
+        description: 'Cross the world’s legendary motorable pass Khardung La (17,982 ft). Descend to Nubra Valley and ride double-humped camels in Hunder white dunes.',
+        highlights: ['Khardung La Pass', 'Hunder Camel Safari', 'Diskit Giant Buddha']
+      },
+      {
+        day: 4,
+        title: 'Shyok River Route to Pangong Tso Shimmering Lake',
+        description: 'Drive through dramatic river gorges to Pangong Tso (14,270 ft). Watch the lake shift 7 shades of blue during twilight from your luxury dome.',
+        highlights: ['Pangong Tso 7-Color Lake', 'Stargazing Milky Way Camp']
+      },
+      {
+        day: 5,
+        title: 'Chang La Pass to Thiksey Monastery & Leh',
+        description: 'Sunrise photography at Pangong. Return to Leh crossing Chang La pass (17,590 ft) visiting Thiksey Monastery, replica of Tibet’s Potala Palace.',
+        highlights: ['Thiksey Monastery', 'Shey Palace', 'Chang La Pass']
+      },
+      {
+        day: 6,
+        title: 'Leh Airport Departure',
+        description: 'Morning breakfast and farewell transfer to Leh Airport with unforgettable Himalayan memories.',
+        highlights: ['Leh Airport Transfer']
+      }
+    ]
+  },
+
+  // --- 4. WORKCATION & SOLO ESCAPES ---
+  {
+    id: 'goa-heritage-workcation',
+    title: 'Goa Portuguese Heritage & High-Speed Co-Living',
+    subtitle: 'Restored Latin Quarter villas, dedicated 300 Mbps workspace, and quiet Mandrem beaches',
+    category: 'workcation',
+    duration: '6 Days / 5 Nights',
+    days: 6,
+    nights: 5,
+    hotel: 'Boutique Heritage Villa & Co-Living Beach Studio',
+    transport: 'Complimentary Rental Scooter / AC Cab Transfers',
+    meals: 'Daily Healthy Breakfast Bowls, Artisanal Coffee & Goan Dinners',
+    pricePerPerson: 16900,
+    rating: 4.88,
+    reviewCount: 195,
+    image: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&auto=format&fit=crop&q=80',
+    badge: 'Nomad Favorite',
+    placesCovered: ['Fontainhas Panaji', 'Mandrem', 'Divar Island', 'Anjuna'],
+    includes: [
+      'Guaranteed 300 Mbps Fiber Wifi with Power Backup Desk Space',
+      'Fontainhas Latin Quarter Guided Architectural Walk & Bakery Trail',
+      'Divar Island Sunset E-Bike Ride across Mango Groves',
+      'Curated Co-Working Networking Mixers with Global Nomads',
+      'Scooter / Electric Vehicle Rental for entire stay'
+    ],
+    excludes: [
+      'Travel to Goa Dabolim / MOPA Airport',
+      'Alcohol and nightclub covers',
+      'Fuel for rental scooter'
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: 'Check-in to Fontainhas Latin Villa & Workspace Setup',
+        description: 'Arrival in Panaji. Check-in to your vibrant colonial villa, ergonomic desk setup, and evening bakery walk for fresh pasteis de nata.',
+        highlights: ['Fontainhas Colorful Alleys', 'Ergonomic Desk Setup', 'Artisanal Coffee Bar']
+      },
+      {
+        day: 2,
+        title: 'Focused Work Hours & Sunset Kayaking',
+        description: 'High-speed productive morning work hours. Late afternoon backwater kayaking through serene Nerul mangrove river.',
+        highlights: ['Superfast Fiber Work Hours', 'Nerul Mangrove Kayaking']
+      },
+      {
+        day: 3,
+        title: 'Divar Island E-Bike Heritage Expedition',
+        description: 'Work from a charming island cafe followed by an evening electric bike ride through ancient Portuguese churches and sluice gates.',
+        highlights: ['Divar Island E-Biking', 'Goan Fish Curry Lunch']
+      },
+      {
+        day: 4,
+        title: 'Mandrem Beach Co-Working & Sound Bath',
+        description: 'Relocate to beachside co-working pavilion in North Goa. Enjoy sunset swim and evening acoustic music by the beach.',
+        highlights: ['Mandrem Beach Pavilion', 'Sunset Swim', 'Acoustic Bonfire']
+      },
+      {
+        day: 5,
+        title: 'Flea Market, Artisan Roasters & Community Dinner',
+        description: 'Productivity sprints, specialty coffee tasting at local micro-roasters, and farewell Goan community seafood feast.',
+        highlights: ['Artisan Coffee Trail', 'Goan Community Dinner']
+      },
+      {
+        day: 6,
+        title: 'Morning Dip & Airport Departure',
+        description: 'Morning swim, breakfast, and private transfer to MOPA / Dabolim Airport.',
+        highlights: ['Airport Transfer']
+      }
+    ]
+  },
+  {
+    id: 'bir-billing-himalayan-nomad',
+    title: 'Bir Billing & Dharamshala Himalayan Nomad Trail',
+    subtitle: 'Mountain view co-working, tandem paragliding take-off, and Tibetan monastery trails',
+    category: 'workcation',
+    duration: '5 Days / 4 Nights',
+    days: 5,
+    nights: 4,
+    hotel: 'Co-Living Mountain Villa & Cloud Eco-Cabins',
+    transport: 'Private Local Transfers',
+    meals: 'Daily Organic Breakfast, Tibetan Thukpa & Herbal Mountain Teas',
+    pricePerPerson: 14800,
+    rating: 4.91,
+    reviewCount: 220,
+    image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800&auto=format&fit=crop&q=80',
+    badge: 'Mountain Nomad',
+    placesCovered: ['Bir Colony', 'Billing Take-off', 'McLeodganj', 'Dharamkot'],
+    includes: [
+      'Dedicated Ergonomic Workstations with 200 Mbps Fiber Internet',
+      'Tandem Paragliding Flight from Billing (2,400m) with Go-Pro Video',
+      'Chokling & Sherabling Monastery Monk Chanting Experience',
+      'Kangra Valley Organic Tea Garden Tasting Pass',
+      'Guided Pine Forest Sunset Trek to Bangoru Waterfall'
+    ],
+    excludes: [
+      'Travel to Kangra Airport / Pathankot Station',
+      'Personal cafe hopping bills',
+      'Extra extreme adventure add-ons'
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: 'Arrival in Bir Tibetan Colony & Villa Check-in',
+        description: 'Arrival in scenic Bir valley. Check into mountain villa, test high-speed wifi, and stroll through Buddhist prayer flag alleyways.',
+        highlights: ['Tibetan Colony Check-in', 'Prayer Flag Walk', 'Himalayan Thukpa']
+      },
+      {
+        day: 2,
+        title: 'Focused Work Sprint & Tandem Paragliding from Billing',
+        description: 'Morning productive work session. Afternoon drive to Billing for a thrilling 25-minute tandem paragliding flight over pine forests.',
+        highlights: ['Billing Tandem Paragliding', 'GoPro Aerial Footage', 'Sunset Landing']
+      },
+      {
+        day: 3,
+        title: 'Sherabling Forest Monastery & Tea Gardens',
+        description: 'Remote work from a forest cafe overlooking Kangra valley. Visit the massive Palpung Sherabling monastery tucked inside oak woods.',
+        highlights: ['Sherabling Monastery', 'Kangra Green Tea Tasting']
+      },
+      {
+        day: 4,
+        title: 'Day Trip to McLeodganj & Dalai Lama Temple',
+        description: 'Visit the seat of His Holiness the Dalai Lama in Dharamshala, Norbulingka Tibetan institute, and Dharamkot meditation cafes.',
+        highlights: ['Dalai Lama Temple', 'Norbulingka Art Institute', 'Dharamkot Sunset']
+      },
+      {
+        day: 5,
+        title: 'Sunrise Walk & Departure',
+        description: 'Morning waterfall hike, farewell breakfast, and transfer to Gaggal Airport or Pathankot railway junction.',
+        highlights: ['Bangoru Waterfall', 'Airport Transfer']
+      }
+    ]
+  },
+
+  // --- 5. FAMILY & WILDLIFE ---
+  {
+    id: 'nainital-corbett',
+    title: 'Himalayan Nainital Lake & Corbett Wildlife Circuit',
+    subtitle: 'Emerald lake sailing, Naina Devi blessings, and thrilling Bengal Tiger safari',
+    category: 'family',
+    duration: '4 Days / 3 Nights',
+    days: 4,
+    nights: 3,
+    hotel: 'Heritage Lakeview Villa & Jungle Safari Wilderness Resort',
+    transport: 'Private AC SUV (Innova / Ertiga)',
+    meals: 'Daily Breakfast, Kumaoni Lunch & Campfire Barbeque Dinners',
+    pricePerPerson: 16400,
+    rating: 4.89,
+    reviewCount: 215,
+    image: 'https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=800&auto=format&fit=crop&q=80',
+    badge: 'Family Favorite',
+    placesCovered: ['Nainital', 'Bhimtal', 'Pangot Bird Sanctuary', 'Jim Corbett National Park'],
+    includes: [
+      'Private Yacht Sailing on Emerald Naini Lake',
+      'Exclusive 4x4 Gypsy Tiger Safari in Jim Corbett Reserve',
+      'Naina Devi Shaktipeeth VIP Temple Darshan',
+      'Pangot Himalayan Bird Watching Sunrise Trek',
+      'Kumaoni Bal Mithai & Singori Tasting Box'
+    ],
+    excludes: [
+      'Travel from home city to Kathgodam/Delhi',
+      'Camera lens entry permits inside National Park',
+      'Optional paragliding at Bhimtal'
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: 'Scenic Hill Climb to Nainital & Mall Road Stroll',
+        description: 'Ascend through pine forests to Nainital (2,084m). Check-in to lakeview villa. Evening stroll along Mall Road and local candle markets.',
+        highlights: ['Naini Lake Sunset', 'Mall Road Tibetan Market', 'Kumaoni Dinner']
+      },
+      {
+        day: 2,
+        title: 'Lake Yachting, Naina Devi & Snow View Peak',
+        description: 'Sail on traditional wooden boats across Naini Lake. Visit Naina Devi Temple and take aerial ropeway cable car to Snow View Peak for Nanda Devi panorama.',
+        highlights: ['Naini Lake Yachting', 'Naina Devi Shaktipeeth', 'Nanda Devi Views']
+      },
+      {
+        day: 3,
+        title: 'Pangot Himalayan Ridge to Jim Corbett Jungle',
+        description: 'Morning bird watching drive to Pangot. Descend into dense Sal forests of Jim Corbett National Park. Evening wildlife documentary and campfire.',
+        highlights: ['Pangot Pine Ridge', 'Corbett Resort Check-in', 'Evening Campfire']
+      },
+      {
+        day: 4,
+        title: 'Morning 4x4 Gypsy Tiger Safari & Departure',
+        description: 'Early morning open 4x4 Jeep Safari through Corbett Tiger Reserve. Spot wild Asian elephants, deer, and Royal Bengal Tigers before departure.',
+        highlights: ['4x4 Gypsy Wildlife Safari', 'Kosi River Crossing', 'Kathgodam/Delhi Transfer']
+      }
+    ]
+  },
+  {
+    id: 'kerala-backwaters',
+    title: 'Kerala Backwaters & Western Ghats Trail',
+    subtitle: 'Tea carpeted hills of Munnar, spice plantations, and private luxury houseboat cruise',
+    category: 'family',
+    duration: '5 Days / 4 Nights',
+    days: 5,
+    nights: 4,
+    hotel: 'Hillside Plantation Resort & Private Luxury Alleppey Houseboat',
+    transport: 'Private AC Sedan with English/Hindi speaking Chauffeur',
+    meals: 'Daily South Indian Breakfast, Authentic Sadya Lunch & Fresh Seafood Dinners',
+    pricePerPerson: 19800,
+    rating: 4.94,
+    reviewCount: 290,
+    image: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800&auto=format&fit=crop&q=80',
+    badge: 'Family Delight',
+    placesCovered: ['Fort Kochi', 'Munnar', 'Thekkady', 'Alleppey (Alappuzha)'],
+    includes: [
+      '22-Hour Exclusive Private Houseboat Cruise with Chef on Board',
+      'Munnar Kolukkumalai Tea Garden Jeep Trek',
+      'Periyar Spice Plantation Guided Aroma Walk',
+      'Evening Kathakali & Kalaripayattu Martial Art Show',
+      'Kerala Ayurvedic Herbal Rejuvenation Massage Coupon'
+    ],
+    excludes: [
+      'Flight tickets to Kochi Airport',
+      'Optional bamboo rafting in Periyar',
+      'Extra beverage orders on houseboat'
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: 'Kochi Heritage Walk & Drive to Munnar Hills',
+        description: 'Explore Chinese Fishing Nets and Jewish Synagogue in Fort Kochi. Ascend misty Western Ghats through Cheeyappara waterfalls to Munnar.',
+        highlights: ['Fort Kochi Chinese Nets', 'Cheeyappara Waterfalls', 'Munnar Tea Hills']
+      },
+      {
+        day: 2,
+        title: 'Munnar Tea Museum & Eravikulam National Park',
+        description: 'Visit Tata Tea Museum to witness tea leaf processing. Spot endangered Nilgiri Tahr mountain goats at Eravikulam National Park.',
+        highlights: ['Eravikulam Nilgiri Tahr', 'Mattupetty Dam', 'Echo Point Walk']
+      },
+      {
+        day: 3,
+        title: 'Thekkady Spice Trails & Kalaripayattu Show',
+        description: 'Drive to Thekkady. Walk through organic cardamom, pepper, and cinnamon plantations. Evening martial arts performance.',
+        highlights: ['Spice Plantation Tour', 'Kalaripayattu Martial Show', 'Kathakali Drama']
+      },
+      {
+        day: 4,
+        title: 'Alleppey Private Houseboat Backwater Cruise',
+        description: 'Board your private AC Kettuvallam houseboat. Glide through palm-fringed canals, paddy fields, and serene lagoons with live cooked meals.',
+        highlights: ['Private Houseboat Cruise', 'Vembanad Lake Sunset', 'Karimeen Fish Fry Dinner']
+      },
+      {
+        day: 5,
+        title: 'Alleppey Sunrise & Departure from Kochi',
+        description: 'Morning backwater tranquility breakfast on deck, check-out, and private transfer to Cochin International Airport (COK).',
+        highlights: ['Backwater Village Walk', 'Kochi Airport Transfer']
+      }
+    ]
+  },
+
+  // --- 6. SACRED PILGRIMAGE TRAILS ---
+  {
+    id: 'varanasi-ayodhya',
+    title: 'Spiritual Varanasi & Ayodhya Sacred Heritage Trail',
+    subtitle: 'Dawn Ganga rituals, Kashi Vishwanath corridor, and grand Sarayu Deepotsav',
+    category: 'spiritual',
+    duration: '4 Days / 3 Nights',
+    days: 4,
+    nights: 3,
+    hotel: 'Riverfront Heritage Boutique Hotel & 4-Star Ayodhya Stay',
+    transport: 'Private Dedicated AC Vehicle',
+    meals: 'Pure Vegetarian Sattvic Meals & Banarasi Lassi Tastings',
+    pricePerPerson: 14200,
+    rating: 4.98,
+    reviewCount: 510,
+    image: 'https://images.unsplash.com/photo-1505764706515-aa95265c5abc?w=800&auto=format&fit=crop&q=80',
+    badge: 'Spiritual Gem',
+    placesCovered: ['Varanasi (Kashi)', 'Sarnath', 'Ayodhya', 'Sarayu River'],
+    includes: [
+      'Private Hand-Rowed Dawn Boat Ride on River Ganga',
+      'VIP Darshan Assistance at Kashi Vishwanath',
+      'Dashashwamedh Ghat Evening Ganga Maha Aarti Seats',
+      'Ram Janmabhoomi & Hanumangarhi Ayodhya Guided Visit',
+      'Authentic Banarasi Paan, Chaat & Malaiyo Food Trail'
+    ],
+    excludes: [
+      'Travel to Varanasi/Ayodhya from origin city',
+      'Special personal puja samagri',
+      'Souvenirs & Silk saree purchases'
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: 'Arrival in Varanasi & Grand Evening Ganga Aarti',
+        description: 'Check-in to ghat-view heritage stay. Evening reserved boat seating to witness the world-famous synchronized Ganga Aarti at Dashashwamedh.',
+        highlights: ['Ghatside Welcome', 'Dashashwamedh Maha Aarti', 'Banarasi Street Food']
+      },
+      {
+        day: 2,
+        title: 'Subah-e-Banaras Boat Ride & Kashi Vishwanath Corridor',
+        description: 'Morning boat ride observing thousands bathing at Manikarnika and Assi Ghat. Walk through Kashi Vishwanath Temple corridor and Sarnath Buddhist ruins.',
+        highlights: ['Dawn Boat Rituals', 'Kashi Vishwanath Corridor', 'Sarnath Dhamek Stupa']
+      },
+      {
+        day: 3,
+        title: 'Scenic Drive to Ayodhya & Ram Janmabhoomi Darshan',
+        description: 'Morning drive to holy city of Ayodhya. Visit the magnificent Shri Ram Janmabhoomi Temple, Hanumangarhi, and Kanak Bhawan.',
+        highlights: ['Ram Janmabhoomi Mandir', 'Hanumangarhi 76-Step Temple', 'Kanak Bhawan']
+      },
+      {
+        day: 4,
+        title: 'Sarayu River Aarti & Departure',
+        description: 'Morning prayers at Ram Ki Paidi on the banks of Sarayu river. Transfer to Ayodhya Maharishi Valmiki Airport or Varanasi Junction.',
+        highlights: ['Sarayu Ram Ki Paidi', 'Guptar Ghat', 'Airport Transfer']
+      }
+    ]
+  },
+  {
+    id: 'south-temple-grand-trail',
+    title: 'Grand Dravidian Temple Trail (Madurai, Thanjavur & Rameswaram)',
+    subtitle: 'Towering thousand-pillar gopurams, 22 sacred wells, and Chola architectural wonders',
+    category: 'spiritual',
+    duration: '5 Days / 4 Nights',
+    days: 5,
+    nights: 4,
+    hotel: 'Heritage Boutique Stays in Chettinad & 4-Star Temple Hotels',
+    transport: 'Private Dedicated AC Innova',
+    meals: 'Traditional Chettinad Banana Leaf Feasts & Pure South Indian Filter Coffee',
+    pricePerPerson: 17500,
+    rating: 4.95,
+    reviewCount: 380,
+    image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&auto=format&fit=crop&q=80',
+    badge: 'Dravidian Sacred',
+    placesCovered: ['Madurai', 'Rameswaram', 'Dhanushkodi', 'Thanjavur'],
+    includes: [
+      'Madurai Meenakshi Amman Temple VIP Darshan & Night Chariot Ceremony',
+      'Rameswaram Ramanathaswamy 22 Sacred Well Bathing Ritual with Priest',
+      'Thanjavur UNESCO Brihadeeswarar Temple Architectural Heritage Walk',
+      'Ghost Town of Dhanushkodi & Ram Setu Vantage Point 4x4 Ride',
+      'Chettinad Palace Heritage Lunch on Fresh Banana Leaf'
+    ],
+    excludes: [
+      'Travel to Madurai Airport / Station',
+      'Special personal archana fees',
+      'Souvenir bronze / Tanjore paintings'
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: 'Arrival in Madurai & Meenakshi Amman Temple',
+        description: 'Check-in to Madurai. Evening tour of the 14-towered Meenakshi Amman Temple and witness the royal bedchamber procession.',
+        highlights: ['Meenakshi Amman Gopuram', 'Thousand Pillar Hall', 'Night Procession']
+      },
+      {
+        day: 2,
+        title: 'Scenic Sea Bridge to Holy Rameswaram Island',
+        description: 'Drive across Pamban Sea Bridge to Rameswaram. Experience the 22 holy teerthams and Ramanathaswamy Temple’s longest pillared corridor in the world.',
+        highlights: ['Pamban Bridge Views', '22 Holy Wells Bath', 'Ramanathaswamy Corridor']
+      },
+      {
+        day: 3,
+        title: 'Dhanushkodi Ram Setu & Chettinad Mansions',
+        description: 'Morning drive to the tip of India at Dhanushkodi where the Indian Ocean meets the Bay of Bengal. Afternoon drive to grand Chettinad palaces.',
+        highlights: ['Dhanushkodi Ram Setu Point', 'Chettinad 100-Room Mansions', 'Chettinad Feast']
+      },
+      {
+        day: 4,
+        title: 'Thanjavur Brihadisvara (Big Temple) Wonder',
+        description: 'Explore the 1000-year-old UNESCO Chola masterwork Brihadisvara Temple with its monolithic 80-tonne granite dome.',
+        highlights: ['Brihadisvara Big Temple', 'Thanjavur Art Gallery', 'Bronze Casting Workshop']
+      },
+      {
+        day: 5,
+        title: 'Departure from Trichy / Madurai',
+        description: 'Morning South Indian filter coffee, breakfast, and transfer to Tiruchirappalli (TRZ) or Madurai (IXM) Airport.',
+        highlights: ['Airport Departure']
+      }
+    ]
   }
 ];
 
-type CategoryFilter = 'all' | 'royal' | 'spiritual' | 'himalayan' | 'backwaters' | 'wildlife';
+interface TourPackagesSectionProps {
+  activeCategory?: TourCategory;
+  onSelectCategory?: (category: TourCategory) => void;
+}
 
-const TourPackagesSection: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
+const TourPackagesSection: React.FC<TourPackagesSectionProps> = ({ 
+  activeCategory: propActiveCategory,
+  onSelectCategory: propOnSelectCategory
+}) => {
+  const [internalCategory, setInternalCategory] = useState<TourCategory>('all');
+  
+  // Use prop if passed, otherwise use internal state
+  const activeCategory = propActiveCategory || internalCategory;
+  const setActiveCategory = (cat: TourCategory) => {
+    if (propOnSelectCategory) {
+      propOnSelectCategory(cat);
+    } else {
+      setInternalCategory(cat);
+    }
+  };
+
   const [selectedItineraryPackage, setSelectedItineraryPackage] = useState<TourPackage | null>(null);
   
   // Booking Modal State
@@ -521,18 +929,19 @@ const TourPackagesSection: React.FC = () => {
       <div className="mt-8 flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto">
         {[
           { id: 'all', label: 'All Expeditions' },
-          { id: 'royal', label: '👑 Royal Heritage' },
-          { id: 'spiritual', label: '🪔 Sacred Circuits' },
-          { id: 'himalayan', label: '🏔️ Himalayan Escapes' },
-          { id: 'backwaters', label: '🌴 Backwaters & Spice' },
-          { id: 'wildlife', label: '🐅 Wildlife & Lakes' }
+          { id: 'wellness', label: '🌿 Wellness & Ayurveda' },
+          { id: 'royal', label: '👑 Royal & Palaces' },
+          { id: 'himalayan', label: '🏔️ Himalayan Expeditions' },
+          { id: 'workcation', label: '💻 Workcation & Solo' },
+          { id: 'family', label: '🐅 Family & Wildlife' },
+          { id: 'spiritual', label: '🪔 Sacred Pilgrimage' }
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveCategory(tab.id as CategoryFilter)}
+            onClick={() => setActiveCategory(tab.id as TourCategory)}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer border ${
               activeCategory === tab.id
-                ? 'bg-slate-900 text-white border-slate-900 shadow-sm scale-102'
+                ? 'bg-slate-900 text-white border-slate-900 shadow-sm scale-105'
                 : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:bg-stone-50'
             }`}
           >
@@ -541,8 +950,23 @@ const TourPackagesSection: React.FC = () => {
         ))}
       </div>
 
+      {/* Active Filter Result Counter */}
+      <div className="mt-4 text-center">
+        <span className="text-xs text-stone-500 font-medium">
+          Showing <strong>{filteredPackages.length}</strong> {filteredPackages.length === 1 ? 'curated package' : 'curated packages'}
+          {activeCategory !== 'all' && (
+            <button 
+              onClick={() => setActiveCategory('all')}
+              className="ml-2 text-amber-700 underline font-semibold hover:text-amber-800"
+            >
+              (Show all)
+            </button>
+          )}
+        </span>
+      </div>
+
       {/* Packages Grid */}
-      <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {filteredPackages.map((pkg) => (
           <article 
             key={pkg.id} 

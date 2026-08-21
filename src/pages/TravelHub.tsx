@@ -1,13 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Sparkles, 
   ShieldCheck, 
   Star, 
   Compass, 
-  MapPin, 
   ArrowRight, 
   Calendar, 
-  Search,
   CheckCircle2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -19,12 +17,18 @@ import GallerySection from '../components/travelhub/GallerySection';
 import ReviewsSection from '../components/travelhub/ReviewsSection';
 import RouteMapSection from '../components/travelhub/RouteMapSection';
 import SpecialFeaturesSection from '../components/travelhub/SpecialFeaturesSection';
-import TourPackagesSection from '../components/travelhub/TourPackagesSection';
+import TourPackagesSection, { TourCategory } from '../components/travelhub/TourPackagesSection';
 import TravelCategoriesSection from '../components/travelhub/TravelCategoriesSection';
 
 const TravelHub: React.FC = () => {
+  const [activeCategory, setActiveCategory] = useState<TourCategory>('all');
+
   const scrollToPackages = () => {
     document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSelectCategory = (category: TourCategory) => {
+    setActiveCategory(category);
   };
 
   return (
@@ -105,11 +109,17 @@ const TravelHub: React.FC = () => {
       {/* 2. MAIN CONTENT SECTIONS */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20 space-y-16">
         
-        {/* Travel Themes */}
-        <TravelCategoriesSection />
+        {/* Travel Themes with Active Filter State */}
+        <TravelCategoriesSection 
+          activeCategory={activeCategory}
+          onSelectCategory={handleSelectCategory}
+        />
         
-        {/* Curated Tour Packages with Real Booking Engine */}
-        <TourPackagesSection />
+        {/* Curated Tour Packages with Real Booking Engine & Reactive Filtering */}
+        <TourPackagesSection 
+          activeCategory={activeCategory}
+          onSelectCategory={setActiveCategory}
+        />
 
         {/* Popular Destinations */}
         <DestinationsSection />
