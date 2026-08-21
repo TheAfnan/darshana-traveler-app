@@ -37,18 +37,18 @@ const Navbar: React.FC = () => {
   return (
     <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md shadow-xs z-50 border-b border-stone-200/80">
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 sm:h-20 py-2 sm:py-2.5">
+        <div className="flex justify-between items-center h-20 sm:h-22 py-2">
           
           {/* Left: Top-Left Hamburger Trigger + Final DarShana Lockup Logo */}
           <div className="flex items-center shrink-0">
             {/* Hamburger Drawer Trigger */}
             <button
               onClick={openSidebar}
-              className="p-2 rounded-xl text-slate-700 hover:text-amber-700 hover:bg-amber-50 border border-stone-200 transition cursor-pointer shadow-2xs"
+              className="p-2.5 rounded-2xl text-slate-700 hover:text-amber-700 hover:bg-amber-50 border border-stone-200 transition cursor-pointer shadow-2xs"
               title="Open Navigation Menu"
               aria-label="Open Navigation Menu"
             >
-              <Menu size={20} />
+              <Menu size={22} />
             </button>
 
             {/* Final Logo (Emblem + Wordmark Baked In - No Duplicate Text) */}
@@ -60,7 +60,7 @@ const Navbar: React.FC = () => {
               <img 
                 src={darshanaLogoFull} 
                 alt="DarShana" 
-                className="h-[32px] sm:h-[40px] w-auto object-contain transition-transform duration-300 hover:scale-[1.02] shrink-0"
+                className="h-[46px] sm:h-[60px] w-auto object-contain transition-transform duration-300 hover:scale-[1.03] shrink-0"
                 loading="eager"
               />
             </Link>
