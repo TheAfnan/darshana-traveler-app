@@ -599,26 +599,16 @@ const CulturalPlanner: React.FC = () => {
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
             <button 
-              onClick={() => {
-                setSelectedStay(plan.budgetStays[0]?.name || 'Heritage Homestay');
-                setConfirmedBookingId(null);
-                setIsBookingModalOpen(true);
-              }}
-              className="flex-1 sm:flex-initial px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-bold rounded-xl shadow-sm hover:scale-105 transition flex items-center justify-center gap-1.5"
-            >
-              <Ticket size={14} /> Instant Book Trip
-            </button>
-            <button 
               onClick={handleDownloadPDF}
-              className="flex-1 sm:flex-initial px-4 py-2 bg-stone-100 hover:bg-stone-200 text-slate-800 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5"
+              className="flex-1 sm:flex-initial px-5 py-2.5 bg-stone-100 hover:bg-stone-200 text-slate-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
             >
-              <Download size={14} /> PDF
+              <Download size={14} /> Download Itinerary PDF
             </button>
             <Link 
               to="/guides"
-              className="flex-1 sm:flex-initial px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5"
+              className="flex-1 sm:flex-initial px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-2xs"
             >
-              <Users size={14} /> Guides
+              <Users size={14} /> Certified Guides
             </Link>
           </div>
         </div>
