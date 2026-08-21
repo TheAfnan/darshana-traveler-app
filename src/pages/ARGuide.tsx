@@ -33,6 +33,7 @@ export const ARGuide: React.FC = () => {
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'history' | 'facts' | 'nearby'>('history');
+  const [dismissNotice, setDismissNotice] = useState(false);
 
   // Start Rear Camera
   const startCamera = async () => {
@@ -355,6 +356,23 @@ export const ARGuide: React.FC = () => {
                   </h2>
                 </div>
               </div>
+
+              {/* AI Config Notice (when using curated demo/fallback) */}
+              {!monumentResult.isLiveAI && !dismissNotice && (
+                <div className="mx-6 sm:mx-8 mt-4 p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-between gap-3 text-xs text-amber-200/90 shadow-sm">
+                  <div className="flex items-center gap-2.5">
+                    <Info size={16} className="text-amber-400 shrink-0" />
+                    <span>Live AI scanning isn't configured yet — showing a curated example instead.</span>
+                  </div>
+                  <button 
+                    onClick={() => setDismissNotice(true)}
+                    className="text-amber-400/70 hover:text-amber-200 text-xs px-2 py-0.5 rounded cursor-pointer transition"
+                    title="Dismiss notice"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
 
               {/* Architecture Quick Facts Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-6 bg-slate-950/60 border-b border-slate-800/80 text-xs">

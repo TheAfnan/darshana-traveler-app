@@ -14,12 +14,7 @@ export async function debugGeminiSetup() {
     return false;
   }
 
-  console.log("✅ API Key found:", apiKey.substring(0, 10) + "...");
-
-  if (!apiKey.startsWith("AIza")) {
-    console.warn("⚠️  WARNING: API Key doesn't start with 'AIza'");
-    console.warn("   This might not be a valid Gemini API key");
-  }
+  console.log("✅ API Key found (configured with length " + apiKey.length + ")");
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);

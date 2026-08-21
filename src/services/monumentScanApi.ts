@@ -188,8 +188,8 @@ export async function analyzeMonumentPhoto(imageDataBase64: string): Promise<Mon
   }
 
   // 2. Direct Gemini 1.5 Flash Vision Multimodal Analysis
-  const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (geminiKey && geminiKey.length > 10) {
+  const geminiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
+  if (geminiKey && geminiKey.length > 5) {
     try {
       const genAI = new GoogleGenerativeAI(geminiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
