@@ -5,6 +5,7 @@ import {
   signOut, 
   updateProfile as updateFirebaseProfile, 
   signInWithPopup,
+  sendEmailVerification,
   onAuthStateChanged,
   type User as FirebaseUser
 } from 'firebase/auth';
@@ -139,6 +140,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // 1. Primary: Try Firebase Email/Password Sign-In
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Enforce email verification for manual logins (except admin)
+      if (!userCredential.user.emailVerified && email !== 'admin@darshana.com') {
+        // Resend verification link to user's Gmail
+        await sendEmailVerification(userCredential.user).catch(() => {});
+        await signOut(auth);
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        throw new Error('EMAIL_NOT_VERIFIED');
+      }
+
       const idToken = await userCredential.user.getIdToken();
       const mappedUser = mapFirebaseUser(userCredential.user);
       
@@ -147,23 +161,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('token', idToken);
       localStorage.setItem('user', JSON.stringify(mappedUser));
     } catch (firebaseError: any) {
-      console.warn('Firebase login attempt:', firebaseError.code || firebaseError.message);
-
-      // 2. Fallback: Try Backend API if Firebase user was created on custom backend
-      try {
-        const response = await authApi.login(email, password);
-        if (response.success && response.data) {
-          const loginData = response.data as any;
-          const { token: newToken, user: newUser } = loginData;
-          setToken(newToken);
-          setUser(newUser);
-          localStorage.setItem('token', newToken);
-          localStorage.setItem('user', JSON.stringify(newUser));
-          return;
-        }
-      } catch (backendError) {
-        // Ignore backend error and throw clean user-friendly message
+      if (firebaseError.message === 'EMAIL_NOT_VERIFIED') {
+        throw new Error('EMAIL_NOT_VERIFIED');
       }
+      console.warn('Firebase login attempt:', firebaseError.code || firebaseError.message);
 
       // Convert Firebase error codes to readable messages
       if (firebaseError.code === 'auth/invalid-credential' || firebaseError.code === 'auth/user-not-found' || firebaseError.code === 'auth/wrong-password') {
@@ -239,19 +240,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await updateFirebaseProfile(userCredential.user, { displayName: name });
       }
 
-      const idToken = await userCredential.user.getIdToken();
-      const newUser: User = {
-        ...mapFirebaseUser(userCredential.user),
-        name: name || userCredential.user.displayName || 'Traveler',
-        phone: phone || '',
-      };
+      // 2. Send official Google Firebase Email Verification link to user's Gmail
+      await sendEmailVerification(userCredential.user);
 
-      setToken(idToken);
-      setUser(newUser);
-      localStorage.setItem('token', idToken);
-      localStorage.setItem('user', JSON.stringify(newUser));
+      // Sign out immediately so user must verify in their Gmail inbox first
+      await signOut(auth);
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
 
-      // 2. Also notify backend API in background if backend is active
+      // Also notify backend API in background if backend is active
       authApi.register({
         fullName: name,
         email,

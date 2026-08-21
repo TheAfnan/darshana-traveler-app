@@ -27,6 +27,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
 
   const [error, setError] = useState("");
+  const [verificationNotice, setVerificationNotice] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // Switch view based on URL
@@ -50,12 +51,14 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
       return;
     }
     setError("");
+    setVerificationNotice("");
     setLoginStep(2);
   };
 
   const handleLoginFinal = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setVerificationNotice("");
     setIsLoading(true);
 
     try {
@@ -69,7 +72,11 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
         else navigate("/travelhub");
       }
     } catch (err: any) {
-      setError(err.message || "Invalid credentials");
+      if (err.message === 'EMAIL_NOT_VERIFIED') {
+        setError(`Email verification required! We have sent a verification link to ${loginEmail.trim()}. Please open your Gmail, click the link, and then log in.`);
+      } else {
+        setError(err.message || "Invalid credentials");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -78,6 +85,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setVerificationNotice("");
 
     if (!signupName.trim() || !signupEmail.trim() || !signupPassword.trim()) {
       setError("Name, email, and password are required");
@@ -107,8 +115,11 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
       // Fire-and-forget welcome email; do not block UI on failure
       void sendSignupEmail({ name: signupName, email: signupEmail });
 
-      if (onClose) onClose();
-      else navigate("/travelhub");
+      setVerificationNotice(`🎉 Verification link sent to ${signupEmail.trim()}! Please open your Gmail, click the link to verify, and then enter your password to log in.`);
+      setIsLoginView(true);
+      setLoginEmail(signupEmail.trim());
+      setLoginPassword("");
+      setLoginStep(2);
     } catch (err: any) {
       setError(err.message || "Signup failed");
     } finally {
@@ -250,10 +261,19 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
               </div>
             )}
 
+            {/* Verification Notice */}
+            {verificationNotice && (
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs rounded-xl flex items-start gap-2 leading-relaxed">
+                <span className="text-base leading-none shrink-0">📬</span>
+                <span>{verificationNotice}</span>
+              </div>
+            )}
+
             {/* Error */}
             {error && (
-              <div className="mb-4 p-3 bg-red-50 text-red-600 text-xs rounded-lg">
-                {error}
+              <div className="mb-4 p-3 bg-red-50 border border-red-200/80 text-red-600 text-xs rounded-xl flex items-start gap-2 leading-relaxed">
+                <span className="text-base leading-none shrink-0">⚠️</span>
+                <span>{error}</span>
               </div>
             )}
 
