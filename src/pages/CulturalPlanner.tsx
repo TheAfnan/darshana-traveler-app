@@ -23,7 +23,10 @@ import {
   Ticket,
   CreditCard,
   Lock,
-  CheckCircle
+  CheckCircle,
+  Lightbulb,
+  Compass,
+  Star
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { db } from '../firebase';
@@ -338,131 +341,162 @@ const CulturalPlanner: React.FC = () => {
 
         {/* Month Highlight Card (Human-Curated Editorial Note) */}
         {plan.currentMonthHighlight && (
-          <div className="bg-[#fffdfa] border border-amber-200/80 rounded-2xl p-6 shadow-sm space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 bg-amber-100 text-amber-800 text-[11px] font-bold rounded-md">
+          <div className="bg-gradient-to-br from-amber-50/70 via-white to-stone-50/60 border border-amber-200/70 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="px-3 py-1 bg-amber-100/80 text-amber-900 text-[11px] font-semibold rounded-full border border-amber-200/60 flex items-center gap-1">
+                <Sparkles size={11} className="text-amber-700" />
                 {plan.currentMonthHighlight.badge}
               </span>
-              <h3 className="font-bold text-base text-slate-900">
+              <h3 className="font-semibold text-base sm:text-lg text-stone-900 tracking-tight">
                 {plan.currentMonthHighlight.title}
               </h3>
             </div>
-            <p className="text-sm text-slate-700 leading-relaxed">
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
               {plan.currentMonthHighlight.description}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-amber-100 text-xs text-slate-600">
-              <div>
-                <strong className="text-slate-800">Best place to experience:</strong> {plan.currentMonthHighlight.whereToExperience}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3.5 border-t border-amber-200/50 text-xs">
+              <div className="flex items-start gap-2.5 text-stone-600">
+                <MapPin size={14} className="text-amber-700 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-stone-900 block text-xs">Where to Experience</span>
+                  <span className="text-stone-600 text-[11px] leading-relaxed">{plan.currentMonthHighlight.whereToExperience}</span>
+                </div>
               </div>
-              <div>
-                <strong className="text-slate-800">Cultural significance:</strong> {plan.currentMonthHighlight.whySpecial}
+              <div className="flex items-start gap-2.5 text-stone-600">
+                <Compass size={14} className="text-amber-700 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-stone-900 block text-xs">Cultural Significance</span>
+                  <span className="text-stone-600 text-[11px] leading-relaxed">{plan.currentMonthHighlight.whySpecial}</span>
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {/* 3 Simple Pillars */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
           {/* 1. Festivals */}
-          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-4 flex flex-col justify-between">
+          <div className="bg-white rounded-3xl p-6 border border-stone-200/70 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-5">
             <div>
-              <div className="flex items-center gap-2 pb-2.5 border-b border-stone-100">
-                <Calendar size={18} className="text-amber-600" />
-                <h4 className="font-bold text-sm text-slate-900">Festivals & Traditions</h4>
+              <div className="flex items-center gap-2.5 pb-3 border-b border-stone-100">
+                <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center text-amber-700">
+                  <Calendar size={15} />
+                </div>
+                <h4 className="font-semibold text-sm text-stone-900 tracking-tight">Festivals & Living Traditions</h4>
               </div>
-              <div className="space-y-3.5 mt-3">
+              <div className="space-y-4 mt-4">
                 {plan.festivals.map((f, i) => (
-                  <div key={i} className="space-y-1.5 pb-3 border-b border-stone-100 last:border-0 last:pb-0">
+                  <div key={i} className="space-y-2 pb-4 border-b border-stone-100 last:border-0 last:pb-0">
                     <div>
-                      <h5 className="font-bold text-xs text-slate-900 leading-snug">{f.name}</h5>
-                      <span className="inline-block mt-1 text-[10px] text-amber-800 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded font-semibold">
-                        🗓️ {f.dates}
+                      <h5 className="font-semibold text-xs text-stone-900 tracking-tight">{f.name}</h5>
+                      <span className="inline-flex items-center gap-1 mt-1 text-[11px] text-amber-900 bg-amber-50/80 border border-amber-200/50 px-2 py-0.5 rounded-md font-medium">
+                        <Clock size={11} className="text-amber-700" /> {f.dates}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 leading-relaxed">{f.description}</p>
-                    <div className="text-[11px] text-amber-900/90 bg-stone-50 p-2 rounded-lg leading-relaxed">
-                      💡 <strong>Tip:</strong> {f.insiderTip}
-                    </div>
+                    <p className="text-xs text-stone-600 leading-relaxed font-normal">{f.description}</p>
+                    {f.insiderTip && (
+                      <div className="flex items-start gap-2 bg-stone-50/80 border-l-2 border-amber-400 p-2.5 rounded-r-xl text-[11px] text-stone-700 leading-relaxed">
+                        <Lightbulb size={12} className="text-amber-600 shrink-0 mt-0.5" />
+                        <span><strong>Tip:</strong> {f.insiderTip}</span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
-            <span className="text-[11px] text-stone-400 pt-2 border-t border-stone-100">Verified cultural calendar</span>
+            <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400 font-medium">
+              <span>Verified Calendar</span>
+              <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md text-[10px] font-semibold">Authentic</span>
+            </div>
           </div>
 
           {/* 2. Hidden Gems */}
-          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-4 flex flex-col justify-between">
+          <div className="bg-white rounded-3xl p-6 border border-stone-200/70 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-5">
             <div>
-              <div className="flex items-center gap-2 pb-2.5 border-b border-stone-100">
-                <MapPin size={18} className="text-amber-600" />
-                <h4 className="font-bold text-sm text-slate-900">Local Hidden Gems</h4>
+              <div className="flex items-center gap-2.5 pb-3 border-b border-stone-100">
+                <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-700">
+                  <Compass size={15} />
+                </div>
+                <h4 className="font-semibold text-sm text-stone-900 tracking-tight">Artisans & Secret Spots</h4>
               </div>
-              <div className="space-y-3.5 mt-3">
+              <div className="space-y-4 mt-4">
                 {plan.hiddenGems.map((g, i) => (
-                  <div key={i} className="space-y-1.5 pb-3 border-b border-stone-100 last:border-0 last:pb-0">
+                  <div key={i} className="space-y-2 pb-4 border-b border-stone-100 last:border-0 last:pb-0">
                     <div>
-                      <h5 className="font-bold text-xs text-slate-900 leading-snug">{g.title}</h5>
-                      <span className="inline-block mt-1 text-[10px] text-purple-700 bg-purple-50 border border-purple-200/60 px-2 py-0.5 rounded font-semibold">
-                        ✨ {g.category}
+                      <h5 className="font-semibold text-xs text-stone-900 tracking-tight">{g.title}</h5>
+                      <span className="inline-flex items-center gap-1 mt-1 text-[11px] text-indigo-900 bg-indigo-50/80 border border-indigo-200/50 px-2 py-0.5 rounded-md font-medium">
+                        <Sparkles size={11} className="text-indigo-600" /> {g.category}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 leading-relaxed">{g.description}</p>
-                    <span className="text-[11px] text-stone-500 font-medium block">📍 {g.location}</span>
+                    <p className="text-xs text-stone-600 leading-relaxed font-normal">{g.description}</p>
+                    <div className="flex items-center gap-1.5 text-[11px] text-stone-500 font-medium">
+                      <MapPin size={11} className="text-rose-500 shrink-0" />
+                      <span>{g.location}</span>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-            <Link to="/guides" className="text-[11px] font-semibold text-amber-700 hover:underline pt-2 border-t border-stone-100 block">
-              Hire a verified local guide ➔
+            <Link to="/guides" className="pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 transition group">
+              <span>Hire Verified Local Guide</span>
+              <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
 
           {/* 3. Food & Stays */}
-          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-4 flex flex-col justify-between">
+          <div className="bg-white rounded-3xl p-6 border border-stone-200/70 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-5">
             <div>
-              <div className="flex items-center gap-2 pb-2.5 border-b border-stone-100">
-                <Utensils size={18} className="text-amber-600" />
-                <h4 className="font-bold text-sm text-slate-900">Authentic Food & Stays</h4>
+              <div className="flex items-center gap-2.5 pb-3 border-b border-stone-100">
+                <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-700">
+                  <Utensils size={15} />
+                </div>
+                <h4 className="font-semibold text-sm text-stone-900 tracking-tight">Authentic Cuisines & Stays</h4>
               </div>
-              <div className="space-y-3 mt-3">
+              <div className="space-y-3.5 mt-4">
                 {plan.seasonalFoods.slice(0, 2).map((food, i) => (
-                  <div key={i} className="space-y-1 pb-2.5 border-b border-stone-100 last:border-0 last:pb-0">
-                    <div>
-                      <h5 className="font-bold text-xs text-slate-900 leading-snug">{food.name}</h5>
-                      <span className="inline-block mt-1 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded font-semibold">
-                        💰 {food.priceRange}
+                  <div key={i} className="space-y-1.5 pb-3 border-b border-stone-100 last:border-0 last:pb-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <h5 className="font-semibold text-xs text-stone-900 tracking-tight">{food.name}</h5>
+                      <span className="text-[10px] text-emerald-800 bg-emerald-50/80 border border-emerald-200/50 px-2 py-0.5 rounded-md font-semibold whitespace-nowrap">
+                        {food.priceRange}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 leading-relaxed">{food.description}</p>
-                    <span className="text-[11px] text-amber-900 font-semibold block">📍 {food.famousSpot}</span>
+                    <p className="text-xs text-stone-600 leading-relaxed font-normal">{food.description}</p>
+                    <div className="flex items-center gap-1 text-[11px] text-amber-900 font-medium">
+                      <MapPin size={10} className="text-amber-700 shrink-0" />
+                      <span>{food.famousSpot}</span>
+                    </div>
                   </div>
                 ))}
 
                 {plan.budgetStays.slice(0, 1).map((stay, i) => (
-                  <div key={i} className="pt-2.5 border-t border-stone-100 flex justify-between items-center">
+                  <div key={i} className="pt-3 border-t border-stone-100 flex items-center justify-between">
                     <div>
-                      <span className="font-bold text-xs text-slate-900 block">{stay.name}</span>
-                      <span className="text-[10px] text-stone-500">{stay.type}</span>
+                      <span className="font-semibold text-xs text-stone-900 block tracking-tight">{stay.name}</span>
+                      <span className="text-[10px] text-stone-400">{stay.type} • ★ {stay.rating}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs font-bold text-slate-900">₹{stay.pricePerNight}<span className="font-normal text-[10px] text-stone-400">/night</span></span>
+                      <span className="text-xs font-bold text-stone-900">₹{stay.pricePerNight}<span className="font-normal text-[10px] text-stone-400">/nt</span></span>
                       <button 
                         onClick={() => {
                           setSelectedStay(stay.name);
                           setConfirmedBookingId(null);
                           setIsBookingModalOpen(true);
                         }}
-                        className="text-[10px] font-bold text-emerald-700 hover:underline block mt-0.5"
+                        className="text-[10px] font-semibold text-emerald-700 hover:text-emerald-900 block mt-0.5 hover:underline"
                       >
-                        Instant Book ➔
+                        Book Stay ➔
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            <span className="text-[11px] text-stone-400 pt-2 border-t border-stone-100">Authentic regional spots</span>
+            <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400 font-medium">
+              <span>Local Flavors</span>
+              <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md text-[10px] font-semibold">Curated</span>
+            </div>
           </div>
 
         </div>
