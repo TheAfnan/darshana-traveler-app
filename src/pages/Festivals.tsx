@@ -56,7 +56,7 @@ const festivalsData = [
         type: "Cultural/Livestock",
         month: "November",
         location: "Pushkar, Rajasthan",
-        desc: "A vibrant five-day livestock fair featuring camel trading, cultural performances, music, and competitions near the Pushkar Lake.",
+        desc: "A major annual livestock and cultural fair featuring camel and cattle trading, competitions, cultural performances, handicrafts, and pilgrimage activities around Pushkar Lake.",
         img: "https://images.pexels.com/photos/1707965/pexels-photo-1707965.jpeg",
         lat: 26.4907,
         lng: 74.5539
@@ -111,7 +111,7 @@ const festivalsData = [
         type: "Religious (Sikh)",
         month: "October/November",
         location: "Punjab, Pan-India",
-        desc: "Celebration of the birth of the Sikh Gurus. Marked by processions (Nagar Kirtan) and reading of the Guru Granth Sahib.",
+        desc: "Sikh commemorations honoring the lives and teachings of the Gurus, especially major birth anniversaries such as Guru Nanak Gurpurab. Celebrations include prayers, kirtan, Nagar Kirtan, and langar.",
         img: "https://www.goldentempleamritsar.org/high-resolution-images/famous-temples/golden-temple/Gurpurab.jpg",
         lat: 30.7333,
         lng: 76.7794
@@ -143,8 +143,8 @@ const festivalsData = [
         name: "Kumbh Mela (कुंभ मेला)",
         type: "Religious (Hindu)",
         month: "Variable (Cycle)",
-        location: "Allahabad, Haridwar, Ujjain, Nashik",
-        desc: "One of the largest peaceful gatherings in the world, held once every three years on a rotating basis at four river-bank pilgrimage sites.",
+        location: "Prayagraj, Haridwar, Ujjain, Nashik",
+        desc: "A major Hindu pilgrimage and religious gathering held at four sacred sites—Prayagraj, Haridwar, Ujjain, and Nashik—according to a rotating astronomical and calendrical cycle.",
         img: "https://images.pexels.com/photos/30218192/pexels-photo-30218192.jpeg",
         lat: 25.4358,
         lng: 81.8463
@@ -228,11 +228,11 @@ const festivalsData = [
     },
     {
       id: 20,
-      name: "Navratri (South India)",
+      name: "Navratri Golu (नवरात्रि गोलु)",
       type: "Religious (Hindu)",
       month: "September/October",
       location: "Tamil Nadu, Karnataka",
-      desc: "Nine nights of worship for Goddess Durga; marked by Golu doll displays and vibrant community celebrations.",
+      desc: "Nine nights of Navaratri devotion, especially known in Tamil Nadu for traditional Golu doll displays. Karnataka also celebrates Navaratri through regional Dasara traditions.",
       img: "https://pin.it/22fqk5O25",
       lat: 23.0225,
       lng: 72.5714
@@ -282,7 +282,7 @@ const festivalsData = [
       lng: 77.0259
     },
     {
-        id: 10,
+        id: 25,
         name: "Lucknow Mahotsav",
         type: "Cultural",
         month: "November/December",
@@ -293,7 +293,7 @@ const festivalsData = [
         lng: 80.9462
     },
     {
-        id: 11,
+        id: 26,
         name: "Chowk Ki Holi",
         type: "Cultural/Religious",
         month: "March",
@@ -304,7 +304,7 @@ const festivalsData = [
         lng: 80.9462
     },
     {
-        id: 12,
+        id: 27,
         name: "Bada Mangal",
         type: "Religious",
         month: "May/June",
@@ -315,7 +315,7 @@ const festivalsData = [
         lng: 80.9462
     },
     {
-        id: 13,
+        id: 28,
         name: "Lucknow Literature Festival",
         type: "Cultural",
         month: "January",
@@ -326,7 +326,7 @@ const festivalsData = [
         lng: 80.9462
     },
     {
-        id: 14,
+        id: 29,
         name: "Awadh Carnival",
         type: "Cultural",
         month: "February",
@@ -342,37 +342,53 @@ const historicalPlaces = [
     {
         id: 1,
         name: "Bara Imambara",
-        desc: "A grand historical monument built by Asaf-ud-Daula in 1784, known for its central hall and the Bhool Bhulaiya (labyrinth).",
+        location: "Lucknow, Uttar Pradesh",
+        era: "18th century",
+        description: "A grand historical monument commissioned by Asaf-ud-Daula in 1784, known for its central hall and the Bhool Bhulaiya labyrinth.",
         img: "https://static.toiimg.com/photo/103890972.cms",
+        lat: 26.8697,
+        lng: 80.9127,
     },
     {
         id: 2,
         name: "Chota Imambara",
-        desc: "An exquisite monument built by Muhammad Ali Shah, featuring chandeliers and intricate decorations.",
+        location: "Lucknow, Uttar Pradesh",
+        era: "19th century",
+        description: "An exquisite monument commissioned by Muhammad Ali Shah, featuring chandeliers, calligraphy, and intricate decorations.",
         img: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Chhota_imambara_Lucknow.jpg",
+        lat: 26.8688,
+        lng: 80.9137,
     },
     {
         id: 3,
         name: "Rumi Darwaza",
-        desc: "An iconic gateway in Lucknow, often referred to as the Turkish Gate, showcasing Awadhi architecture.",
+        location: "Lucknow, Uttar Pradesh",
+        era: "18th century",
+        description: "An iconic gateway built during the reign of Asaf-ud-Daula, showcasing the distinctive Awadhi architectural style.",
         img: "https://s7ap1.scene7.com/is/image/incredibleindia/2-rumi-darwaza-lucknow-uttar-pradesh-attr-hero?qlt=82&ts=1742170244420",
+        lat: 26.8699,
+        lng: 80.9125,
     },
     {
         id: 4,
         name: "Hazratganj Market",
-        desc: "A historic shopping area in Lucknow, blending colonial and modern architecture, and a hub for cultural activities.",
+        location: "Lucknow, Uttar Pradesh",
+        era: "19th–20th century",
+        description: "A historic commercial district in central Lucknow, known for its shops, restaurants, colonial-era character, and cultural activity.",
         img: "https://yometro.com/images/places/hazratganj-market.jpg",
+        lat: 26.8505,
+        lng: 80.9466,
     },
     {
         id: 5,
         name: "Residency",
         desc: "A group of historical buildings that served as a refuge during the 1857 uprising, now a preserved archaeological site.",
-        img: "https://example.com/residency.jpg"
+        img: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Residency_Lucknow.jpg"
     }
 ];
 
 // ----------------------------------------------------------------------------------
-// 2. 10 CULTURAL HIGHLIGHTS (सांस्कृतिक झलकियाँ) - Key non-festival cultural aspects
+// 2. CULTURAL HIGHLIGHTS (सांस्कृतिक झलकियाँ) - Key non-festival cultural aspects
 // ----------------------------------------------------------------------------------
 const culturalHighlights = [
   {
@@ -496,7 +512,7 @@ const culturalHighlights = [
     lng: 76.2711
   },
   {
-    name: "Yoga and Ayurveda",
+    name: "Yoga and Ayurveda — Ashram Tradition",
     aspect: "Wellness",
     description: "Ancient body-mind practices and holistic medicine systems rooted in South Indian tradition and ashrams.",
     img: "https://i0.wp.com/powercutonline.com/wp-content/uploads/2025/07/Jnana-Yoga-Basics-optimized.webp?w=1280&ssl=1",
@@ -520,7 +536,7 @@ const culturalHighlights = [
     lng: 76.6394
   },
   {
-    name: "Traditional Textiles",
+    name: "South Indian Traditional Textiles",
     aspect: "Craft",
     description: "Handloom heritage like Kanjivaram, Ilkal, and Pochampally weaving, showcasing South Indian textile mastery.",
     img: "https://images.pexels.com/photos/34996132/pexels-photo-34996132.jpeg",
@@ -744,7 +760,6 @@ const Festivals = () => {
 
         {/* CONTROLS BAR */}
         <div ref={cardsSectionRef} className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-10">
-          
           <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
             {/* UNIFIED FILTER BUTTON */}
             <div className="relative z-30">
@@ -755,7 +770,6 @@ const Festivals = () => {
                 <span className="capitalize">{filterCategories.find(c => c.value === filterType)?.label}</span>
                 <ChevronDown size={16} className={`transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
               </button>
-              
               <AnimatePresence>
                 {isFilterOpen && (
                   <motion.div 
@@ -784,7 +798,6 @@ const Festivals = () => {
                 )}
               </AnimatePresence>
             </div>
-
             {/* MONTH SELECTION */}
             <div className="relative group z-20">
               <select
@@ -797,7 +810,6 @@ const Festivals = () => {
               </select>
               <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
             </div>
-
             {/* UPCOMING BUTTONS */}
             <div className="flex bg-white rounded-xl border border-stone-200 p-1">
               <button
@@ -818,7 +830,6 @@ const Festivals = () => {
               </button>
             </div>
           </div>
-
           {/* ACTION BUTTONS */}
           <div className="flex gap-3 w-full xl:w-auto justify-end">
             <button
@@ -829,7 +840,6 @@ const Festivals = () => {
             >
               <Share2 size={16} /> Live Location
             </button>
-            
             <div className="bg-white p-1 rounded-xl border border-stone-200 flex">
               <button
                 onClick={() => setShowMap(false)}
@@ -846,7 +856,6 @@ const Festivals = () => {
             </div>
           </div>
         </div>
-
         {/* LIST OR MAP VIEW */}
         {!showMap ? (
           <>
@@ -864,7 +873,6 @@ const Festivals = () => {
                     transition={{ delay: idx * 0.05 }}
                     key={card.id || card.name}
                     className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer flex flex-col h-full"
-                    // onMouseEnter and onMouseLeave for hover effect removed (setHoveredCardId was unused)
                     onClick={() => setSelectedCard(card)}
                   >
                     <div className="relative h-56 overflow-hidden">
@@ -912,7 +920,6 @@ const Festivals = () => {
                           <p className="text-stone-600 text-sm leading-relaxed line-clamp-3 mb-4">{card.description}</p>
                         </>
                       )}
-                      
                       <div className="mt-auto pt-4 border-t border-stone-100 flex justify-between items-center">
                         <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">Read More</span>
                         <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-stone-900 group-hover:text-white transition-colors">
@@ -924,7 +931,6 @@ const Festivals = () => {
                 ))}
               </AnimatePresence>
             </motion.div>
-            
             {filteredCards.length > 6 && (
               <div className="text-center mt-12">
                 <button
@@ -937,7 +943,6 @@ const Festivals = () => {
             )}
           </>
         ) : (
-          // --- MAP VIEW ---
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -947,7 +952,6 @@ const Festivals = () => {
           </motion.div>
         )}
       </div>
-
       {/* CARD DETAIL MODAL */}
       <AnimatePresence>
         {selectedCard && (
@@ -989,7 +993,6 @@ const Festivals = () => {
                   <X size={24} />
                 </button>
               </div>
-              
               <div className="p-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   {selectedCard?.cardType === "festival" && (
@@ -1017,7 +1020,6 @@ const Festivals = () => {
                     </>
                   )}
                 </div>
-
                 <div className="prose prose-stone max-w-none">
                   <h3 className="text-xl font-bold text-stone-900 mb-4">About</h3>
                   <p className="text-stone-600 leading-relaxed text-lg">
@@ -1026,7 +1028,6 @@ const Festivals = () => {
                      selectedCard?.cardType === "historical" ? selectedCard.description : ""}
                   </p>
                 </div>
-
                 <div className="mt-8 pt-8 border-t border-stone-100 flex justify-between items-center">
                   <button className="text-stone-500 hover:text-stone-800 font-medium text-sm flex items-center gap-2">
                     <Share2 size={16} /> Share
@@ -1046,5 +1047,4 @@ const Festivals = () => {
     </div>
   );
 };
-
 export default Festivals;
