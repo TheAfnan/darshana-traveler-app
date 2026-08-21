@@ -297,7 +297,7 @@ const MoodAnalyzer: React.FC = () => {
   const imagePreviewRef = useRef<HTMLImageElement | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const isDetectingRef = useRef(false);
-  const [isCameraOpen, setIsCameraOpen] = useState(true);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [aiStep, setAIStep] = useState<number>(0); // 0: input, 1: recommendations shown
   const [isPayingAI, setIsPayingAI] = useState(false);
   const [paidAI, setPaidAI] = useState(false);
@@ -312,13 +312,6 @@ const MoodAnalyzer: React.FC = () => {
   const prefComplete = true; // No longer blocked by multi-step questionnaires
   const [weatherByDest, setWeatherByDest] = useState<Record<string, WeatherSnapshot>>({});
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
-
-  // Automatically start camera on mount for AI mode
-  useEffect(() => {
-    if (mode === 'ai' && aiStep === 0 && !image && !result) {
-      setIsCameraOpen(true);
-    }
-  }, [mode, aiStep, image, result]);
 
   // Sync face count from detection hook
   useEffect(() => {
