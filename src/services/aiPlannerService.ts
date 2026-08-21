@@ -1,5 +1,5 @@
 // src/services/aiPlannerService.ts
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { apiClient } from "./api";
 import { getCulturalTripPlan, type CulturalPlan } from "../data/culturalTripData";
 
 // Major City Expansions with Authentic Real-world Data
@@ -511,7 +511,9 @@ const EXPANDED_CITY_DATABASE: Record<string, Partial<CulturalPlan>> = {
 };
 
 /**
- * Intelligent Dynamic Cultural Trip Generator (Gemini AI + Curated Graph)
+ * Intelligent Dynamic Cultural Trip Generator
+ * Security Notice: All generative AI LLM calls are routed server-side via the backend API
+ * (/api/planner/generate or /api/ai/plan) to protect private API keys from client exposure.
  */
 export async function getDynamicCulturalPlan(
   destination: string,
@@ -534,85 +536,28 @@ export async function getDynamicCulturalPlan(
     }
   }
 
-  // 2. Try Gemini 1.5 Flash for ANY custom Indian city if API key is present
-  const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (geminiKey && geminiKey.length > 10) {
-    try {
-      const genAI = new GoogleGenerativeAI(geminiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  // 2. Route AI generation to backend endpoint (server holds private LLM API keys)
+  try {
+    const response = await apiClient.post<Partial<CulturalPlan>>('/planner/generate', {
+      destination,
+      travelDateStr,
+      originCity
+    });
 
-      const prompt = `You are the chief cultural historian for Ministry of Tourism "Incredible India".
-Generate a structured JSON travel plan for a traveler visiting "${destination}" from "${originCity}" during "${travelDateStr}".
-Respond ONLY with a valid JSON object strictly adhering to this schema:
-{
-  "destination": "${destination}",
-  "state": "State of India",
-  "tagline": "A poetic, authentic cultural tagline",
-  "bestMonths": "Best season months",
-  "bgImage": "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1200&auto=format&fit=crop&q=80",
-  "currentMonthHighlight": {
-    "title": "Specific authentic event or tradition happening around ${travelDateStr}",
-    "badge": "Month-Matched Highlight",
-    "description": "Authentic 2-sentence description of what's happening",
-    "whereToExperience": "Exact location in ${destination}",
-    "whySpecial": "Historical/cultural reason"
-  },
-  "festivals": [
-    {
-      "name": "Authentic regional festival name",
-      "dates": "Season/Month",
-      "description": "2-sentence celebration details",
-      "insiderTip": "Local insider tip",
-      "significance": "Cultural meaning"
-    }
-  ],
-  "hiddenGems": [
-    {
-      "title": "Secret heritage site or artisan workshop",
-      "category": "Artisans & Crafts",
-      "location": "Local landmark in ${destination}",
-      "description": "Why tourists must explore it",
-      "bestTimeToVisit": "Time of day"
-    }
-  ],
-  "seasonalFoods": [
-    {
-      "name": "Iconic authentic local dish",
-      "type": "Must-Try Specialty",
-      "famousSpot": "Real famous eatery/street lane in ${destination}",
-      "priceRange": "₹80 – ₹200",
-      "description": "Taste and ingredients description"
-    }
-  ],
-  "budgetStays": [
-    {
-      "name": "${destination} Heritage Homestay",
-      "type": "Heritage Haveli",
-      "pricePerNight": 1250,
-      "rating": 4.8,
-      "ecoScore": "A+ (Eco-Certified)",
-      "amenities": ["Traditional Breakfast", "Local Guide", "WiFi"]
-    }
-  ]
-}`;
-
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(cleanJson);
-
+    if (response.success && response.data) {
       const base = getCulturalTripPlan(destination, travelDateStr, originCity);
       return {
         ...base,
-        ...parsed,
-        destination: destination,
+        ...response.data,
+        destination,
         origin: originCity
       };
-    } catch (e) {
-      console.warn("Gemini dynamic generation fallback to curated graph:", e);
     }
+  } catch (err) {
+    // Graceful fallback to verified cultural graph if backend is offline/unreachable
+    console.warn("Backend dynamic planner offline, using curated knowledge graph:", err);
   }
 
-  // 3. Fallback to standard cultural trip graph
+  // 3. Fallback to standard curated cultural trip graph
   return getCulturalTripPlan(destination, travelDateStr, originCity);
 }

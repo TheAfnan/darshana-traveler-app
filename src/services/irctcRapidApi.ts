@@ -8,9 +8,14 @@ export interface LiveTrainOption {
   duration: string;
   fromStationCode: string;
   toStationCode: string;
-  trainType: 'Vande Bharat' | 'Shatabdi Express' | 'Superfast' | 'Tejas Express';
+  trainType: 'Vande Bharat' | 'Shatabdi Express' | 'Superfast' | 'Tejas Express' | 'Express';
   co2SavedKg: number;
   classes: string[];
+}
+
+export interface LiveTrainResult {
+  trains: LiveTrainOption[];
+  isLive: boolean;
 }
 
 const STATION_CODES: Record<string, string> = {
@@ -177,7 +182,7 @@ const AUTHENTIC_TRAIN_SCHEDULES: Record<string, LiveTrainOption[]> = {
   ]
 };
 
-export async function fetchLiveTrainOptions(fromCity: string, toCity: string): Promise<LiveTrainOption[]> {
+export async function fetchLiveTrainOptions(fromCity: string, toCity: string): Promise<LiveTrainResult> {
   const fromNorm = fromCity.trim().toLowerCase();
   const toNorm = toCity.trim().toLowerCase();
   const routeKey = `${fromNorm}_${toNorm}`;
@@ -201,7 +206,7 @@ export async function fetchLiveTrainOptions(fromCity: string, toCity: string): P
       if (response.ok) {
         const data = await response.json();
         if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
-          return data.data.slice(0, 2).map((t: any) => ({
+          const trains: LiveTrainOption[] = data.data.slice(0, 2).map((t: any) => ({
             trainNumber: t.train_number || '22426',
             trainName: t.train_name || 'Electric Express',
             departureTime: t.from_std || '06:10 AM',
@@ -213,32 +218,36 @@ export async function fetchLiveTrainOptions(fromCity: string, toCity: string): P
             co2SavedKg: 5.5,
             classes: t.class_type || ['CC', 'EC', '3A']
           }));
+          return { trains, isLive: true };
         }
       }
     } catch (err) {
-      console.warn('IRCTC RapidAPI fetch fallback:', err);
+      console.warn('IRCTC RapidAPI fetch fallback to curated schedules:', err);
     }
   }
 
-  // Fallback authentic data
+  // Fallback authentic data (isLive: false)
   for (const key of Object.keys(AUTHENTIC_TRAIN_SCHEDULES)) {
     if (routeKey.includes(key) || key.includes(routeKey)) {
-      return AUTHENTIC_TRAIN_SCHEDULES[key];
+      return { trains: AUTHENTIC_TRAIN_SCHEDULES[key], isLive: false };
     }
   }
 
-  return [
-    {
-      trainNumber: '22426',
-      trainName: `${toCity} Vande Bharat Express`,
-      departureTime: '06:10 AM',
-      arrivalTime: '12:45 PM',
-      duration: '6h 35m',
-      fromStationCode: fromCode,
-      toStationCode: toCode,
-      trainType: 'Vande Bharat',
-      co2SavedKg: 5.4,
-      classes: ['CC', 'EC']
-    }
-  ];
+  return {
+    trains: [
+      {
+        trainNumber: '22426',
+        trainName: `${toCity} Express Route`,
+        departureTime: '06:10 AM',
+        arrivalTime: '12:45 PM',
+        duration: '6h 35m',
+        fromStationCode: fromCode,
+        toStationCode: toCode,
+        trainType: 'Superfast',
+        co2SavedKg: 5.4,
+        classes: ['CC', 'EC', '3A']
+      }
+    ],
+    isLive: false
+  };
 }

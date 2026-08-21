@@ -33,8 +33,8 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getCulturalTripPlan, MONTHLY_EVENT_RADAR, type CulturalPlan } from '../data/culturalTripData';
 import { getDynamicCulturalPlan } from '../services/aiPlannerService';
-import { fetchTripAdvisorSpots, type TripAdvisorSpot } from '../services/tripAdvisorApi';
-import { fetchLiveTrainOptions, type LiveTrainOption } from '../services/irctcRapidApi';
+import { fetchTripAdvisorSpots, type TripAdvisorSpot, type TripAdvisorResult } from '../services/tripAdvisorApi';
+import { fetchLiveTrainOptions, type LiveTrainOption, type LiveTrainResult } from '../services/irctcRapidApi';
 
 const CulturalPlanner: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -44,8 +44,8 @@ const CulturalPlanner: React.FC = () => {
   const [travelDate, setTravelDate] = useState(searchParams.get('date') || '2026-05-19'); // Default May to showcase Bada Mangal!
   const [isGenerating, setIsGenerating] = useState(false);
   const [plan, setPlan] = useState<CulturalPlan>(() => getCulturalTripPlan(toCity, travelDate, fromCity));
-  const [tripAdvisorSpots, setTripAdvisorSpots] = useState<TripAdvisorSpot[]>([]);
-  const [liveTrains, setLiveTrains] = useState<LiveTrainOption[]>([]);
+  const [tripAdvisorData, setTripAdvisorData] = useState<TripAdvisorResult>({ spots: [], isLive: false });
+  const [liveTrainsData, setLiveTrainsData] = useState<LiveTrainResult>({ trains: [], isLive: false });
 
   // Direct Booking Modal States
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -68,15 +68,15 @@ const CulturalPlanner: React.FC = () => {
     });
 
     // Fetch TripAdvisor & IRCTC RapidAPIs
-    fetchTripAdvisorSpots(dest).then(spots => setTripAdvisorSpots(spots));
-    fetchLiveTrainOptions(origin, dest).then(trains => setLiveTrains(trains));
+    fetchTripAdvisorSpots(dest).then(res => setTripAdvisorData(res));
+    fetchLiveTrainOptions(origin, dest).then(res => setLiveTrainsData(res));
   }, [searchParams, toCity, fromCity]);
 
   const handlePlanSearch = async () => {
     if (!toCity.trim()) return;
     setIsGenerating(true);
-    fetchTripAdvisorSpots(toCity).then(spots => setTripAdvisorSpots(spots));
-    fetchLiveTrainOptions(fromCity, toCity).then(trains => setLiveTrains(trains));
+    fetchTripAdvisorSpots(toCity).then(res => setTripAdvisorData(res));
+    fetchLiveTrainOptions(fromCity, toCity).then(res => setLiveTrainsData(res));
     
     const newPlan = await getDynamicCulturalPlan(toCity, travelDate, fromCity);
     setPlan(newPlan);
@@ -248,33 +248,14 @@ const CulturalPlanner: React.FC = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-stone-100">
-            {/* Quick Suggestions */}
-            <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
-              <span className="font-semibold text-slate-400">Featured Seasons:</span>
-              {[
-                { name: 'Ayodhya (Nov Deepotsav)', dest: 'Ayodhya', date: '2026-11-01' },
-                { name: 'Lucknow (May Bada Mangal)', dest: 'Lucknow', date: '2026-05-19' },
-                { name: 'Varanasi (Nov Dev Deepawali)', dest: 'Varanasi', date: '2026-11-15' },
-                { name: 'Jaipur (Aug Teej)', dest: 'Jaipur', date: '2026-08-05' },
-              ].map((chip) => (
-                <button
-                  key={chip.name}
-                  onClick={() => {
-                    setToCity(chip.dest);
-                    setTravelDate(chip.date);
-                    setPlan(getCulturalTripPlan(chip.dest, chip.date, fromCity));
-                  }}
-                  className="px-2.5 py-1 bg-stone-100 hover:bg-amber-100 hover:text-amber-900 text-slate-700 rounded-lg transition"
-                >
-                  {chip.name}
-                </button>
-              ))}
-            </div>
+            <span className="text-xs text-slate-500 font-medium hidden sm:inline">
+              ✨ Tailored cultural itineraries, authentic seasonal events & eco-transit
+            </span>
 
             <button 
               onClick={handlePlanSearch}
               disabled={isGenerating}
-              className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2 cursor-pointer ml-auto"
             >
               {isGenerating ? <Sparkles className="animate-spin" size={14} /> : <Search size={14} />}
               <span>Update Itinerary</span>
@@ -501,21 +482,23 @@ const CulturalPlanner: React.FC = () => {
 
         </div>
 
-        {/* TripAdvisor Verified Reviews & Places (Powered by RapidAPI) */}
-        {tripAdvisorSpots.length > 0 && (
+        {/* TripAdvisor Curated & Verified Reviews (Powered by RapidAPI / Curated Graph) */}
+        {tripAdvisorData.spots.length > 0 && (
           <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 pb-2.5 border-b border-stone-100">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-full flex items-center gap-1">
-                  🟢 TripAdvisor Verified Places
+                  {tripAdvisorData.isLive ? '🟢 TripAdvisor Verified Places' : '⭐ Curated Heritage & Dining'}
                 </span>
-                <span className="text-xs text-slate-400 font-medium">• Live via RapidAPI</span>
+                <span className="text-xs text-slate-400 font-medium">
+                  {tripAdvisorData.isLive ? '• Live via RapidAPI' : '• Handpicked Recommendations'}
+                </span>
               </div>
-              <span className="text-[11px] text-slate-400">Authentic Traveler Ratings & Real Reviews</span>
+              <span className="text-[11px] text-slate-400">Authentic Traveler Ratings & Regional Spots</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              {tripAdvisorSpots.map((spot, idx) => (
+              {tripAdvisorData.spots.map((spot, idx) => (
                 <div key={idx} className="bg-[#faf9f7] border border-stone-200/80 rounded-xl p-3.5 space-y-1.5 flex flex-col justify-between">
                   <div className="space-y-1">
                     <div className="flex justify-between items-start">
@@ -527,13 +510,17 @@ const CulturalPlanner: React.FC = () => {
                         <span className="text-xs font-black text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-md">
                           ★ {spot.rating} / 5
                         </span>
-                        <span className="text-[10px] text-slate-400 block mt-0.5">({spot.reviewCount.toLocaleString()} reviews)</span>
+                        {spot.verifiedBadge && spot.reviewCount > 0 ? (
+                          <span className="text-[10px] text-slate-400 block mt-0.5">({spot.reviewCount.toLocaleString()} reviews)</span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 block mt-0.5">(Curated Choice)</span>
+                        )}
                       </div>
                     </div>
                     <p className="text-[11px] text-slate-600 italic leading-relaxed">{spot.topReviewSnippet}</p>
                   </div>
                   <span className="text-[10px] font-semibold text-emerald-800 pt-1 block">
-                    🏆 {spot.rankingText}
+                    {spot.verifiedBadge ? `🏆 ${spot.rankingText}` : `📍 ${spot.rankingText}`}
                   </span>
                 </div>
               ))}
@@ -541,21 +528,23 @@ const CulturalPlanner: React.FC = () => {
           </div>
         )}
 
-        {/* IRCTC Live Trains & Green Transit (Powered by RapidAPI) */}
-        {liveTrains.length > 0 && (
+        {/* IRCTC Transit Options (Powered by RapidAPI / Direct Express Schedules) */}
+        {liveTrainsData.trains.length > 0 && (
           <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 pb-2.5 border-b border-stone-100">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 text-xs font-bold rounded-full flex items-center gap-1">
-                  🚆 IRCTC Live Rail Transit
+                  {liveTrainsData.isLive ? '🚆 IRCTC Live Rail Transit' : '🚆 Popular Rail Routes'}
                 </span>
-                <span className="text-xs text-slate-400 font-medium">• Live via RapidAPI</span>
+                <span className="text-xs text-slate-400 font-medium">
+                  {liveTrainsData.isLive ? '• Live via RapidAPI' : '• Direct Transit Schedules'}
+                </span>
               </div>
               <span className="text-[11px] text-slate-400">Direct Low-Emission Express Routes ({fromCity} ➔ {toCity})</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              {liveTrains.map((train, idx) => (
+              {liveTrainsData.trains.map((train, idx) => (
                 <div key={idx} className="bg-[#f8fafc] border border-slate-200/80 rounded-xl p-3.5 space-y-2 flex flex-col justify-between">
                   <div className="flex justify-between items-start">
                     <div>

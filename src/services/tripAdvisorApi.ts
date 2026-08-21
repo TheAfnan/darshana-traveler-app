@@ -1,4 +1,4 @@
-﻿// src/services/tripAdvisorApi.ts
+// src/services/tripAdvisorApi.ts
 
 export interface TripAdvisorSpot {
   name: string;
@@ -9,6 +9,11 @@ export interface TripAdvisorSpot {
   topReviewSnippet: string;
   priceLevel: string;
   verifiedBadge: boolean;
+}
+
+export interface TripAdvisorResult {
+  spots: TripAdvisorSpot[];
+  isLive: boolean;
 }
 
 const CITY_LOCATION_IDS: Record<string, string> = {
@@ -103,7 +108,7 @@ const FALLBACK_TRIPADVISOR_DATA: Record<string, TripAdvisorSpot[]> = {
   ]
 };
 
-export async function fetchTripAdvisorSpots(cityName: string): Promise<TripAdvisorSpot[]> {
+export async function fetchTripAdvisorSpots(cityName: string): Promise<TripAdvisorResult> {
   const normalized = cityName.trim().toLowerCase();
   const apiKey = import.meta.env.VITE_RAPIDAPI_KEY;
   const apiHost = import.meta.env.VITE_RAPIDAPI_HOST || 'tripadvisor16.p.rapidapi.com';
@@ -123,50 +128,55 @@ export async function fetchTripAdvisorSpots(cityName: string): Promise<TripAdvis
       if (response.ok) {
         const data = await response.json();
         if (data?.data?.data && Array.isArray(data.data.data) && data.data.data.length > 0) {
-          return data.data.data.slice(0, 2).map((item: any) => ({
+          const spots: TripAdvisorSpot[] = data.data.data.slice(0, 2).map((item: any) => ({
             name: item.name || 'Authentic Local Heritage Spot',
             category: 'Restaurant' as const,
             rating: Number(item.averageRating) || 4.8,
-            reviewCount: Number(item.userReviewCount) || 1250,
-            rankingText: item.rankingDetails || 'TripAdvisor Highly Recommended',
+            reviewCount: Number(item.userReviewCount) || 0,
+            rankingText: item.rankingDetails || 'TripAdvisor Recommended',
             topReviewSnippet: item.establishmentTypeAndCuisineTags?.[0] ? `Famous for authentic ${item.establishmentTypeAndCuisineTags[0]}` : 'Top rated authentic local flavor.',
             priceLevel: item.priceTag || '₹₹',
             verifiedBadge: true
           }));
+          return { spots, isLive: true };
         }
       }
     } catch (err) {
-      console.warn('TripAdvisor RapidAPI fetch failed, using authentic cache:', err);
+      console.warn('TripAdvisor RapidAPI fetch failed, using curated data:', err);
     }
   }
 
-  // Authentic fallback
+  // Curated authentic known-city data (marked as fallback, isLive: false)
   for (const key of Object.keys(FALLBACK_TRIPADVISOR_DATA)) {
     if (normalized.includes(key) || key.includes(normalized)) {
-      return FALLBACK_TRIPADVISOR_DATA[key];
+      return { spots: FALLBACK_TRIPADVISOR_DATA[key], isLive: false };
     }
   }
 
-  return [
-    {
-      name: `${cityName} Old Town Heritage Kitchen`,
-      category: 'Restaurant',
-      rating: 4.8,
-      reviewCount: 1420,
-      rankingText: `Top Rated in ${cityName}`,
-      topReviewSnippet: `“Authentic traditional regional spices and hospitality in the heart of ${cityName}.”`,
-      priceLevel: '₹₹',
-      verifiedBadge: true
-    },
-    {
-      name: `${cityName} Heritage Homestay & Haveli`,
-      category: 'Heritage Hotel',
-      rating: 4.7,
-      reviewCount: 680,
-      rankingText: 'TripAdvisor Travelers’ Choice 2026',
-      topReviewSnippet: '“Centrally located with clean rooms and organic home-cooked local breakfast.”',
-      priceLevel: '₹₹',
-      verifiedBadge: true
-    }
-  ];
+  // Generic fallback for unlisted cities - verifiedBadge is FALSE, reviewCount is 0, no fabricated awards
+  return {
+    spots: [
+      {
+        name: `${cityName} Heritage Kitchen`,
+        category: 'Restaurant',
+        rating: 4.5,
+        reviewCount: 0,
+        rankingText: `Recommended Regional Food in ${cityName}`,
+        topReviewSnippet: `“Traditional regional recipes and local specialties in ${cityName}.”`,
+        priceLevel: '₹₹',
+        verifiedBadge: false
+      },
+      {
+        name: `${cityName} Heritage Homestay`,
+        category: 'Heritage Hotel',
+        rating: 4.5,
+        reviewCount: 0,
+        rankingText: `Local Stay Recommendation in ${cityName}`,
+        topReviewSnippet: `“Centrally located boutique stay with home-cooked regional cuisine.”`,
+        priceLevel: '₹₹',
+        verifiedBadge: false
+      }
+    ],
+    isLive: false
+  };
 }
