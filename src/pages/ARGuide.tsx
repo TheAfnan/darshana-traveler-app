@@ -38,7 +38,7 @@ export const ARGuide: React.FC = () => {
     setCameraError(null);
 
     if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setCameraError("Camera stream not available in this browser. Use 'Take Photo' or 'Upload Image'.");
+      setCameraError("Camera stream not supported in this browser. Use 'Take Photo' or 'Upload Photo' below.");
       setCameraActive(false);
       setIsRequestingCamera(false);
       return;
@@ -153,7 +153,7 @@ export const ARGuide: React.FC = () => {
         isLiveAI: false
       });
       setIsScanning(false);
-    }, 400);
+    }, 350);
   };
 
   // Scan & analyze
@@ -181,19 +181,19 @@ export const ARGuide: React.FC = () => {
   const activePhoto = capturedImage || monumentResult?.imageUrl || CURATED_MONUMENTS_DATA['taj mahal'].imageUrl;
 
   return (
-    <div className="min-h-screen bg-[#faf9f6] text-slate-800 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen bg-[#faf9f6] text-slate-900 py-8 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-4xl mx-auto space-y-6">
 
-        {/* Page Header (Matching Cultural Planner & App Aesthetic) */}
+        {/* Page Header (Clean Modern SaaS Heading) */}
         <div className="text-center space-y-2 mb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200/80 rounded-full text-xs font-semibold shadow-2xs">
             <Landmark size={13} className="text-amber-700" />
             <span>Heritage Lens & Monument Identifier</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Monument Scan & History Guide
           </h1>
-          <p className="text-slate-500 text-sm max-w-xl mx-auto leading-relaxed">
+          <p className="text-slate-600 text-sm max-w-xl mx-auto leading-relaxed">
             Point your camera or upload a photo of any Indian landmark to discover its architecture, history, and key insights.
           </p>
         </div>
@@ -232,11 +232,11 @@ export const ARGuide: React.FC = () => {
                 {/* Viewfinder Overlay */}
                 <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-5">
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium text-slate-200">
+                    <div className="flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium text-white shadow-sm">
                       <span className="w-2 h-2 rounded-full bg-emerald-400" />
                       <span>{cameraActive ? 'Camera Active' : 'Ready to Scan'}</span>
                     </div>
-                    <div className="text-[11px] font-mono text-slate-300 bg-slate-900/80 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
+                    <div className="text-[11px] font-mono text-slate-200 bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
                       1.0X
                     </div>
                   </div>
@@ -264,7 +264,7 @@ export const ARGuide: React.FC = () => {
                   </div>
 
                   <div className="text-center">
-                    <span className="text-xs text-slate-200 bg-slate-900/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 inline-block shadow-md">
+                    <span className="text-xs text-slate-200 bg-slate-900/85 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 inline-block shadow-md">
                       {isScanning ? 'Analyzing architecture...' : 'Point at monument facade or dome'}
                     </span>
                   </div>
@@ -272,7 +272,7 @@ export const ARGuide: React.FC = () => {
 
                 {/* Camera Fallback State */}
                 {cameraError && !capturedImage && (
-                  <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-3 z-20">
+                  <div className="absolute inset-0 bg-slate-950/92 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-3 z-20">
                     <div className="w-12 h-12 rounded-full bg-stone-900 border border-stone-800 flex items-center justify-center">
                       <Camera size={22} className="text-amber-500" />
                     </div>
@@ -315,7 +315,7 @@ export const ARGuide: React.FC = () => {
                   <button
                     onClick={handleCaptureFrame}
                     disabled={isScanning}
-                    className="w-full sm:w-auto px-7 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full sm:w-auto px-7 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Camera size={15} />
                     <span>{isScanning ? 'Identifying...' : 'Capture & Identify'}</span>
@@ -381,7 +381,7 @@ export const ARGuide: React.FC = () => {
                   <button
                     key={demo.key}
                     onClick={() => handleSelectCuratedPreset(demo.key)}
-                    className="px-3 py-1.5 bg-stone-50 hover:bg-amber-50 hover:text-amber-900 border border-stone-200 hover:border-amber-300 rounded-xl text-xs text-slate-700 transition cursor-pointer"
+                    className="px-3 py-1.5 bg-stone-50 hover:bg-amber-50 hover:text-amber-900 border border-stone-200 hover:border-amber-300 rounded-xl text-xs text-slate-700 font-medium transition cursor-pointer"
                   >
                     {demo.name}
                   </button>
@@ -390,13 +390,13 @@ export const ARGuide: React.FC = () => {
             </div>
           </div>
         ) : (
-          /* RESULT VIEW: CLEAN MATCHING MONUMENT CARD */
+          /* RESULT VIEW: CLEAN MODERN SAAS MONUMENT CARD */
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <div className="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-xs">
+            <div className="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm">
               
               {/* Destination Editorial Showcase Header */}
               <div className="relative h-64 sm:h-80 bg-slate-900 overflow-hidden text-white">
@@ -414,14 +414,14 @@ export const ARGuide: React.FC = () => {
                     </span>
                   </div>
 
-                  <h2 className="text-2xl sm:text-4xl font-serif font-bold text-white mb-1">
+                  <h2 className="text-2xl sm:text-4xl font-extrabold text-white mb-1 tracking-tight">
                     {monumentResult.name}
                   </h2>
                 </div>
               </div>
 
               {/* Architecture Quick Facts Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-5 sm:p-6 bg-stone-50/80 border-b border-stone-100 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-5 sm:p-6 bg-stone-50/80 border-b border-stone-200 text-xs">
                 <div className="p-3.5 bg-white border border-stone-200 rounded-xl space-y-1 shadow-2xs">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Historic Era</span>
                   <p className="font-semibold text-slate-800">{monumentResult.era}</p>
@@ -436,41 +436,46 @@ export const ARGuide: React.FC = () => {
                 </div>
               </div>
 
-              {/* Navigation Tabs */}
-              <div className="flex border-b border-stone-200 px-6 pt-3 gap-2">
-                <button
-                  onClick={() => setActiveTab('history')}
-                  className={`pb-3 px-4 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
-                    activeTab === 'history'
-                      ? 'border-amber-600 text-amber-900'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <BookOpen size={14} /> Historical Overview
-                </button>
-                <button
-                  onClick={() => setActiveTab('facts')}
-                  className={`pb-3 px-4 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
-                    activeTab === 'facts'
-                      ? 'border-amber-600 text-amber-900'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <History size={14} /> Key Insights
-                </button>
-                <button
-                  onClick={() => setActiveTab('nearby')}
-                  className={`pb-3 px-4 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
-                    activeTab === 'nearby'
-                      ? 'border-amber-600 text-amber-900'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <Compass size={14} /> Nearby Sights
-                </button>
+              {/* HIGH-CONTRAST SAAS SEGMENTED TABS */}
+              <div className="px-6 pt-5">
+                <div className="flex bg-stone-100 p-1 rounded-xl gap-1 border border-stone-200/80">
+                  <button
+                    onClick={() => setActiveTab('history')}
+                    className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      activeTab === 'history'
+                        ? 'bg-white text-slate-900 shadow-xs border border-stone-200/60'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                    }`}
+                  >
+                    <BookOpen size={14} className={activeTab === 'history' ? 'text-amber-600' : 'text-slate-400'} />
+                    <span>Historical Overview</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('facts')}
+                    className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      activeTab === 'facts'
+                        ? 'bg-white text-slate-900 shadow-xs border border-stone-200/60'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                    }`}
+                  >
+                    <History size={14} className={activeTab === 'facts' ? 'text-amber-600' : 'text-slate-400'} />
+                    <span>Key Insights</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('nearby')}
+                    className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      activeTab === 'nearby'
+                        ? 'bg-white text-slate-900 shadow-xs border border-stone-200/60'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                    }`}
+                  >
+                    <Compass size={14} className={activeTab === 'nearby' ? 'text-amber-600' : 'text-slate-400'} />
+                    <span>Nearby Sights</span>
+                  </button>
+                </div>
               </div>
 
-              {/* Tab Contents */}
+              {/* Tab Contents (High Contrast & Clean Typography) */}
               <div className="p-6 sm:p-8 space-y-4">
                 {activeTab === 'history' && (
                   <div className="space-y-2">
@@ -494,7 +499,7 @@ export const ARGuide: React.FC = () => {
                           <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
                             {idx + 1}
                           </span>
-                          <span className="leading-relaxed">{fact}</span>
+                          <span className="leading-relaxed font-medium">{fact}</span>
                         </li>
                       ))}
                     </ul>
@@ -530,7 +535,7 @@ export const ARGuide: React.FC = () => {
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <Link
                     to="/travelhub"
-                    className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-xl transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                   >
                     <span>Explore in Travel Hub</span>
                     <ArrowRight size={14} />
