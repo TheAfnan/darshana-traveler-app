@@ -21,6 +21,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import Map from '../components/Map';
+import { NATIONAL_FESTIVALS_59 } from '../data/nationalFestivalCalendar';
 
 // --- Haversine Distance Formula in Kilometers ---
 function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -754,12 +755,13 @@ const Festivals = () => {
     }
   };
 
-  // Create cards for all types
-  const allCards: CardType[] = [
+  // Create cards for all types (including all 52+ National Indian Festivals from CSV)
+  const allCards: any[] = [
+    ...NATIONAL_FESTIVALS_59,
     ...festivalsData.map(f => ({ ...f, cardType: "festival" as const })),
     ...culturalHighlights.map((f, i) => ({ ...f, cardType: "culture" as const, id: 1000 + i })),
     ...historicalPlaces.map((f, i) => ({ ...f, cardType: "historical" as const, id: 2000 + i })),
-  ] as CardType[];
+  ];
 
   // --- SEARCH & FILTER HOOK ---
   const filteredCards = useMemo(() => {
@@ -1125,9 +1127,17 @@ const Festivals = () => {
                     <div className="p-5 flex-grow flex flex-col">
                       {card.cardType === "festival" && (
                         <>
-                          <div className="flex items-center gap-4 text-xs font-medium text-stone-500 mb-4">
-                            <span className="flex items-center gap-1.5 bg-stone-50 px-2 py-1 rounded-md"><Calendar size={14} className="text-teal-600" /> {card.month}</span>
-                            <span className="flex items-center gap-1.5 bg-stone-50 px-2 py-1 rounded-md"><MapPin size={14} className="text-red-500" /> {card.location}</span>
+                          <div className="flex items-center gap-2.5 flex-wrap text-xs font-medium text-stone-500 mb-3">
+                            <span className="flex items-center gap-1.5 bg-stone-50 border border-stone-200/60 px-2.5 py-1 rounded-md text-stone-800 font-semibold">
+                              <Calendar size={13} className="text-teal-600" /> 
+                              {'date' in card && card.date ? `${card.date}${'day' in card && card.day ? ` • ${card.day}` : ''}` : card.month}
+                            </span>
+                            {'location' in card && card.location && (
+                              <span className="flex items-center gap-1.5 bg-stone-50 border border-stone-200/60 px-2 py-1 rounded-md">
+                                <MapPin size={13} className="text-red-500" /> 
+                                {card.location}
+                              </span>
+                            )}
                           </div>
                           <p className="text-stone-600 text-sm leading-relaxed line-clamp-3 mb-4">{card.desc}</p>
                         </>
