@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { getCulturalTripPlan, MONTHLY_EVENT_RADAR, type CulturalPlan } from '../data/culturalTripData';
+import { fetchTripAdvisorSpots, type TripAdvisorSpot } from '../services/tripAdvisorApi';
 
 const CulturalPlanner: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,17 +31,24 @@ const CulturalPlanner: React.FC = () => {
   const [travelDate, setTravelDate] = useState(searchParams.get('date') || '2026-05-19'); // Default May to showcase Bada Mangal!
   const [isGenerating, setIsGenerating] = useState(false);
   const [plan, setPlan] = useState<CulturalPlan>(() => getCulturalTripPlan(toCity, travelDate, fromCity));
+  const [tripAdvisorSpots, setTripAdvisorSpots] = useState<TripAdvisorSpot[]>([]);
 
   useEffect(() => {
     const dest = searchParams.get('to') || toCity;
     const origin = searchParams.get('from') || fromCity;
     const date = searchParams.get('date') || travelDate;
     setPlan(getCulturalTripPlan(dest, date, origin));
-  }, [searchParams]);
+
+    // Fetch TripAdvisor ratings
+    fetchTripAdvisorSpots(dest).then(spots => {
+      setTripAdvisorSpots(spots);
+    });
+  }, [searchParams, toCity]);
 
   const handlePlanSearch = () => {
     if (!toCity.trim()) return;
     setIsGenerating(true);
+    fetchTripAdvisorSpots(toCity).then(spots => setTripAdvisorSpots(spots));
     setTimeout(() => {
       setPlan(getCulturalTripPlan(toCity, travelDate, fromCity));
       setIsGenerating(false);
@@ -382,6 +390,46 @@ const CulturalPlanner: React.FC = () => {
           </div>
 
         </div>
+
+        {/* TripAdvisor Verified Reviews & Places (Powered by RapidAPI) */}
+        {tripAdvisorSpots.length > 0 && (
+          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 pb-2.5 border-b border-stone-100">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-full flex items-center gap-1">
+                  🟢 TripAdvisor Verified Places
+                </span>
+                <span className="text-xs text-slate-400 font-medium">• Live via RapidAPI</span>
+              </div>
+              <span className="text-[11px] text-slate-400">Authentic Traveler Ratings & Real Reviews</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              {tripAdvisorSpots.map((spot, idx) => (
+                <div key={idx} className="bg-[#faf9f7] border border-stone-200/80 rounded-xl p-3.5 space-y-1.5 flex flex-col justify-between">
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h5 className="font-bold text-xs text-slate-900">{spot.name}</h5>
+                        <span className="text-[10px] text-stone-500">{spot.category} • {spot.priceLevel}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-black text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-md">
+                          ★ {spot.rating} / 5
+                        </span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">({spot.reviewCount.toLocaleString()} reviews)</span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-slate-600 italic leading-relaxed">{spot.topReviewSnippet}</p>
+                  </div>
+                  <span className="text-[10px] font-semibold text-emerald-800 pt-1 block">
+                    🏆 {spot.rankingText}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Clean Practical Travel & Action Bar */}
         <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
