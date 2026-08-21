@@ -4,6 +4,164 @@ import { getCulturalTripPlan, type CulturalPlan } from "../data/culturalTripData
 
 // Major City Expansions with Authentic Real-world Data
 const EXPANDED_CITY_DATABASE: Record<string, Partial<CulturalPlan>> = {
+  'nainital': {
+    destination: 'Nainital (Lake District of Kumaon)',
+    state: 'Uttarakhand',
+    tagline: 'Sacred Emerald Naini Lake, Himalayan Naina Devi Shaktipeeth & Pine Ridge Viewpoints',
+    bestMonths: 'March to June & September to January (Pleasant lake breeze, autumn glow & winter snowfall)',
+    bgImage: 'https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=1200&auto=format&fit=crop&q=80',
+    currentMonthHighlight: {
+      title: 'Naini Lake Twilight Yachting & Naina Devi Temple Sacred Aarti',
+      badge: 'Kumaon Himalayan Wonder',
+      description: 'Sail in traditional wooden rowboats across the emerald crescent-shaped Naini Lake under the reflection of seven surrounding pine peaks (Cheena Peak), followed by evening aarti at the ancient Naina Devi Shaktipeeth.',
+      whereToExperience: 'Naini Lake Promenade (Mallital) & Naina Devi Temple Complex',
+      whySpecial: 'One of the revered 51 holy Shaktipeeths where Goddess Sati eye (Naina) fell, giving birth to the sacred emerald lake.'
+    },
+    festivals: [
+      {
+        name: 'Nanda Devi Mahotsav & Kumaoni Folk Fair',
+        dates: 'September / Autumn',
+        description: 'Vibrant 7-day fair worshipping Goddess Nanda Devi with Chholiya sword dancers, traditional brass Ransingha horns, and folk theater.',
+        insiderTip: 'Visit the temple courtyard during the morning idol decoration for authentic traditional Kumaoni folk chanting.',
+        significance: 'State cultural festival celebrating the patron deity and protector of the Kumaon Himalayas.'
+      },
+      {
+        name: 'Nainital Winter Carnival & Lake Festival',
+        dates: 'December / January',
+        description: 'Heritage yacht races on Naini Lake, photography walks, bird-watching workshops in Pangot, and mountain acoustic concerts.',
+        insiderTip: 'Take the cable car to Snow View Point at sunset for clear 360-degree views of Nanda Devi and Trishul peaks.',
+        significance: 'Celebrates winter sports, eco-tourism, and mountain artistic culture.'
+      }
+    ],
+    hiddenGems: [
+      {
+        title: 'Tiffin Top (Dorothy Seat 2292m Panoramic Trail)',
+        category: 'Secret Trails',
+        location: 'Ayarpatta Hill (4 km from Mallital)',
+        description: 'Stonework memorial viewpoint perched on Ayarpatta peak offering sweeping vistas of the Himalayas and Nainital town.',
+        bestTimeToVisit: '6:30 AM – 9:30 AM (Crisp mountain sunrise)'
+      },
+      {
+        title: 'Pangot & Kilbury Himalayan Bird Sanctuary',
+        category: 'Secret Trails',
+        location: 'Kilbury Pine Reserve (15 km above town)',
+        description: 'Dense oak, pine, and rhododendron reserve shelter to over 580 Himalayan bird species including Lammergeiers and Cheer Pheasants.',
+        bestTimeToVisit: '7:00 AM – 11:00 AM'
+      },
+      {
+        title: 'Gurney House (Jim Corbett Living Heritage Villa)',
+        category: 'Ancient Architecture',
+        location: 'Ayarpatta Slopes, Nainital',
+        description: 'Historic cottage preserving hunter-conservationist Jim Corbett personal furniture, books, and antique trophies.',
+        bestTimeToVisit: '11:00 AM – 3:00 PM'
+      }
+    ],
+    seasonalFoods: [
+      {
+        name: 'Kumaoni Bal Mithai & Singori in Malu Leaf',
+        type: 'Must-Try Specialty',
+        famousSpot: 'Mamu Bal Mithai (Mallital) & Khairna Sweet Junction',
+        priceRange: '₹100 – ₹220',
+        description: 'Slow-roasted brown milk fudge (khoa) coated with sugar beads, and Singori cones wrapped in fragrant wild Malu leaves.'
+      },
+      {
+        name: 'Aloo Ke Gutke with Bhang Jeera Chutney & Steamed Momos',
+        type: 'Street Food Legend',
+        famousSpot: 'Tibetan Market Food Alley (Mallital) & Sonam Fast Food',
+        priceRange: '₹60 – ₹130',
+        description: 'Boiled mountain potatoes tossed in Himalayan jumboo herb, served with pungent roasted hemp seed chutney.'
+      }
+    ],
+    budgetStays: [
+      {
+        name: 'Nainital Heritage Pine Lodge Homestay',
+        type: 'Eco-Homestay',
+        pricePerNight: 1450,
+        rating: 4.9,
+        ecoScore: 'A+ (Zero Plastic & Rainwater Harvesting)',
+        amenities: ['Lake View Balcony', 'Traditional Kumaoni Breakfast', 'Guided Pine Trek', 'WiFi']
+      }
+    ],
+    sustainability: {
+      co2SavedKg: 6.4,
+      ecoRewardPoints: 120,
+      greenRoute: 'Kathgodam Shatabdi Express Rail (Delhi/Lucknow to Kathgodam) + Electric Hill Shuttle',
+      recommendedTransit: 'Electric Rail to Kathgodam + Shared E-Cab',
+      localInitiative: 'Clean Naini Lake and Himalayan Ridge Afforestation Project.'
+    }
+  },
+  'agra': {
+    destination: 'Agra',
+    state: 'Uttar Pradesh',
+    tagline: 'Imperial Mughal Capital, World Wonder Taj Mahal & Pietra Dura Stone Inlay Crafts',
+    bestMonths: 'October to March (Crisp winter sunshine and Taj Mahotsav)',
+    bgImage: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&auto=format&fit=crop&q=80',
+    currentMonthHighlight: {
+      title: 'Taj Mahotsav Artisan Carnival & Mehtab Bagh Sunset Glow',
+      badge: 'UNESCO World Heritage Crown',
+      description: 'Witness the iconic ivory-white marble Taj Mahal reflected in the Yamuna River during sunset from Mehtab Bagh, followed by 400+ master craftsmen performances at Shilpgram.',
+      whereToExperience: 'Taj Mahal Complex, Mehtab Bagh & Shilpgram Agra',
+      whySpecial: 'Undisputed architectural wonder of the world symbolizing eternal Mughal craftsmanship.'
+    },
+    festivals: [
+      {
+        name: 'Taj Mahotsav (10-Day Cultural Fair)',
+        dates: 'February / March',
+        description: 'Grand cultural carnival at Shilpgram near the Eastern Gate of Taj Mahal featuring classical musicians, Ghazal baithaks, and artisan stalls from across India.',
+        insiderTip: 'Visit the craft village after 4:00 PM for folk puppet shows and live brass stone-inlay demonstrations.',
+        significance: 'Celebrates India rich handloom and classical arts against the backdrop of Mughal heritage.'
+      }
+    ],
+    hiddenGems: [
+      {
+        title: 'Pachhikari (Pietra Dura) Marble Inlay Ateliers',
+        category: 'Artisans & Crafts',
+        location: 'Gokulpura & Taj Ganj Artisan Lanes',
+        description: 'Generations of master craftsmen cutting semiprecious stones (lapis lazuli, malachite) into fine floral marble inlays.',
+        bestTimeToVisit: '10:30 AM – 2:30 PM'
+      },
+      {
+        title: 'Chini Ka Rauza & Tomb of I\'timad-ud-Daulah (Baby Taj)',
+        category: 'Ancient Architecture',
+        location: 'Eastern Yamuna Riverbank, Agra',
+        description: 'Glazed porcelain tile tomb and delicate marble jali screens predating the Taj Mahal.',
+        bestTimeToVisit: '3:30 PM – 5:30 PM'
+      }
+    ],
+    seasonalFoods: [
+      {
+        name: 'Original Agra Petha (Angoori, Kesar & Paan Petha)',
+        type: 'Must-Try Specialty',
+        famousSpot: 'Panchi Petha (Noori Gate Est. 1950)',
+        priceRange: '₹80 – ₹180',
+        description: 'Translucent soft candy made of candied ash gourd infused with saffron, kewra, and rose water.'
+      },
+      {
+        name: 'Bedmi Puri with Spiced Aloo Sabzi & Jalebi',
+        type: 'Street Food Legend',
+        famousSpot: 'Deviram Sweets (Pratappura) & Seth Gali',
+        priceRange: '₹50 – ₹90',
+        description: 'Crispy urad dal stuffed wheat puris served with fiery fenugreek-spiced potato gravy.'
+      }
+    ],
+    budgetStays: [
+      {
+        name: 'Agra Heritage Taj Haveli Homestay',
+        type: 'Heritage Haveli',
+        pricePerNight: 1250,
+        rating: 4.8,
+        ecoScore: 'A+ (Solar Powered)',
+        amenities: ['Taj View Rooftop Terrace', 'Homemade Mughlai Breakfast', 'WiFi', 'RO Water']
+      }
+    ],
+    sustainability: {
+      co2SavedKg: 5.2,
+      ecoRewardPoints: 100,
+      greenRoute: 'Gatimaan / Vande Bharat Express (Delhi to Agra Cantt in 99 mins) + Electric Auto',
+      recommendedTransit: 'Direct Electric Express Rail + CNG/Electric Autos',
+      localInitiative: 'Taj Trapezium Zone Clean Air and Green Yamuna Mission.'
+    }
+  },
   'noida': {
     destination: 'Noida (Gautam Buddha Nagar)',
     state: 'Uttar Pradesh',

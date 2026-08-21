@@ -24,10 +24,37 @@ const STATION_CODES: Record<string, string> = {
   'agra': 'AGC',
   'goa': 'MAO',
   'kolkata': 'HWH',
-  'noida': 'GZB/ANVT'
+  'noida': 'GZB/ANVT',
+  'nainital': 'KGM'
 };
 
 const AUTHENTIC_TRAIN_SCHEDULES: Record<string, LiveTrainOption[]> = {
+  'delhi_nainital': [
+    {
+      trainNumber: '12040',
+      trainName: 'Kathgodam Shatabdi Express',
+      departureTime: '06:20 AM',
+      arrivalTime: '11:40 AM',
+      duration: '5h 20m',
+      fromStationCode: 'NDLS (Delhi)',
+      toStationCode: 'KGM (Nainital)',
+      trainType: 'Shatabdi Express',
+      co2SavedKg: 6.4,
+      classes: ['CC', 'EC']
+    },
+    {
+      trainNumber: '15013',
+      trainName: 'Ranikhet Express',
+      departureTime: '09:00 PM',
+      arrivalTime: '05:05 AM',
+      duration: '8h 05m',
+      fromStationCode: 'DLI (Old Delhi)',
+      toStationCode: 'KGM (Nainital)',
+      trainType: 'Express',
+      co2SavedKg: 5.9,
+      classes: ['1A', '2A', '3A', 'SL']
+    }
+  ],
   'lucknow_noida': [
     {
       trainNumber: '82501',
