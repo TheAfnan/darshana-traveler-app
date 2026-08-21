@@ -393,33 +393,124 @@ const festivalsData = [
 const historicalPlaces = [
     {
         id: 1,
-        name: "Bara Imambara",
-        desc: "A grand historical monument built by Asaf-ud-Daula in 1784, known for its central hall and the Bhool Bhulaiya (labyrinth).",
+        name: "Bara Imambara (बड़ा इमामबाड़ा)",
+        era: "1784 AD (Nawabi Era)",
+        location: "Lucknow, Uttar Pradesh",
+        desc: "A magnificent architectural marvel built by Nawab Asaf-ud-Daula featuring the world's largest unsupported vaulted hall and the famous 489-doorway Bhool Bhulaiya labyrinth.",
+        description: "A magnificent architectural marvel built by Nawab Asaf-ud-Daula featuring the world's largest unsupported vaulted hall and the famous 489-doorway Bhool Bhulaiya labyrinth.",
         img: "https://static.toiimg.com/photo/103890972.cms",
+        lat: 26.8692,
+        lng: 80.9128
     },
     {
         id: 2,
-        name: "Chota Imambara",
-        desc: "An exquisite monument built by Muhammad Ali Shah, featuring chandeliers and intricate decorations.",
+        name: "Chota Imambara (छोटा इमामबाड़ा)",
+        era: "1838 AD (Nawabi Era)",
+        location: "Lucknow, Uttar Pradesh",
+        desc: "Known as the Palace of Lights, built by Nawab Muhammad Ali Shah, adorned with exquisite Belgian glass chandeliers, gold-plated domes, and calligraphic Islamic artistry.",
+        description: "Known as the Palace of Lights, built by Nawab Muhammad Ali Shah, adorned with exquisite Belgian glass chandeliers, gold-plated domes, and calligraphic Islamic artistry.",
         img: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Chhota_imambara_Lucknow.jpg",
+        lat: 26.8744,
+        lng: 80.9044
     },
     {
         id: 3,
-        name: "Rumi Darwaza",
-        desc: "An iconic gateway in Lucknow, often referred to as the Turkish Gate, showcasing Awadhi architecture.",
+        name: "Rumi Darwaza (रूमी दरवाज़ा)",
+        era: "1784 AD (Nawabi Era)",
+        location: "Lucknow, Uttar Pradesh",
+        desc: "The 60-foot towering gateway modeled after Sublime Porte in Constantinople. The quintessential emblem of Lucknow's grand Awadhi architectural legacy.",
+        description: "The 60-foot towering gateway modeled after Sublime Porte in Constantinople. The quintessential emblem of Lucknow's grand Awadhi architectural legacy.",
         img: "https://s7ap1.scene7.com/is/image/incredibleindia/2-rumi-darwaza-lucknow-uttar-pradesh-attr-hero?qlt=82&ts=1742170244420",
+        lat: 26.8699,
+        lng: 80.9133
     },
     {
         id: 4,
-        name: "Hazratganj Market",
-        desc: "A historic shopping area in Lucknow, blending colonial and modern architecture, and a hub for cultural activities.",
+        name: "Hazratganj Heritage Market",
+        era: "1842 AD (British & Nawabi)",
+        location: "Lucknow, Uttar Pradesh",
+        desc: "The historic Victorian promenade and royal shopping heart of Lucknow, famed for evening 'Ganjing' walks, Awadhi Chikankari emporiums, and iconic kebabs.",
+        description: "The historic Victorian promenade and royal shopping heart of Lucknow, famed for evening 'Ganjing' walks, Awadhi Chikankari emporiums, and iconic kebabs.",
         img: "https://yometro.com/images/places/hazratganj-market.jpg",
+        lat: 26.8526,
+        lng: 80.9423
     },
     {
         id: 5,
-        name: "Residency",
-        desc: "A group of historical buildings that served as a refuge during the 1857 uprising, now a preserved archaeological site.",
-        img: "https://example.com/residency.jpg"
+        name: "The British Residency (रेसीडेंसी)",
+        era: "1800 AD (1857 Siege of Lucknow)",
+        location: "Lucknow, Uttar Pradesh",
+        desc: "Historical complex of buildings that witnessed the dramatic 1857 Siege of Lucknow during India's First War of Independence, now a protected archaeological sanctuary.",
+        description: "Historical complex of buildings that witnessed the dramatic 1857 Siege of Lucknow during India's First War of Independence, now a protected archaeological sanctuary.",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/The_Residency_Lucknow.jpg/1200px-The_Residency_Lucknow.jpg",
+        lat: 26.8617,
+        lng: 80.9272
+    },
+    {
+        id: 6,
+        name: "Taj Mahal (ताज महल)",
+        era: "1632 AD (Mughal Era)",
+        location: "Agra, Uttar Pradesh",
+        desc: "UNESCO World Heritage wonder of ivory-white marble on the Yamuna river bank, built by Emperor Shah Jahan in memory of Mumtaz Mahal.",
+        description: "UNESCO World Heritage wonder of ivory-white marble on the Yamuna river bank, built by Emperor Shah Jahan in memory of Mumtaz Mahal.",
+        img: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&auto=format&fit=crop&q=80",
+        lat: 27.1751,
+        lng: 78.0421
+    },
+    {
+        id: 7,
+        name: "Amber Fort & Palace (आमेर का किला)",
+        era: "1592 AD (Rajput Era)",
+        location: "Jaipur, Rajasthan",
+        desc: "Majestic hilltop fort built of red sandstone and marble overlooking Maota Lake, famous for Sheesh Mahal (Mirror Palace) and royal Rajput courtyards.",
+        description: "Majestic hilltop fort built of red sandstone and marble overlooking Maota Lake, famous for Sheesh Mahal (Mirror Palace) and royal Rajput courtyards.",
+        img: "https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=800&auto=format&fit=crop",
+        lat: 26.9855,
+        lng: 75.8513
+    },
+    {
+        id: 8,
+        name: "Qutub Minar (क़ुतुब मीनार)",
+        era: "1192 AD (Delhi Sultanate)",
+        location: "Delhi NCR",
+        desc: "The world's tallest brick minaret standing at 72.5 meters, surrounded by ancient Indo-Islamic monuments and the rust-resistant 1600-year-old Iron Pillar.",
+        description: "The world's tallest brick minaret standing at 72.5 meters, surrounded by ancient Indo-Islamic monuments and the rust-resistant 1600-year-old Iron Pillar.",
+        img: "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800&auto=format&fit=crop&q=80",
+        lat: 28.5245,
+        lng: 77.1855
+    },
+    {
+        id: 9,
+        name: "Sun Temple Konark (कोणार्क सूर्य मंदिर)",
+        era: "1250 AD (Eastern Ganga Dynasty)",
+        location: "Konark, Odisha",
+        desc: "Monumental 24-wheeled stone chariot temple dedicated to the Sun God Surya, celebrated for intricate astronomical carvings and Kalinga architecture.",
+        description: "Monumental 24-wheeled stone chariot temple dedicated to the Sun God Surya, celebrated for intricate astronomical carvings and Kalinga architecture.",
+        img: "https://images.unsplash.com/photo-1606293926075-69a00dbfde81?w=800&auto=format&fit=crop&q=80",
+        lat: 19.8876,
+        lng: 86.0945
+    },
+    {
+        id: 10,
+        name: "Meenakshi Amman Temple (मीनाक्षी अम्मन)",
+        era: "6th Century AD (Pandya & Nayak)",
+        location: "Madurai, Tamil Nadu",
+        desc: "Dravidian masterwork with 14 towering, richly sculpted gopurams dedicated to Goddess Meenakshi (Parvati) and Lord Sundareswarar (Shiva).",
+        description: "Dravidian masterwork with 14 towering, richly sculpted gopurams dedicated to Goddess Meenakshi (Parvati) and Lord Sundareswarar (Shiva).",
+        img: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&auto=format&fit=crop&q=80",
+        lat: 9.9195,
+        lng: 78.1193
+    },
+    {
+        id: 11,
+        name: "Hampi Monument Group (हम्पी)",
+        era: "14th Century AD (Vijayanagara Empire)",
+        location: "Hampi, Karnataka",
+        desc: "Sprawling UNESCO World Heritage ruins of the Vijayanagara Empire with monolithic stone chariots, musical pillars, and riverside boulder landscapes.",
+        description: "Sprawling UNESCO World Heritage ruins of the Vijayanagara Empire with monolithic stone chariots, musical pillars, and riverside boulder landscapes.",
+        img: "https://images.unsplash.com/photo-1600100397608-f010e08e1e19?w=800&auto=format&fit=crop&q=80",
+        lat: 15.3350,
+        lng: 76.4600
     }
 ];
 
@@ -1143,14 +1234,36 @@ const Festivals = () => {
                         </>
                       )}
                       {card.cardType === "culture" && (
-                        <p className="text-stone-600 text-sm leading-relaxed line-clamp-4 mb-4">{card.description}</p>
+                        <>
+                          {'aspect' in card && card.aspect && (
+                            <div className="flex items-center gap-2 text-xs font-medium text-stone-500 mb-3">
+                              <span className="flex items-center gap-1.5 bg-stone-50 border border-stone-200/60 px-2.5 py-1 rounded-md text-stone-800 font-semibold">
+                                🎨 {card.aspect}
+                              </span>
+                            </div>
+                          )}
+                          <p className="text-stone-600 text-sm leading-relaxed line-clamp-3 mb-4">
+                            {('description' in card && card.description) || ('desc' in card && card.desc) || ''}
+                          </p>
+                        </>
                       )}
                       {card.cardType === "historical" && (
                         <>
-                          <div className="flex items-center gap-2 text-xs font-medium text-stone-500 mb-3">
-                            <span className="flex items-center gap-1.5 bg-stone-50 px-2 py-1 rounded-md"><MapPin size={14} className="text-red-500" /> {card.location}</span>
+                          <div className="flex items-center gap-2 flex-wrap text-xs font-medium text-stone-500 mb-3">
+                            {'era' in card && card.era && (
+                              <span className="flex items-center gap-1.5 bg-stone-50 border border-stone-200/60 px-2.5 py-1 rounded-md text-stone-800 font-semibold">
+                                ⏳ {card.era}
+                              </span>
+                            )}
+                            {'location' in card && card.location && (
+                              <span className="flex items-center gap-1.5 bg-stone-50 border border-stone-200/60 px-2 py-1 rounded-md text-stone-700">
+                                <MapPin size={13} className="text-red-500" /> {card.location}
+                              </span>
+                            )}
                           </div>
-                          <p className="text-stone-600 text-sm leading-relaxed line-clamp-3 mb-4">{card.description}</p>
+                          <p className="text-stone-600 text-sm leading-relaxed line-clamp-3 mb-4">
+                            {('description' in card && card.description) || ('desc' in card && card.desc) || ''}
+                          </p>
                         </>
                       )}
                       
