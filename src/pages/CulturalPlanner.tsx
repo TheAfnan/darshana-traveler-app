@@ -122,332 +122,292 @@ const CulturalPlanner: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-[#faf9f6] text-slate-800 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-5xl mx-auto space-y-8">
 
-        {/* Top Search Bar */}
-        <div className="bg-white rounded-3xl shadow-lg border border-orange-100/60 p-6">
-          <div className="flex flex-col md:flex-row items-center gap-4">
-            <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">From</label>
-                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5">
-                  <MapPin size={16} className="text-slate-400" />
-                  <input 
-                    type="text"
-                    value={fromCity}
-                    onChange={(e) => setFromCity(e.target.value)}
-                    placeholder="Departure (e.g. Delhi)"
-                    className="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none"
-                  />
-                </div>
+        {/* Page Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900">
+            Cultural Journey Planner
+          </h1>
+          <p className="text-slate-500 text-sm sm:text-base max-w-2xl mx-auto">
+            Discover not just where to go, but the exact right moment to experience India’s living traditions, festivals, and local heritage.
+          </p>
+        </div>
+
+        {/* Clean Search Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Departure City</label>
+              <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5">
+                <MapPin size={16} className="text-stone-400" />
+                <input 
+                  type="text"
+                  value={fromCity}
+                  onChange={(e) => setFromCity(e.target.value)}
+                  placeholder="e.g. Delhi"
+                  className="w-full bg-transparent text-sm font-medium text-slate-800 focus:outline-none"
+                />
               </div>
-              <div>
-                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Destination</label>
-                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5">
-                  <MapPin size={16} className="text-orange-500" />
-                  <input 
-                    type="text"
-                    value={toCity}
-                    onChange={(e) => setToCity(e.target.value)}
-                    placeholder="Destination (e.g. Lucknow)"
-                    className="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none"
-                  />
-                </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Destination</label>
+              <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5">
+                <MapPin size={16} className="text-amber-600" />
+                <input 
+                  type="text"
+                  value={toCity}
+                  onChange={(e) => setToCity(e.target.value)}
+                  placeholder="e.g. Ayodhya, Lucknow, Varanasi"
+                  className="w-full bg-transparent text-sm font-medium text-slate-800 focus:outline-none"
+                />
               </div>
-              <div>
-                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Travel Date</label>
-                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5">
-                  <Calendar size={16} className="text-amber-500" />
-                  <input 
-                    type="date"
-                    value={travelDate}
-                    onChange={(e) => setTravelDate(e.target.value)}
-                    className="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none"
-                  />
-                </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Travel Date</label>
+              <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5">
+                <Calendar size={16} className="text-amber-600" />
+                <input 
+                  type="date"
+                  value={travelDate}
+                  onChange={(e) => setTravelDate(e.target.value)}
+                  className="w-full bg-transparent text-sm font-medium text-slate-800 focus:outline-none"
+                />
               </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-stone-100">
+            {/* Quick Suggestions */}
+            <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+              <span className="font-semibold text-slate-400">Featured Seasons:</span>
+              {[
+                { name: 'Ayodhya (Nov Deepotsav)', dest: 'Ayodhya', date: '2026-11-01' },
+                { name: 'Lucknow (May Bada Mangal)', dest: 'Lucknow', date: '2026-05-19' },
+                { name: 'Varanasi (Nov Dev Deepawali)', dest: 'Varanasi', date: '2026-11-15' },
+                { name: 'Jaipur (Aug Teej)', dest: 'Jaipur', date: '2026-08-05' },
+              ].map((chip) => (
+                <button
+                  key={chip.name}
+                  onClick={() => {
+                    setToCity(chip.dest);
+                    setTravelDate(chip.date);
+                    setPlan(getCulturalTripPlan(chip.dest, chip.date, fromCity));
+                  }}
+                  className="px-2.5 py-1 bg-stone-100 hover:bg-amber-100 hover:text-amber-900 text-slate-700 rounded-lg transition"
+                >
+                  {chip.name}
+                </button>
+              ))}
             </div>
 
             <button 
               onClick={handlePlanSearch}
               disabled={isGenerating}
-              className="w-full md:w-auto mt-2 md:mt-5 flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-600 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-md hover:shadow-orange-500/20 hover:scale-105 transition-all"
+              className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2"
             >
-              {isGenerating ? <Sparkles className="animate-spin" size={16} /> : <Search size={16} />}
-              <span>Plan Cultural Journey</span>
+              {isGenerating ? <Sparkles className="animate-spin" size={14} /> : <Search size={14} />}
+              <span>Update Itinerary</span>
             </button>
           </div>
+        </div>
 
-          {/* Quick Destination Chips */}
-          <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-100 text-xs font-semibold text-slate-500">
-            <span className="text-[11px] uppercase tracking-wider text-slate-400">Popular:</span>
-            {[
-              { name: 'Ayodhya (Nov Deepotsav)', dest: 'Ayodhya', date: '2026-11-01' },
-              { name: 'Lucknow (May Bada Mangal)', dest: 'Lucknow', date: '2026-05-19' },
-              { name: 'Varanasi (Nov Dev Deepawali)', dest: 'Varanasi', date: '2026-11-15' },
-              { name: 'Jaipur (Aug Teej Festival)', dest: 'Jaipur', date: '2026-08-05' },
-              { name: 'Goa (Feb Viva Carnival)', dest: 'Goa', date: '2026-02-14' },
-            ].map((chip) => (
+        {/* Season Radar - Simple Month-by-Month Explorer */}
+        <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-bold text-slate-900">
+              When & Where: Peak Seasonal Moments in India
+            </h3>
+            <span className="text-xs text-slate-400">Select any month to view live event</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            {Object.values(MONTHLY_EVENT_RADAR).map((radar) => (
               <button
-                key={chip.name}
+                key={radar.monthNum}
                 onClick={() => {
-                  setToCity(chip.dest);
-                  setTravelDate(chip.date);
-                  setPlan(getCulturalTripPlan(chip.dest, chip.date, fromCity));
+                  const top = radar.topDestinations[0];
+                  setToCity(top.city);
+                  setTravelDate(top.targetDate);
+                  setPlan(getCulturalTripPlan(top.city, top.targetDate, fromCity));
                 }}
-                className="px-3 py-1 bg-orange-50 text-orange-700 hover:bg-orange-100 rounded-full transition-colors"
+                className="p-3 text-left bg-stone-50 hover:bg-amber-50/80 border border-stone-200 hover:border-amber-300 rounded-xl transition group flex flex-col justify-between h-24"
               >
-                {chip.name}
+                <div>
+                  <span className="text-[11px] font-bold text-slate-800 group-hover:text-amber-900 block">
+                    {radar.monthName}
+                  </span>
+                  <span className="text-xs font-semibold text-amber-700 block mt-0.5">
+                    {radar.topDestinations[0].city}
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-500 line-clamp-1">
+                  {radar.topDestinations[0].event}
+                </span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* WHEN & WHERE TO GO (MONTH-WISE EVENT RADAR) */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 uppercase tracking-wider">
-                <Sparkles size={14} /> When & Where to Go Engine
-              </div>
-              <h3 className="text-lg font-bold text-slate-900">
-                Discover India by Season: Where the Magic is Happening Right Now
+        {/* Destination Editorial Showcase Header */}
+        <div className="relative rounded-2xl overflow-hidden shadow-md bg-slate-900 text-white">
+          <img 
+            src={plan.bgImage} 
+            alt={plan.destination}
+            className="w-full h-56 sm:h-64 object-cover opacity-40 filter brightness-90"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex flex-col justify-end p-6 sm:p-8">
+            <div className="text-xs font-medium text-amber-300 mb-1">
+              {fromCity} ➔ {plan.destination} • {travelDate}
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-serif font-bold text-white mb-2">
+              {plan.destination}
+            </h2>
+            <p className="text-stone-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
+              {plan.tagline}
+            </p>
+          </div>
+        </div>
+
+        {/* Month Highlight Card (Human-Curated Editorial Note) */}
+        {plan.currentMonthHighlight && (
+          <div className="bg-[#fffdfa] border border-amber-200/80 rounded-2xl p-6 shadow-sm space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 bg-amber-100 text-amber-800 text-[11px] font-bold rounded-md">
+                {plan.currentMonthHighlight.badge}
+              </span>
+              <h3 className="font-bold text-base text-slate-900">
+                {plan.currentMonthHighlight.title}
               </h3>
             </div>
-            <span className="text-xs text-slate-400">1-Tap to auto-plan for peak festive season</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-2">
-            {Object.values(MONTHLY_EVENT_RADAR).map((radar) => (
-              <div key={radar.monthNum} className="bg-slate-50 border border-slate-200/70 rounded-2xl p-4 space-y-2.5 hover:border-orange-300 transition-all">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
-                    📅 {radar.monthName}
-                  </span>
-                  <span className="text-[10px] font-bold text-orange-700 bg-orange-100/80 px-2 py-0.5 rounded-full">
-                    {radar.topDestinations[0].city}
-                  </span>
-                </div>
-
-                <p className="text-xs font-bold text-slate-800 line-clamp-1">
-                  {radar.topDestinations[0].icon} {radar.topDestinations[0].event}
-                </p>
-                <p className="text-[11px] text-slate-500 line-clamp-2">
-                  {radar.topDestinations[0].description}
-                </p>
-
-                <button
-                  onClick={() => {
-                    const top = radar.topDestinations[0];
-                    setToCity(top.city);
-                    setTravelDate(top.targetDate);
-                    setPlan(getCulturalTripPlan(top.city, top.targetDate, fromCity));
-                  }}
-                  className="w-full text-center text-xs font-bold text-orange-600 bg-white hover:bg-orange-600 hover:text-white border border-orange-200 py-1.5 rounded-xl transition-colors shadow-sm"
-                >
-                  Explore {radar.topDestinations[0].city} in {radar.monthName} ➔
-                </button>
+            <p className="text-sm text-slate-700 leading-relaxed">
+              {plan.currentMonthHighlight.description}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-amber-100 text-xs text-slate-600">
+              <div>
+                <strong className="text-slate-800">Best place to experience:</strong> {plan.currentMonthHighlight.whereToExperience}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* HERO TITLE & MONTH HIGHLIGHT (GOLDEN CARD) */}
-        {plan.currentMonthHighlight && (
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 rounded-3xl p-1 text-white shadow-xl"
-          >
-            <div className="bg-slate-950/90 backdrop-blur-md rounded-[22px] p-6 sm:p-8">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-400/20 border border-amber-400/40 text-amber-300 rounded-full text-xs font-extrabold tracking-wide uppercase">
-                  <Flame size={14} className="text-amber-400" /> {plan.currentMonthHighlight.badge}
-                </div>
-                <div className="flex items-center gap-3 text-xs text-slate-300">
-                  <span>Journey: <strong className="text-white">{fromCity} ➔ {plan.destination}</strong></span>
-                  <span>•</span>
-                  <span>Date: <strong className="text-white">{travelDate}</strong></span>
-                </div>
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">
-                {plan.currentMonthHighlight.title}
-              </h2>
-
-              <p className="text-slate-200 text-sm sm:text-base leading-relaxed mb-6">
-                {plan.currentMonthHighlight.description}
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-white/10 text-xs">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                  <span className="text-amber-300 font-bold block mb-1">📍 Where to experience:</span>
-                  <span className="text-slate-200">{plan.currentMonthHighlight.whereToExperience}</span>
-                </div>
-                <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                  <span className="text-emerald-300 font-bold block mb-1">✨ Cultural Significance:</span>
-                  <span className="text-slate-200">{plan.currentMonthHighlight.whySpecial}</span>
-                </div>
+              <div>
+                <strong className="text-slate-800">Cultural significance:</strong> {plan.currentMonthHighlight.whySpecial}
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
-        {/* 3 CORE PILLARS (CLEAN & ELEGANT) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 3 Simple Pillars */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-          {/* 1. LIVING CULTURE & FESTIVALS */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between space-y-4">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className="p-2.5 bg-orange-100 text-orange-600 rounded-2xl">
-                  <Calendar size={20} />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-base text-slate-900">Local Festivals & Traditions</h3>
-                  <p className="text-xs text-slate-400">Authentic regional celebrations</p>
-                </div>
+          {/* 1. Festivals */}
+          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 pb-2.5 border-b border-stone-100">
+                <Calendar size={18} className="text-amber-600" />
+                <h4 className="font-bold text-sm text-slate-900">Festivals & Traditions</h4>
               </div>
-
-              <div className="space-y-3">
+              <div className="space-y-3 mt-3">
                 {plan.festivals.map((f, i) => (
-                  <div key={i} className="bg-orange-50/40 border border-orange-100 rounded-2xl p-4 space-y-2">
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-bold text-sm text-slate-900">{f.name}</h4>
-                      <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">{f.dates}</span>
+                  <div key={i} className="space-y-1">
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-semibold text-xs text-slate-900">{f.name}</span>
+                      <span className="text-[10px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-medium">{f.dates}</span>
                     </div>
-                    <p className="text-xs text-slate-600 leading-relaxed">{f.description}</p>
-                    <div className="text-[11px] text-orange-900 bg-orange-100/60 p-2 rounded-xl">
-                      💡 <strong>Tip:</strong> {f.insiderTip}
-                    </div>
+                    <p className="text-xs text-slate-600">{f.description}</p>
+                    <p className="text-[11px] text-amber-900/80 bg-stone-50 p-2 rounded-lg">
+                      <strong>Tip:</strong> {f.insiderTip}
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
-
-            <div className="pt-2 text-xs text-slate-400 flex justify-between items-center">
-              <span>Verified Cultural Calendar</span>
-              <span className="font-bold text-orange-600">Dekho Apna Desh</span>
-            </div>
+            <span className="text-[11px] text-stone-400 pt-2 border-t border-stone-100">Verified cultural calendar</span>
           </div>
 
-          {/* 2. HIDDEN GEMS & SECRET TRAILS */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between space-y-4">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className="p-2.5 bg-purple-100 text-purple-600 rounded-2xl">
-                  <Sparkles size={20} />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-base text-slate-900">Hidden Gems & Artisan Trails</h3>
-                  <p className="text-xs text-slate-400">Beyond common tourist spots</p>
-                </div>
+          {/* 2. Hidden Gems */}
+          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 pb-2.5 border-b border-stone-100">
+                <MapPin size={18} className="text-amber-600" />
+                <h4 className="font-bold text-sm text-slate-900">Local Hidden Gems</h4>
               </div>
-
-              <div className="space-y-3">
+              <div className="space-y-3 mt-3">
                 {plan.hiddenGems.map((g, i) => (
-                  <div key={i} className="bg-purple-50/40 border border-purple-100 rounded-2xl p-4 space-y-1.5">
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-bold text-sm text-slate-900">{g.title}</h4>
-                      <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">{g.category}</span>
+                  <div key={i} className="space-y-1">
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-semibold text-xs text-slate-900">{g.title}</span>
+                      <span className="text-[10px] text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded">{g.category}</span>
                     </div>
-                    <p className="text-xs text-slate-600 leading-relaxed">{g.description}</p>
-                    <div className="text-[11px] text-slate-500 font-medium">
-                      📍 {g.location}
-                    </div>
+                    <p className="text-xs text-slate-600">{g.description}</p>
+                    <span className="text-[11px] text-stone-400 block">📍 {g.location}</span>
                   </div>
                 ))}
               </div>
             </div>
-
-            <div className="pt-2 text-xs text-slate-400 flex justify-between items-center">
-              <span>Artisans & Heritage</span>
-              <Link to="/guides" className="font-bold text-purple-600 hover:underline">
-                Hire Local Guide ➔
-              </Link>
-            </div>
+            <Link to="/guides" className="text-[11px] font-semibold text-amber-700 hover:underline pt-2 border-t border-stone-100 block">
+              Hire a verified local guide ➔
+            </Link>
           </div>
 
-          {/* 3. ICONIC FOOD & BUDGET STAYS */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between space-y-4">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className="p-2.5 bg-amber-100 text-amber-600 rounded-2xl">
-                  <Utensils size={20} />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-base text-slate-900">Authentic Food & Stays</h3>
-                  <p className="text-xs text-slate-400">Legendary flavors & eco homestays</p>
-                </div>
+          {/* 3. Food & Stays */}
+          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 pb-2.5 border-b border-stone-100">
+                <Utensils size={18} className="text-amber-600" />
+                <h4 className="font-bold text-sm text-slate-900">Authentic Food & Stays</h4>
               </div>
-
-              {/* Foods */}
-              <div className="space-y-2.5">
-                <h5 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Must-Try Food Spots:</h5>
+              <div className="space-y-3 mt-3">
                 {plan.seasonalFoods.slice(0, 2).map((food, i) => (
-                  <div key={i} className="bg-amber-50/40 border border-amber-100 rounded-2xl p-3 space-y-1">
-                    <div className="flex justify-between items-start">
-                      <h6 className="font-bold text-xs text-slate-900">{food.name}</h6>
-                      <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">{food.priceRange}</span>
+                  <div key={i} className="space-y-0.5">
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-semibold text-xs text-slate-900">{food.name}</span>
+                      <span className="text-[10px] text-slate-500 font-medium">{food.priceRange}</span>
                     </div>
-                    <p className="text-[11px] text-slate-600">{food.description}</p>
-                    <span className="text-[10px] text-amber-900 font-bold block">📍 {food.famousSpot}</span>
+                    <p className="text-xs text-slate-600">{food.description}</p>
+                    <span className="text-[10px] text-amber-800 font-medium block">📍 {food.famousSpot}</span>
                   </div>
                 ))}
-              </div>
 
-              {/* Stays */}
-              <div className="space-y-2 pt-2 border-t border-slate-100">
-                <h5 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Recommended Homestay:</h5>
                 {plan.budgetStays.slice(0, 1).map((stay, i) => (
-                  <div key={i} className="bg-blue-50/40 border border-blue-100 rounded-2xl p-3 flex justify-between items-center">
+                  <div key={i} className="pt-2 border-t border-stone-100 flex justify-between items-center">
                     <div>
-                      <h6 className="font-bold text-xs text-slate-900">{stay.name}</h6>
-                      <span className="text-[10px] text-blue-600 block">{stay.type} • {stay.ecoScore}</span>
+                      <span className="font-semibold text-xs text-slate-900 block">{stay.name}</span>
+                      <span className="text-[10px] text-stone-500">{stay.type}</span>
                     </div>
-                    <div className="text-right">
-                      <span className="font-black text-sm text-slate-900">₹{stay.pricePerNight}</span>
-                      <span className="text-[10px] text-slate-400 block">/night</span>
-                    </div>
+                    <span className="text-xs font-bold text-slate-900">₹{stay.pricePerNight}<span className="font-normal text-[10px] text-stone-400">/night</span></span>
                   </div>
                 ))}
               </div>
             </div>
-
-            <div className="pt-2 text-xs text-slate-400 flex justify-between items-center">
-              <span>Local Awadhi Cuisine</span>
-              <span className="font-bold text-amber-600">Gourmet Verified</span>
-            </div>
+            <span className="text-[11px] text-stone-400 pt-2 border-t border-stone-100">Authentic regional spots</span>
           </div>
 
         </div>
 
-        {/* BOTTOM UTILITY BAR: SAFETY, ECO TRANSIT & PDF DOWNLOAD */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex flex-wrap items-center gap-4 text-xs">
-            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-800 px-4 py-2 rounded-xl font-semibold border border-emerald-100">
+        {/* Clean Practical Travel & Action Bar */}
+        <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600">
+            <div className="flex items-center gap-1.5">
               <ShieldCheck size={16} className="text-emerald-600" />
-              <span>Safety Index: <strong>{plan.safety[0].score}/10</strong> (Police: 112 / Women Helpline: 1090)</span>
+              <span>Safety: <strong>{plan.safety[0].score}/10</strong> (Emergency 112)</span>
             </div>
-            <div className="flex items-center gap-2 bg-teal-50 text-teal-800 px-4 py-2 rounded-xl font-semibold border border-teal-100">
+            <div className="flex items-center gap-1.5">
               <Leaf size={16} className="text-teal-600" />
-              <span>Eco-Transit: <strong>-{plan.sustainability.co2SavedKg} kg CO2</strong> (+{plan.sustainability.ecoRewardPoints} DarShana Pts)</span>
+              <span>Eco-Transit: <strong>-{plan.sustainability.co2SavedKg} kg CO2</strong></span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <button 
               onClick={handleDownloadPDF}
-              className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-2xl font-bold text-xs shadow-md transition"
+              className="flex-1 sm:flex-initial px-4 py-2 bg-stone-100 hover:bg-stone-200 text-slate-800 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2"
             >
-              <Download size={14} className="text-orange-400" /> Download PDF Itinerary
+              <Download size={14} /> Download PDF
             </button>
             <Link 
               to="/guides"
-              className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-2xl font-bold text-xs shadow-md hover:scale-105 transition"
+              className="flex-1 sm:flex-initial px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2"
             >
-              <Users size={14} /> Book Local Guide
+              <Users size={14} /> Local Guides
             </Link>
           </div>
         </div>
