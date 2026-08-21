@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Calendar, Users, Search, Sparkles } from 'lucide-react';
 
+import { useNavigate } from 'react-router-dom';
+
 interface JourneyFormProps {
   onSearch?: (data: {
     from: string;
@@ -12,6 +14,7 @@ interface JourneyFormProps {
 }
 
 const JourneyForm: React.FC<JourneyFormProps> = ({ onSearch }) => {
+  const navigate = useNavigate();
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [date, setDate] = useState('');
@@ -21,6 +24,8 @@ const JourneyForm: React.FC<JourneyFormProps> = ({ onSearch }) => {
     if (onSearch) {
       onSearch({ from, to, date, passengers });
     }
+    const destination = to.trim() || 'Varanasi';
+    navigate(`/planner?from=${encodeURIComponent(from || 'Lucknow')}&to=${encodeURIComponent(destination)}&date=${encodeURIComponent(date || '2026-11-15')}&passengers=${passengers}`);
   };
 
   return (

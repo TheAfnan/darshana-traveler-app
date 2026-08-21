@@ -24,6 +24,7 @@ import GovernmentInitiatives from '../components/GovernmentInitiatives';
 import HeroSection from '../components/HeroSection';
 import HighlightSlider from '../components/HighlightSlider';
 import KathakaliAssistant from "../components/KathakaliAssistant";
+import JourneyForm from '../components/JourneyForm';
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -89,8 +90,11 @@ const Home: React.FC = () => {
 
       {/* Hero Section */}
       <HeroSection />
-     
-      
+
+      {/* AI Journey & Cultural Expedition Search Form */}
+      <div className="max-w-7xl mx-auto px-4 -mt-10 relative z-20 mb-12 w-full">
+        <JourneyForm />
+      </div>
 
       {/* Inspirational Quotes Section - Auto Flow */}
       <section className="bg-slate-900 text-white py-10 border-y border-slate-800 overflow-hidden">

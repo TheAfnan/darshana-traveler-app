@@ -12,10 +12,10 @@ const Navbar: React.FC = () => {
 
   const navLinks = [
     { name: "Home", path: "/", icon: Backpack },
+    { name: "AI Planner", path: "/planner", icon: Calendar },
     { name: "Mood AI", path: "/mood", icon: Smile },
     { name: "Travel Hub", path: "/travelhub", icon: Plane },
     { name: "All Cities", path: "/cities", icon: MoreVertical },
-    { name: "Essentials", path: "/travel-essentials", icon: Calendar },
     { name: "Cultural Odyssey", path: "/festivals", icon: Leaf },
     { name: "Eco Travel", path: "/sustainable", icon: User },
     { name: "Local-Guides", path: "/guides", icon: X },

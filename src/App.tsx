@@ -44,6 +44,7 @@ import TravelHub from "./pages/TravelHub"; // ✔️ Correct Import
 import ARGuide from "./pages/ARGuide";
 import MyBookings from "./pages/MyBookings";
 import UIStyleGuide from "./pages/UIStyleGuide";
+import CulturalPlanner from "./pages/CulturalPlanner";
 
 
 // Auto scroll to top when route changes
@@ -79,6 +80,8 @@ const App: React.FC = () => {
             <Route path="/login" element={<GuestOnly><Login /></GuestOnly>} />
             <Route path="/register" element={<GuestOnly><Login /></GuestOnly>} />
             <Route path="/home" element={<Home />} />
+            <Route path="/planner" element={<CulturalPlanner />} />
+            <Route path="/cultural-engine" element={<CulturalPlanner />} />
             <Route path="/mood" element={<MoodAnalyzer />} />
             <Route path="/ar-guide" element={<ARGuide />} />
             <Route path="/travelhub" element={<TravelHub />} />
