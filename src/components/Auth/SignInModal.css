@@ -1,0 +1,230 @@
+/* src/components/Auth/SignInModal.css */
+
+:root {
+    --primary-orange: #D84E25; /* Burnt Orange/Terracotta */
+    --primary-orange-hover: #BF4320;
+    --text-dark: #2C3E50;
+    --text-light: #7F8C8D;
+    --border-color: #E0E0E0;
+    --white: #FFFFFF;
+    --overlay-bg: rgba(0, 0, 0, 0.6);
+    --font-body: 'Poppins', sans-serif;
+    --font-title: 'Merriweather', serif;
+}
+
+/* Modal Overlay */
+.signin-modal-overlay {
+    position: fixed;
+    inset: 0; /* Covers top, right, bottom, left */
+    background-color: var(--overlay-bg);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; /* High z-index to stay on top */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    padding: 20px; /* Prevent touching edges on small screens */
+}
+
+.signin-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Container */
+.signin-modal-container {
+    background: var(--white);
+    width: 900px;
+    max-width: 100%;
+    height: auto;
+    min-height: 500px;
+    max-height: 90vh;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    margin: auto; /* Ensure centering */
+}
+
+.signin-modal-overlay.active .signin-modal-container {
+    transform: scale(1);
+}
+
+/* Close Button */
+.signin-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-light);
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.2s;
+}
+
+.signin-close-btn:hover {
+    color: var(--text-dark);
+}
+
+/* Left Side - Illustration */
+.signin-modal-left {
+    flex: 1.2;
+    background-color: #FFF5F0; /* Light orange tint background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.signin-modal-left img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Right Side - Form */
+.signin-modal-right {
+    flex: 1;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+.signin-modal-title {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    color: #5D4037; /* Dark brown for title */
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.signin-modal-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    margin-bottom: 2.5rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Form Elements */
+.signin-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.signin-input-field {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.signin-input-field:focus {
+    border-color: var(--primary-orange);
+}
+
+.signin-btn-primary {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--primary-orange);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 1.5rem;
+}
+
+.signin-btn-primary:hover {
+    background-color: var(--primary-orange-hover);
+}
+
+/* Divider */
+.signin-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.signin-divider::before,
+.signin-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.signin-divider::before {
+    margin-right: .5em;
+}
+
+.signin-divider::after {
+    margin-left: .5em;
+}
+
+/* Google Button */
+.signin-btn-google {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.signin-btn-google:hover {
+    background-color: #F5F5F5;
+}
+
+.signin-google-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .signin-modal-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 500px;
+    }
+
+    .signin-modal-left {
+        display: none;
+    }
+
+    .signin-modal-right {
+        padding: 2rem;
+    }
+
+    .signin-modal-title {
+        font-size: 2rem;
+    }
+}
