@@ -1,22 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, MapPin, Star, Loader, AlertCircle, Mail, Phone } from 'lucide-react';
 import GuideCard from '../components/GuideCard';
-
-interface Guide {
-  _id: string;
-  name: string;
-  location: string;
-  specialties: string[];
-  languages: string[];
-  rating: number;
-  reviews: number;
-  pricePerDay: number;
-  bio: string;
-  profileImage: string;
-  verified: boolean;
-  email?: string;
-  phone?: string;
-}
+import { fetchAllGuides, submitGuideRequest, type Guide } from '../api/guides';
 
 const GuideListing = () => {
   const [guides, setGuides] = useState<Guide[]>([]);
@@ -25,8 +10,8 @@ const GuideListing = () => {
   const [error, setError] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('');
-  const [maxPrice, setMaxPrice] = useState<number>(1000);
-  const [minRating, setMinRating] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState(5000);
+  const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState<'rating' | 'price' | 'reviews'>('rating');
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const [contactMessage, setContactMessage] = useState('');
@@ -44,82 +29,11 @@ const GuideListing = () => {
   const fetchGuides = async () => {
     try {
       setLoading(true);
-      const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-      const response = await fetch(`${baseUrl}/api/local-guides`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      
-      // Handle both array and object responses
-      const guideList = Array.isArray(data) ? data : (data.guides || []);
-      setGuides(guideList);
+      const list = await fetchAllGuides();
+      setGuides(list);
       setError('');
     } catch (err) {
-      console.warn('Backend unavailable, using curated local guides dataset.');
-      setGuides([
-        {
-          _id: '1',
-          name: 'Mohammad Tariq',
-          location: 'Lucknow, Uttar Pradesh',
-          specialties: ['Heritage Walks', 'Awadhi Cuisine', 'Chikankari & Bazaars'],
-          languages: ['Hindi', 'Urdu', 'English'],
-          rating: 4.9,
-          reviews: 142,
-          pricePerDay: 1200,
-          bio: 'Certified Ministry of Tourism guide specializing in Old Lucknow, Bara Imambara, and royal culinary trails.',
-          profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300',
-          verified: true,
-          email: 'tariq.lucknow@darshana.com',
-          phone: '+91 98765 43210'
-        },
-        {
-          _id: '2',
-          name: 'Ananya Sharma',
-          location: 'Varanasi, Uttar Pradesh',
-          specialties: ['Ghats & Temples', 'Spiritual Walks', 'Photography'],
-          languages: ['Hindi', 'English', 'French'],
-          rating: 4.8,
-          reviews: 98,
-          pricePerDay: 1500,
-          bio: 'Historian and storyteller guiding travelers through ancient alleys, morning boat rides, and evening Ganga Aarti.',
-          profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300',
-          verified: true,
-          email: 'ananya.varanasi@darshana.com',
-          phone: '+91 98765 43211'
-        },
-        {
-          _id: '3',
-          name: 'Rohan Naik',
-          location: 'Goa',
-          specialties: ['Water Sports', 'Eco-Trekking', 'Portuguese Heritage'],
-          languages: ['English', 'Konkani', 'Hindi', 'Portuguese'],
-          rating: 4.9,
-          reviews: 175,
-          pricePerDay: 1800,
-          bio: 'Local explorer passionate about off-beat waterfalls, spice plantations, and historic Latin quarters.',
-          profileImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300',
-          verified: true,
-          email: 'rohan.goa@darshana.com',
-          phone: '+91 98765 43212'
-        },
-        {
-          _id: '4',
-          name: 'Devika Menon',
-          location: 'Kerala Backwaters',
-          specialties: ['Ayurveda & Wellness', 'Houseboat Tours', 'Village Life'],
-          languages: ['English', 'Malayalam', 'Hindi'],
-          rating: 4.9,
-          reviews: 110,
-          pricePerDay: 2000,
-          bio: 'Born in Alleppey, offering authentic canoe experiences, spice tours, and village cooking workshops.',
-          profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300',
-          verified: true,
-          email: 'devika.kerala@darshana.com',
-          phone: '+91 98765 43213'
-        }
-      ]);
+      console.warn('Error fetching guides:', err);
       setError('');
     } finally {
       setLoading(false);
@@ -167,8 +81,13 @@ const GuideListing = () => {
 
     setContactLoading(true);
     try {
-      // Simulate sending message - in production, this would call your API
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await submitGuideRequest(
+        selectedGuide._id,
+        'contact_inquiry',
+        contactMessage,
+        localStorage.getItem('token') || '',
+        { name: selectedGuide.name, email: selectedGuide.email }
+      );
       
       setContactSuccess(true);
       setContactMessage('');
@@ -177,7 +96,7 @@ const GuideListing = () => {
       setTimeout(() => {
         setContactSuccess(false);
         setSelectedGuide(null);
-      }, 3000);
+      }, 2500);
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message. Please try again.');
