@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Camera, 
   Upload, 
@@ -12,11 +12,10 @@ import {
   Compass, 
   Info, 
   CheckCircle2, 
-  Layers, 
   BookOpen, 
-  Share2, 
   ArrowRight,
-  AlertCircle
+  AlertCircle,
+  Image as ImageIcon
 } from 'lucide-react';
 import { analyzeMonumentPhoto, CURATED_MONUMENTS_DATA } from '../services/monumentScanApi';
 import type { MonumentResult } from '../types/arGuide';
@@ -24,7 +23,8 @@ import type { MonumentResult } from '../types/arGuide';
 export const ARGuide: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const nativeCameraInputRef = useRef<HTMLInputElement | null>(null);
 
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -32,33 +32,83 @@ export const ARGuide: React.FC = () => {
   const [monumentResult, setMonumentResult] = useState<MonumentResult | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isRequestingCamera, setIsRequestingCamera] = useState(false);
   const [activeTab, setActiveTab] = useState<'history' | 'facts' | 'nearby'>('history');
   const [dismissNotice, setDismissNotice] = useState(false);
 
-  // Start Rear Camera
+  // Multi-tier resilient camera initializer (supports mobile rear, mobile front, laptop/desktop webcams)
   const startCamera = async () => {
+    setIsRequestingCamera(true);
+    setCameraError(null);
+
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setCameraError("Live camera stream is not supported in this browser. Use 'Take Photo' or 'Upload Photo' below.");
+      setCameraActive(false);
+      setIsRequestingCamera(false);
+      return;
+    }
+
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+
+    // Attempt 1: Ideal Rear Environment Camera (High-res on Mobile)
     try {
-      setCameraError(null);
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'environment', // Prefer rear camera for monuments
+          facingMode: { ideal: 'environment' },
           width: { ideal: 1280 },
           height: { ideal: 720 }
-        }
+        },
+        audio: false
       });
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-      setCameraActive(true);
-    } catch (err: any) {
-      console.warn("Camera access denied or unavailable:", err);
-      setCameraError("Camera access unavailable. Please enable permissions or upload a monument photo.");
-      setCameraActive(false);
+      attachStream(mediaStream);
+      return;
+    } catch (e1) {
+      console.warn("Attempt 1 (environment ideal) failed, trying fallback...", e1);
     }
+
+    // Attempt 2: Basic environment string constraint
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false
+      });
+      attachStream(mediaStream);
+      return;
+    } catch (e2) {
+      console.warn("Attempt 2 (facingMode environment) failed, trying generic video...", e2);
+    }
+
+    // Attempt 3: Generic video device (works on laptops/desktops with webcam & all mobile devices)
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false
+      });
+      attachStream(mediaStream);
+      return;
+    } catch (err: any) {
+      console.warn("All live camera attempts failed:", err);
+      let userMsg = "Camera access unavailable. Tap 'Enable Camera' or use 'Take Photo' below.";
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        userMsg = "Camera permission was denied in your browser. Tap 'Allow Camera' to grant access, or snap a photo directly below.";
+      }
+      setCameraError(userMsg);
+      setCameraActive(false);
+      setIsRequestingCamera(false);
+    }
+  };
+
+  const attachStream = (mediaStream: MediaStream) => {
+    setStream(mediaStream);
+    if (videoRef.current) {
+      videoRef.current.srcObject = mediaStream;
+      videoRef.current.play().catch(() => {});
+    }
+    setCameraActive(true);
+    setCameraError(null);
+    setIsRequestingCamera(false);
   };
 
   const stopCamera = () => {
@@ -94,8 +144,8 @@ export const ARGuide: React.FC = () => {
     await processMonumentScan(dataUrl);
   };
 
-  // Upload image from file input
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload or native camera file handler
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -133,7 +183,6 @@ export const ARGuide: React.FC = () => {
       setMonumentResult(result);
     } catch (err) {
       console.error("Monument scan failed:", err);
-      // Fallback
       setMonumentResult(CURATED_MONUMENTS_DATA['taj mahal']);
     } finally {
       setIsScanning(false);
@@ -151,7 +200,7 @@ export const ARGuide: React.FC = () => {
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
       {/* Header Banner */}
       <div className="max-w-6xl mx-auto px-4 pt-24 pb-6 text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-300 text-xs font-semibold">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-300 text-xs font-semibold">
           <Sparkles size={13} className="text-amber-400" />
           <span>AR Heritage Lens & Monument Identifier</span>
         </div>
@@ -198,10 +247,10 @@ export const ARGuide: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2 bg-slate-950/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium text-amber-300">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                    <span>{cameraActive ? 'AR Scanner Active' : 'Image Ready'}</span>
+                    <span>{cameraActive ? 'AR Scanner Active' : 'Camera Ready'}</span>
                   </div>
                   <div className="text-[11px] font-mono text-slate-400 bg-slate-950/70 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
-                    REAR LENS 1.0X
+                    LENS 1.0X
                   </div>
                 </div>
 
@@ -223,7 +272,7 @@ export const ARGuide: React.FC = () => {
                   )}
 
                   {!isScanning && (
-                    <span className="text-[11px] text-amber-200/80 font-medium px-2 py-1 bg-slate-950/60 rounded-md">
+                    <span className="text-[11px] text-amber-200/80 font-medium px-2.5 py-1 bg-slate-950/70 rounded-md">
                       Align Monument in Frame
                     </span>
                   )}
@@ -237,23 +286,47 @@ export const ARGuide: React.FC = () => {
                 </div>
               </div>
 
-              {/* Camera Error Fallback Message */}
+              {/* Camera Access Fallback Box */}
               {cameraError && !capturedImage && (
-                <div className="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 text-center space-y-3">
-                  <AlertCircle size={36} className="text-amber-400" />
-                  <p className="text-sm text-slate-300 max-w-sm leading-relaxed">{cameraError}</p>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer shadow-lg"
-                  >
-                    <Upload size={14} /> Upload Monument Photo
-                  </button>
+                <div className="absolute inset-0 bg-slate-950/92 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 z-20">
+                  <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+                    <Camera size={28} className="text-amber-400" />
+                  </div>
+                  <div className="space-y-1 max-w-md">
+                    <h3 className="text-base font-bold text-white">Enable Camera Access</h3>
+                    <p className="text-xs text-slate-300 leading-relaxed">{cameraError}</p>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                    <button
+                      onClick={startCamera}
+                      disabled={isRequestingCamera}
+                      className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 text-xs font-black rounded-xl transition flex items-center gap-2 cursor-pointer shadow-lg"
+                    >
+                      <RefreshCw size={14} className={isRequestingCamera ? 'animate-spin' : ''} />
+                      <span>{isRequestingCamera ? 'Requesting...' : 'Allow Camera'}</span>
+                    </button>
+                    <button
+                      onClick={() => nativeCameraInputRef.current?.click()}
+                      className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer shadow-md"
+                    >
+                      <Camera size={14} className="text-amber-400" />
+                      <span>Take Photo</span>
+                    </button>
+                    <button
+                      onClick={() => galleryInputRef.current?.click()}
+                      className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer"
+                    >
+                      <Upload size={14} />
+                      <span>Upload Photo</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* SCANNER CONTROL BAR */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            {/* SCANNER CONTROLS */}
+            <div className="flex flex-wrap items-center justify-center gap-3">
               {cameraActive && (
                 <button
                   onClick={handleCaptureFrame}
@@ -265,25 +338,43 @@ export const ARGuide: React.FC = () => {
                 </button>
               )}
 
-              {/* Upload Alternative */}
+              {/* Direct Phone Camera Snap (Mobile Native Camera) */}
               <input
-                ref={fileInputRef}
+                ref={nativeCameraInputRef}
                 type="file"
                 accept="image/*"
-                onChange={handleFileUpload}
+                capture="environment"
+                onChange={handleFileChange}
                 className="hidden"
               />
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => nativeCameraInputRef.current?.click()}
                 disabled={isScanning}
-                className="w-full sm:w-auto px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold text-xs rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 sm:flex-initial px-6 py-3.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-bold text-xs rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Upload size={16} className="text-amber-400" />
+                <Camera size={16} />
+                <span>Snap with Phone Camera</span>
+              </button>
+
+              {/* Upload From Gallery */}
+              <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <button
+                onClick={() => galleryInputRef.current?.click()}
+                disabled={isScanning}
+                className="flex-1 sm:flex-initial px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold text-xs rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <ImageIcon size={16} className="text-slate-400" />
                 <span>Upload From Gallery</span>
               </button>
             </div>
 
-            {/* QUICK PRESET SELECTOR */}
+            {/* QUICK PRESET DEMO SELECTOR */}
             <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-5 space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
