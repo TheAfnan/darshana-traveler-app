@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import Map from '../components/Map';
+import FestivalMap from '../components/FestivalMap';
 import { NATIONAL_FESTIVALS_59 } from '../data/nationalFestivalCalendar';
 
 // --- Haversine Distance Formula in Kilometers ---
@@ -1291,13 +1291,18 @@ const Festivals = () => {
             )}
           </>
         ) : (
-          // --- MAP VIEW ---
+          // --- INTERACTIVE FESTIVAL MAP VIEW ---
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full h-[600px] rounded-3xl flex flex-col border border-stone-200 overflow-hidden shadow-2xl relative"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full"
           >
-            <Map location="India" />
+            <FestivalMap 
+              items={filteredCards as any}
+              onSelectItem={(card) => setSelectedCard(card as any)}
+              userCoords={userCoords}
+              userCityName={userCityName}
+            />
           </motion.div>
         )}
       </div>
