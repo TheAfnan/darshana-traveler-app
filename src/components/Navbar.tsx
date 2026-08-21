@@ -1,4 +1,16 @@
-import { Backpack, Calendar, Leaf, Menu, MoreVertical, Plane, Smile, User, X } from "lucide-react";
+import { 
+  Home, 
+  Sparkles, 
+  Smile, 
+  Plane, 
+  Building2, 
+  Calendar, 
+  Leaf, 
+  Compass, 
+  MoreVertical, 
+  Menu, 
+  X 
+} from "lucide-react";
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useRightSidebar } from "../hooks/useRightSidebar";
@@ -11,37 +23,37 @@ const Navbar: React.FC = () => {
   const location = useLocation();
 
   const navLinks = [
-    { name: "Home", path: "/", icon: Backpack },
-    { name: "AI Planner", path: "/planner", icon: Calendar },
+    { name: "Home", path: "/", icon: Home },
+    { name: "AI Planner", path: "/planner", icon: Sparkles },
     { name: "Mood AI", path: "/mood", icon: Smile },
     { name: "Travel Hub", path: "/travelhub", icon: Plane },
-    { name: "All Cities", path: "/cities", icon: MoreVertical },
-    { name: "Cultural Odyssey", path: "/festivals", icon: Leaf },
-    { name: "Eco Travel", path: "/sustainable", icon: User },
-    { name: "Local-Guides", path: "/guides", icon: X },
+    { name: "All Cities", path: "/cities", icon: Building2 },
+    { name: "Cultural Odyssey", path: "/festivals", icon: Calendar },
+    { name: "Eco Travel", path: "/sustainable", icon: Leaf },
+    { name: "Local Guides", path: "/guides", icon: Compass },
   ];
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md shadow-sm z-50 border-b border-slate-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-24">
+    <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md shadow-xs z-50 border-b border-slate-100">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20 sm:h-22">
           
           {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center gap-2 select-none group flex-shrink-0"
+            className="flex items-center gap-2 select-none group shrink-0"
           >
             {/* Logo Image */}
             <img 
               src={logoImage} 
               alt="DarShana Logo" 
-              className="h-24 w-auto object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500 flex-shrink-0"
+              className="h-16 sm:h-20 w-auto object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-300 shrink-0"
             />
             
             {/* Logo Text */}
-            <div className="text-xl sm:text-2xl font-extrabold font-serif tracking-tight drop-shadow-lg whitespace-nowrap flex-shrink-0">
+            <div className="text-lg sm:text-2xl font-extrabold font-serif tracking-tight drop-shadow-xs whitespace-nowrap shrink-0">
               <span className="bg-gradient-to-r from-orange-700 via-orange-600 to-amber-600 bg-clip-text text-transparent">
                 Dar
               </span>
@@ -52,8 +64,7 @@ const Navbar: React.FC = () => {
           </Link>
 
           {/* Desktop Menu */}
-
-          <div className="hidden md:flex items-center space-x-1 md:ml-6 lg:ml-10 text-xs">
+          <div className="hidden lg:flex items-center space-x-1 xl:space-x-1.5 text-xs whitespace-nowrap">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const active = isActive(link.path);
@@ -61,46 +72,42 @@ const Navbar: React.FC = () => {
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`group relative px-3 py-2 rounded-full text-xs flex items-center gap-1.5 font-medium transition-all duration-200
-                    ${active ? "text-white bg-gradient-to-r from-orange-500 to-orange-600 shadow-md" : "text-slate-700 hover:bg-orange-50 hover:text-orange-700"}
-                    hover:scale-105 focus:scale-105
+                  className={`group relative px-2.5 py-1.5 xl:px-3 xl:py-2 rounded-full text-[12px] xl:text-[13px] flex items-center gap-1.5 font-medium transition-all duration-200 whitespace-nowrap shrink-0
+                    ${active ? "text-white bg-gradient-to-r from-orange-500 to-orange-600 shadow-xs font-semibold" : "text-slate-700 hover:bg-orange-50/80 hover:text-orange-700"}
                   `}
-                  style={{ overflow: 'hidden' }}
                 >
-                  {Icon && <Icon size={16} className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:scale-110" />}
-                  <span className="relative z-10">{link.name}</span>
+                  {Icon && <Icon size={14} className="shrink-0 transition-transform duration-200 group-hover:scale-110" />}
+                  <span className="whitespace-nowrap">{link.name}</span>
                 </Link>
               );
             })}
 
             {/* CTA + Kebab Menu */}
-            <div className="ml-4 flex items-center gap-3">
+            <div className="ml-2 xl:ml-3 flex items-center gap-2 shrink-0">
               <Link
                 to="/booking"
-                className={`group relative px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200
-                  ${isActive('/booking') ? 'text-white bg-gradient-to-r from-emerald-600 to-teal-600 shadow-md' : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-700'}
-                  hover:scale-105 focus:scale-105
+                className={`group relative px-3.5 py-1.5 xl:px-4 xl:py-2 rounded-full text-[12px] xl:text-[13px] font-semibold transition-all duration-200 whitespace-nowrap shrink-0
+                  ${isActive('/booking') ? 'text-white bg-gradient-to-r from-emerald-600 to-teal-600 shadow-xs' : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200/60'}
                 `}
-                style={{ overflow: 'hidden' }}
               >
-                <span className="relative z-10">Book Trip</span>
+                <span className="whitespace-nowrap">Book Trip</span>
               </Link>
               
               {/* Kebab Menu (3-dot) */}
               <button
                 onClick={openSidebar}
-                className="p-2 text-slate-600 hover:text-orange-600 hover:bg-orange-100/50 rounded-full transition-all duration-300 hover:scale-110"
+                className="p-2 text-slate-600 hover:text-orange-600 hover:bg-orange-100/50 rounded-full transition-all duration-200 shrink-0"
                 title="More options"
               >
-                <MoreVertical size={20} />
+                <MoreVertical size={18} />
               </button>
             </div>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile / Tablet Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 text-gray-700 hover:text-orange-600"
+            className="lg:hidden p-2 text-gray-700 hover:text-orange-600"
             aria-label="Toggle menu"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -110,7 +117,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white/95 backdrop-blur-lg border-t border-white/20 shadow-xl">
+        <div className="lg:hidden bg-white/95 backdrop-blur-lg border-t border-white/20 shadow-xl">
           <div className="px-4 py-4 space-y-2">
             {navLinks.map((link) => {
               const Icon = link.icon;
