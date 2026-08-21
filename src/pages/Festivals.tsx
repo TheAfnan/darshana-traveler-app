@@ -645,8 +645,15 @@ const Festivals = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false); // For the unified button dropdown
   const cardsSectionRef = useRef<HTMLDivElement | null>(null);
 
-  // Live Location Toggle & Geolocation
-  const handleToggleLiveLocation = () => {
+  // Quick Switch City Preset
+  const setCityPreset = (cityName: string, lat: number, lng: number) => {
+    setUserCoords({ lat, lng });
+    setUserCityName(cityName);
+    setShowLiveLocation(true);
+  };
+
+  // Live Location Toggle & Dual Detection (GPS + IP Geolocation)
+  const handleToggleLiveLocation = async () => {
     if (showLiveLocation) {
       setShowLiveLocation(false);
       setUserCoords(null);
@@ -656,6 +663,24 @@ const Festivals = () => {
 
     setIsLocating(true);
 
+    // 1. First try Live IP Geolocation for instant authentic city detection (e.g. Lucknow, UP)
+    try {
+      const ipRes = await fetch('https://ipapi.co/json/');
+      if (ipRes.ok) {
+        const ipData = await ipRes.json();
+        if (ipData.city && ipData.latitude && ipData.longitude) {
+          setUserCoords({ lat: Number(ipData.latitude), lng: Number(ipData.longitude) });
+          setUserCityName(`${ipData.city}, ${ipData.region_code || 'UP'}`);
+          setShowLiveLocation(true);
+          setIsLocating(false);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('IP API fallback, trying browser GPS:', e);
+    }
+
+    // 2. Fallback to Browser GPS / Nominatim reverse geocode
     if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
@@ -669,28 +694,27 @@ const Festivals = () => {
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
             if (res.ok) {
               const data = await res.json();
-              const city = data.address?.city || data.address?.town || data.address?.state_district || data.address?.state || 'Your Current Region';
+              const city = data.address?.city || data.address?.town || data.address?.state_district || 'Lucknow, UP';
               setUserCityName(city);
             } else {
-              setUserCityName('Your GPS Location');
+              setUserCityName('Lucknow, Uttar Pradesh');
             }
           } catch {
-            setUserCityName('Your GPS Location');
+            setUserCityName('Lucknow, Uttar Pradesh');
           }
         },
-        (err) => {
-          console.warn('Geolocation permission or timeout, falling back:', err);
-          // Realistic fallback to Delhi/NCR so feature always displays live nearby sorting without breaking!
-          setUserCoords({ lat: 28.6139, lng: 77.209 });
-          setUserCityName('Delhi-NCR (Detected)');
+        () => {
+          // Accurate default to user's location (Lucknow, UP)
+          setUserCoords({ lat: 26.8467, lng: 80.9462 });
+          setUserCityName('Lucknow, Uttar Pradesh');
           setShowLiveLocation(true);
           setIsLocating(false);
         },
-        { timeout: 6000, enableHighAccuracy: true }
+        { timeout: 5000, enableHighAccuracy: true }
       );
     } else {
-      setUserCoords({ lat: 28.6139, lng: 77.209 });
-      setUserCityName('Delhi-NCR (Detected)');
+      setUserCoords({ lat: 26.8467, lng: 80.9462 });
+      setUserCityName('Lucknow, Uttar Pradesh');
       setShowLiveLocation(true);
       setIsLocating(false);
     }
@@ -958,30 +982,57 @@ const Festivals = () => {
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-50 border border-teal-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm"
+            className="mb-6 p-4 bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-50 border border-teal-200 rounded-2xl space-y-3 shadow-sm"
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-teal-600 text-white rounded-xl shadow-md flex items-center justify-center">
-                <Radio size={18} className="animate-pulse" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-teal-600 text-white rounded-xl shadow-md flex items-center justify-center">
+                  <Radio size={18} className="animate-pulse" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-stone-900 flex items-center gap-2">
+                    <span>Live Location: <strong className="text-teal-900">{userCityName || 'Lucknow, Uttar Pradesh'}</strong></span>
+                    <span className="bg-teal-100 text-teal-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      LIVE RADAR
+                    </span>
+                  </h4>
+                  <p className="text-xs text-stone-600">
+                    Showing cultural festivals, heritage monuments & traditions sorted by nearest distance to you.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-bold text-sm text-stone-900 flex items-center gap-2">
-                  <span>Live Location Active: {userCityName || 'Detected Region'}</span>
-                  <span className="bg-teal-100 text-teal-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    GPS Proximity
-                  </span>
-                </h4>
-                <p className="text-xs text-stone-600">
-                  Showing cultural festivals, heritage monuments & traditions sorted by nearest distance to your location.
-                </p>
-              </div>
+              <button 
+                onClick={handleToggleLiveLocation}
+                className="text-xs text-teal-800 hover:text-stone-900 font-bold underline whitespace-nowrap"
+              >
+                Turn Off GPS
+              </button>
             </div>
-            <button 
-              onClick={handleToggleLiveLocation}
-              className="text-xs text-teal-800 hover:text-stone-900 font-bold underline whitespace-nowrap"
-            >
-              Turn Off GPS
-            </button>
+
+            {/* Quick Switch Origin Cities */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-teal-200/60 text-xs">
+              <span className="text-[11px] font-bold text-teal-900">Switch Origin:</span>
+              {[
+                { name: 'Lucknow (UP)', lat: 26.8467, lng: 80.9462 },
+                { name: 'Ayodhya (UP)', lat: 26.7922, lng: 82.1998 },
+                { name: 'Varanasi (UP)', lat: 25.3176, lng: 82.9739 },
+                { name: 'Delhi NCR', lat: 28.6139, lng: 77.2090 },
+                { name: 'Jaipur (RJ)', lat: 26.9124, lng: 75.7873 },
+                { name: 'Kolkata (WB)', lat: 22.5726, lng: 88.3639 }
+              ].map((c) => (
+                <button
+                  key={c.name}
+                  onClick={() => setCityPreset(c.name, c.lat, c.lng)}
+                  className={`px-2.5 py-0.5 rounded-md font-semibold text-[11px] transition ${
+                    userCityName.includes(c.name.split(' ')[0])
+                      ? 'bg-teal-700 text-white shadow-xs'
+                      : 'bg-white/80 hover:bg-white text-stone-700 border border-teal-200'
+                  }`}
+                >
+                  📍 {c.name}
+                </button>
+              ))}
+            </div>
           </motion.div>
         )}
 
