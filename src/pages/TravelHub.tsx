@@ -5,14 +5,16 @@ import {
   Star, 
   Compass, 
   ArrowRight, 
-  CheckCircle2
+  CheckCircle2,
+  Play,
+  MapPin,
+  ChevronDown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import DestinationsSection from '../components/travelhub/DestinationsSection';
 import ReviewsSection from '../components/travelhub/ReviewsSection';
 import TourPackagesSection, { TourCategory } from '../components/travelhub/TourPackagesSection';
-import TravelCategoriesSection from '../components/travelhub/TravelCategoriesSection';
 
 const TravelHub: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<TourCategory>('all');
@@ -23,143 +25,117 @@ const TravelHub: React.FC = () => {
 
   const handleSelectCategory = (category: TourCategory) => {
     setActiveCategory(category);
-  };
-
-  const handleQuickTagClick = (category: TourCategory) => {
-    setActiveCategory(category);
     scrollToPackages();
   };
 
   return (
     <div className="min-h-screen relative overflow-x-hidden bg-[#faf8f5] text-stone-800 font-sans">
       
-      {/* 1. EDITORIAL TRAVEL HUB HERO (Clean, Premium, High-End Layout) */}
-      <div className="relative pt-10 pb-16 px-4 sm:px-6 lg:px-8 border-b border-stone-200/80 bg-gradient-to-b from-amber-50/50 via-stone-50/30 to-[#faf8f5]">
+      {/* 1. CINEMATIC VIDEO HERO SECTION (Like travelhubindia.com) */}
+      <div className="relative min-h-[580px] lg:min-h-[640px] flex items-center justify-center overflow-hidden bg-slate-950 text-white">
         
-        {/* Subtle Ambient Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-[radial-gradient(ellipse_at_top,_rgba(245,158,11,0.08),_transparent_70%)] pointer-events-none" />
+        {/* Background Looping Video */}
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="absolute inset-0 w-full h-full object-cover opacity-60 scale-105 transition-opacity duration-1000"
+          poster="https://images.unsplash.com/photo-1548013146-72479768bbaa?w=1600&auto=format&fit=crop&q=80"
+        >
+          <source src="https://cdn.pixabay.com/video/2020/05/25/40149-425482329_large.mp4" type="video/mp4" />
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-beautiful-river-flowing-through-the-forest-42468-large.mp4" type="video/mp4" />
+        </video>
 
-        <div className="relative max-w-6xl mx-auto space-y-8">
+        {/* Cinematic Dark Gradient Vignette */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-slate-950" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_20%,_rgba(0,0,0,0.6)_100%)]" />
+
+        {/* Hero Content Container */}
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 pt-16 pb-16">
           
-          {/* Top Pill & Trust Stamp */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <div className="inline-flex items-center gap-2 bg-amber-100/70 border border-amber-300/80 px-3.5 py-1.5 rounded-full shadow-2xs">
-              <Sparkles size={13} className="text-amber-800" />
-              <span className="text-[11px] font-bold uppercase tracking-widest text-amber-900">
-                DarShana Curated Indian Travel Hub
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 text-xs text-stone-500 font-medium">
-              <span className="flex items-center gap-1">
-                <Star size={13} className="text-amber-500 fill-amber-500" />
-                <strong className="text-stone-800 font-bold">4.95 / 5</strong> rating
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <ShieldCheck size={14} className="text-emerald-700" />
-                Verified Local Scholars
-              </span>
-            </div>
+          {/* Top Golden Badge */}
+          <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/40 px-4 py-1.5 rounded-full backdrop-blur-md shadow-lg">
+            <Sparkles size={13} className="text-amber-300" />
+            <span className="text-xs font-bold uppercase tracking-widest text-amber-200">
+              EXTRAORDINARY INDIAN JOURNEYS
+            </span>
           </div>
 
-          {/* Editorial Headline & Value Proposition */}
-          <div className="space-y-4 max-w-4xl">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif text-stone-900 tracking-tight leading-[1.15]">
-              Experience India with Curated Expeditions & Bespoke Stays
-            </h1>
-            <p className="text-stone-600 text-base sm:text-lg leading-relaxed font-normal max-w-3xl">
-              From dawn boat rituals on the sacred Ganga to Dal Lake luxury houseboats and royal Rajput desert camps — explore authentic cultural tour packages handcrafted with boutique heritage stays, private AC transit, and certified historians.
-            </p>
-          </div>
+          {/* Main Cinematic Title */}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold font-serif text-white tracking-tight leading-[1.12] drop-shadow-md">
+            Discover India with <span className="text-amber-400">DarShana</span> Travel Hub
+          </h1>
 
-          {/* Interactive Quick-Theme Search Card */}
-          <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-xl shadow-stone-200/50 border border-stone-200/80 space-y-4">
-            
-            {/* Quick Filter Tags */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-              <span className="font-bold text-stone-400 uppercase tracking-wider shrink-0 text-[11px]">Popular Circuits:</span>
+          {/* Subtitle */}
+          <p className="text-stone-200 text-base sm:text-lg max-w-2xl mx-auto font-light leading-relaxed drop-shadow-sm">
+            Handcrafted cultural itineraries, boutique royal stays, private AC transit, and authentic culinary trails across India.
+          </p>
+
+          {/* Floating Glassmorphism Theme Bar */}
+          <div className="pt-4 max-w-4xl mx-auto">
+            <div className="bg-black/40 backdrop-blur-md border border-white/20 p-2 sm:p-2.5 rounded-2xl sm:rounded-full shadow-2xl flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
               {[
-                { label: '🏔️ Kashmir Houseboats', cat: 'himalayan' as TourCategory },
-                { label: '👑 Rajasthan Palaces', cat: 'royal' as TourCategory },
-                { label: '🪔 Varanasi & Ayodhya', cat: 'spiritual' as TourCategory },
-                { label: '🌿 Kerala Ayurveda', cat: 'wellness' as TourCategory },
-                { label: '🐅 Jim Corbett Safari', cat: 'family' as TourCategory },
-                { label: '💻 Goa Nomad Co-Living', cat: 'workcation' as TourCategory }
-              ].map((item) => (
+                { id: 'all', label: 'All Expeditions' },
+                { id: 'royal', label: '👑 Royal Heritage' },
+                { id: 'spiritual', label: '🪔 Sacred Circuits' },
+                { id: 'himalayan', label: '🏔️ Himalayan' },
+                { id: 'wellness', label: '🌿 Wellness' },
+                { id: 'workcation', label: '💻 Workcation' },
+                { id: 'family', label: '🐅 Wildlife & Family' }
+              ].map((tab) => (
                 <button
-                  key={item.label}
-                  onClick={() => handleQuickTagClick(item.cat)}
-                  className={`px-3 py-1.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
-                    activeCategory === item.cat
-                      ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                      : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200'
+                  key={tab.id}
+                  onClick={() => handleSelectCategory(tab.id as TourCategory)}
+                  className={`px-3.5 py-2 rounded-xl sm:rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                    activeCategory === tab.id
+                      ? 'bg-amber-500 text-slate-950 font-bold shadow-md scale-105'
+                      : 'text-stone-200 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  {item.label}
+                  {tab.label}
                 </button>
               ))}
             </div>
-
-            {/* Quick Action Navigation Buttons */}
-            <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3 text-xs text-stone-500">
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 size={14} className="text-emerald-600" /> All-Inclusive INR Pricing
-                </span>
-                <span className="hidden sm:inline">•</span>
-                <span className="hidden sm:flex items-center gap-1.5">
-                  <CheckCircle2 size={14} className="text-emerald-600" /> Free Date Rescheduling
-                </span>
-                <span className="hidden sm:inline">•</span>
-                <span className="hidden sm:flex items-center gap-1.5">
-                  <CheckCircle2 size={14} className="text-emerald-600" /> 24/7 YatraSahayak SOS
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Link
-                  to="/planner"
-                  className="px-4 py-2.5 rounded-xl border border-stone-300 hover:bg-stone-50 text-stone-800 text-xs font-bold transition flex items-center gap-1.5"
-                >
-                  <Compass size={14} className="text-amber-700" />
-                  <span>Custom AI Planner</span>
-                </Link>
-
-                <button
-                  onClick={scrollToPackages}
-                  className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span>Browse 12 Packages</span>
-                  <ArrowRight size={14} />
-                </button>
-              </div>
-            </div>
-
           </div>
 
+          {/* Trust Strip */}
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-4 text-xs text-stone-300">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck size={15} className="text-amber-400" /> 100% Verified Boutique Stays
+            </span>
+            <span className="hidden sm:inline">•</span>
+            <span className="flex items-center gap-1.5">
+              <Star size={14} className="text-amber-400 fill-amber-400" /> 4.95/5 Traveler Rating
+            </span>
+            <span className="hidden sm:inline">•</span>
+            <span className="flex items-center gap-1.5">
+              <CheckCircle2 size={15} className="text-emerald-400" /> Free Date Rescheduling
+            </span>
+          </div>
+
+        </div>
+
+        {/* Bottom Scroll Indicator */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-stone-400 flex flex-col items-center gap-1 opacity-70 hover:opacity-100 transition cursor-pointer" onClick={scrollToPackages}>
+          <span className="text-[10px] uppercase tracking-widest font-semibold text-stone-300">Explore Packages</span>
+          <ChevronDown size={16} className="animate-bounce text-amber-400" />
         </div>
       </div>
 
       {/* 2. MAIN FOCUSED CONTENT SECTIONS */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-20 space-y-16">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 space-y-16">
         
-        {/* 1. Travel Themes with Active Filter State */}
-        <TravelCategoriesSection 
-          activeCategory={activeCategory}
-          onSelectCategory={handleSelectCategory}
-        />
-        
-        {/* 2. Curated Tour Packages with Real Booking Engine & Reactive Filtering */}
+        {/* 1. Curated Tour Packages with Real Booking Engine & Reactive Filtering */}
         <TourPackagesSection 
           activeCategory={activeCategory}
           onSelectCategory={setActiveCategory}
         />
 
-        {/* 3. Popular Destinations */}
+        {/* 2. Popular Destinations */}
         <DestinationsSection />
 
-        {/* 4. Verified Traveler Reviews */}
+        {/* 3. Verified Traveler Reviews */}
         <ReviewsSection />
 
       </div>
