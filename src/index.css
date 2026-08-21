@@ -1,0 +1,299 @@
+/* TravelHub premium styles */
+@import url('./styles/travelhub.css');
+
+/* ----------------------------------------
+  Tailwind Base Layers
+----------------------------------------- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ----------------------------------------
+   Root Theme Variables
+----------------------------------------- */
+:root {
+  --text-color: #1e1e1e;
+  --bg-color: #ffffff;
+  --accent: #6366f1;
+
+  /* TravelHub - Professional Palette */
+  --color-primary: #06b6d4; /* cyan */
+  --color-primary-600: #0891b2;
+  --color-secondary: #06d6a0; /* mint/teal */
+  --color-accent: #fb923c; /* warm orange */
+  --color-bg-hero: #071029; /* deep midnight */
+  --color-surface: rgba(255,255,255,0.04);
+  --color-glass: rgba(255,255,255,0.06);
+  --text-on-dark: #e6eef4;
+  --muted: #94a3b8;
+  --glass-gradient: linear-gradient(45deg, rgba(6,182,212,0.08), rgba(249,115,22,0.06));
+
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+
+  line-height: 1.5;
+  font-weight: 400;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ----------------------------------------
+   Dark mode
+----------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: #ffffffd9;
+    --bg-color: #18181b;
+    --accent: #818cf8;
+    /* ensure palette works in dark mode */
+    --color-bg-hero: #041021;
+    --text-on-dark: #e6eef4;
+  }
+}
+
+/* ----------------------------------------
+   Global Styles
+----------------------------------------- */
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* Hard-reset any stray global pseudo overlays (fixes random circles overlaying pages) */
+body::before,
+body::after,
+#root::before,
+#root::after {
+  content: none !important;
+  background: none !important;
+}
+
+/* Links */
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+  color: #4f46e5;
+}
+
+/* Headings */
+h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Buttons (Optional — Tailwind already covers this but keeping styling) */
+button {
+  padding: 0.6em 1.2em;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  background: #e5e7eb;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+button:hover {
+  background: #d4d4d8;
+  border-color: #6366f1;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 3px solid #6366f1;
+  outline-offset: 3px;
+}
+
+/* ----------------------------------------
+   Cross-browser Compatibility Helpers
+----------------------------------------- */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.text-size-adjust-auto {
+  -webkit-text-size-adjust: auto;
+  -moz-text-size-adjust: auto;
+  -ms-text-size-adjust: auto;
+  text-size-adjust: auto;
+}
+
+/* Ensure backdrop-filter works across supported browsers */
+@supports ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
+  .backdrop-blur-fix {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* ----------------------------------------
+   Specific Compatibility Fixes
+----------------------------------------- */
+
+/* Fix for Leaflet SVG user-select */
+.leaflet-overlay-pane svg {
+  user-select: none;
+}
+
+/* Fix for text-size-adjust */
+html,
+:host {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Fix for backdrop-filter in Tailwind utilities */
+.backdrop-blur-md {
+  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+}
+
+/* Fix for Leaflet zoom in Firefox */
+.leaflet-oldie .leaflet-popup-content-wrapper {
+  zoom: 1;
+}
+
+/* Fix for Leaflet user-drag */
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+/* ----------------------------------------
+   Premium Hero Animations
+----------------------------------------- */
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+/* Glow effect for logo */
+@keyframes glowPulse {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(251, 146, 60, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(251, 146, 60, 0.8);
+  }
+}
+
+.animate-glow {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* Premium transitions */
+button, a, [role="button"] {
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Theme utility classes for quick styling */
+.bg-hero {
+  background: var(--color-bg-hero);
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  color: #fff;
+  border-radius: 0.75rem;
+  padding: 0.6rem 1.25rem;
+  font-weight: 600;
+}
+
+.glass-card {
+  background: var(--color-glass);
+  border: 1px solid rgba(255,255,255,0.08);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.gradient-accent {
+  background: var(--glass-gradient);
+}
+
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.text-accent {
+  color: var(--color-accent) !important;
+}
+
+/* ----------------------------------------
+   Floating Animation for Hero Images
+----------------------------------------- */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-15px) rotate(2deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(-1deg);
+  }
+  75% {
+    transform: translateY(-20px) rotate(1deg);
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-12px) scale(1.02);
+  }
+}
+
+@keyframes float-reverse {
+  0%, 100% {
+    transform: translateY(-15px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(0px) rotate(2deg);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 7s ease-in-out infinite;
+}
