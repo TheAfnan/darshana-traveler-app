@@ -192,17 +192,7 @@ const CulturalPlanner: React.FC = () => {
       <div className="max-w-5xl mx-auto space-y-8">
 
         {/* Page Header */}
-        <div className="text-center space-y-3">
-          <a
-            href="https://huggingface.co/datasets/Mohd12312/darshana-cultural-heritage-dataset"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-3.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-950 rounded-full text-xs font-semibold transition-all hover:scale-105 shadow-xs cursor-pointer group"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Hugging Face AI Dataset: <strong className="font-mono text-amber-900 group-hover:underline">Mohd12312/darshana-cultural-heritage-dataset</strong></span>
-            <span className="text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-mono font-bold">LIVE ↗</span>
-          </a>
+        <div className="text-center space-y-2">
           <h1 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900">
             Cultural Journey Planner
           </h1>
