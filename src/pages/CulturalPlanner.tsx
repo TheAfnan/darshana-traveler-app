@@ -29,6 +29,7 @@ import jsPDF from 'jspdf';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getCulturalTripPlan, MONTHLY_EVENT_RADAR, type CulturalPlan } from '../data/culturalTripData';
+import { getDynamicCulturalPlan } from '../services/aiPlannerService';
 import { fetchTripAdvisorSpots, type TripAdvisorSpot } from '../services/tripAdvisorApi';
 import { fetchLiveTrainOptions, type LiveTrainOption } from '../services/irctcRapidApi';
 
@@ -58,23 +59,26 @@ const CulturalPlanner: React.FC = () => {
     const dest = searchParams.get('to') || toCity;
     const origin = searchParams.get('from') || fromCity;
     const date = searchParams.get('date') || travelDate;
-    setPlan(getCulturalTripPlan(dest, date, origin));
+    
+    getDynamicCulturalPlan(dest, date, origin).then(dynamicPlan => {
+      setPlan(dynamicPlan);
+    });
 
     // Fetch TripAdvisor & IRCTC RapidAPIs
     fetchTripAdvisorSpots(dest).then(spots => setTripAdvisorSpots(spots));
     fetchLiveTrainOptions(origin, dest).then(trains => setLiveTrains(trains));
   }, [searchParams, toCity, fromCity]);
 
-  const handlePlanSearch = () => {
+  const handlePlanSearch = async () => {
     if (!toCity.trim()) return;
     setIsGenerating(true);
     fetchTripAdvisorSpots(toCity).then(spots => setTripAdvisorSpots(spots));
     fetchLiveTrainOptions(fromCity, toCity).then(trains => setLiveTrains(trains));
-    setTimeout(() => {
-      setPlan(getCulturalTripPlan(toCity, travelDate, fromCity));
-      setIsGenerating(false);
-      setSearchParams({ from: fromCity, to: toCity, date: travelDate });
-    }, 400);
+    
+    const newPlan = await getDynamicCulturalPlan(toCity, travelDate, fromCity);
+    setPlan(newPlan);
+    setIsGenerating(false);
+    setSearchParams({ from: fromCity, to: toCity, date: travelDate });
   };
 
   const handleDirectBookingSubmit = async (e: React.FormEvent) => {
