@@ -309,23 +309,25 @@ const CulturalPlanner: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
           {/* 1. Festivals */}
-          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3 flex flex-col justify-between">
+          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-4 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 pb-2.5 border-b border-stone-100">
                 <Calendar size={18} className="text-amber-600" />
                 <h4 className="font-bold text-sm text-slate-900">Festivals & Traditions</h4>
               </div>
-              <div className="space-y-3 mt-3">
+              <div className="space-y-3.5 mt-3">
                 {plan.festivals.map((f, i) => (
-                  <div key={i} className="space-y-1">
-                    <div className="flex justify-between items-baseline">
-                      <span className="font-semibold text-xs text-slate-900">{f.name}</span>
-                      <span className="text-[10px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-medium">{f.dates}</span>
+                  <div key={i} className="space-y-1.5 pb-3 border-b border-stone-100 last:border-0 last:pb-0">
+                    <div>
+                      <h5 className="font-bold text-xs text-slate-900 leading-snug">{f.name}</h5>
+                      <span className="inline-block mt-1 text-[10px] text-amber-800 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded font-semibold">
+                        🗓️ {f.dates}
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-600">{f.description}</p>
-                    <p className="text-[11px] text-amber-900/80 bg-stone-50 p-2 rounded-lg">
-                      <strong>Tip:</strong> {f.insiderTip}
-                    </p>
+                    <p className="text-xs text-slate-600 leading-relaxed">{f.description}</p>
+                    <div className="text-[11px] text-amber-900/90 bg-stone-50 p-2 rounded-lg leading-relaxed">
+                      💡 <strong>Tip:</strong> {f.insiderTip}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -334,21 +336,23 @@ const CulturalPlanner: React.FC = () => {
           </div>
 
           {/* 2. Hidden Gems */}
-          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3 flex flex-col justify-between">
+          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-4 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 pb-2.5 border-b border-stone-100">
                 <MapPin size={18} className="text-amber-600" />
                 <h4 className="font-bold text-sm text-slate-900">Local Hidden Gems</h4>
               </div>
-              <div className="space-y-3 mt-3">
+              <div className="space-y-3.5 mt-3">
                 {plan.hiddenGems.map((g, i) => (
-                  <div key={i} className="space-y-1">
-                    <div className="flex justify-between items-baseline">
-                      <span className="font-semibold text-xs text-slate-900">{g.title}</span>
-                      <span className="text-[10px] text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded">{g.category}</span>
+                  <div key={i} className="space-y-1.5 pb-3 border-b border-stone-100 last:border-0 last:pb-0">
+                    <div>
+                      <h5 className="font-bold text-xs text-slate-900 leading-snug">{g.title}</h5>
+                      <span className="inline-block mt-1 text-[10px] text-purple-700 bg-purple-50 border border-purple-200/60 px-2 py-0.5 rounded font-semibold">
+                        ✨ {g.category}
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-600">{g.description}</p>
-                    <span className="text-[11px] text-stone-400 block">📍 {g.location}</span>
+                    <p className="text-xs text-slate-600 leading-relaxed">{g.description}</p>
+                    <span className="text-[11px] text-stone-500 font-medium block">📍 {g.location}</span>
                   </div>
                 ))}
               </div>
@@ -359,7 +363,7 @@ const CulturalPlanner: React.FC = () => {
           </div>
 
           {/* 3. Food & Stays */}
-          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3 flex flex-col justify-between">
+          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-4 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 pb-2.5 border-b border-stone-100">
                 <Utensils size={18} className="text-amber-600" />
@@ -367,23 +371,28 @@ const CulturalPlanner: React.FC = () => {
               </div>
               <div className="space-y-3 mt-3">
                 {plan.seasonalFoods.slice(0, 2).map((food, i) => (
-                  <div key={i} className="space-y-0.5">
-                    <div className="flex justify-between items-baseline">
-                      <span className="font-semibold text-xs text-slate-900">{food.name}</span>
-                      <span className="text-[10px] text-slate-500 font-medium">{food.priceRange}</span>
+                  <div key={i} className="space-y-1 pb-2.5 border-b border-stone-100 last:border-0 last:pb-0">
+                    <div>
+                      <h5 className="font-bold text-xs text-slate-900 leading-snug">{food.name}</h5>
+                      <span className="inline-block mt-1 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded font-semibold">
+                        💰 {food.priceRange}
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-600">{food.description}</p>
-                    <span className="text-[10px] text-amber-800 font-medium block">📍 {food.famousSpot}</span>
+                    <p className="text-xs text-slate-600 leading-relaxed">{food.description}</p>
+                    <span className="text-[11px] text-amber-900 font-semibold block">📍 {food.famousSpot}</span>
                   </div>
                 ))}
 
                 {plan.budgetStays.slice(0, 1).map((stay, i) => (
                   <div key={i} className="pt-2 border-t border-stone-100 flex justify-between items-center">
                     <div>
-                      <span className="font-semibold text-xs text-slate-900 block">{stay.name}</span>
+                      <span className="font-bold text-xs text-slate-900 block">{stay.name}</span>
                       <span className="text-[10px] text-stone-500">{stay.type}</span>
                     </div>
-                    <span className="text-xs font-bold text-slate-900">₹{stay.pricePerNight}<span className="font-normal text-[10px] text-stone-400">/night</span></span>
+                    <div className="text-right">
+                      <span className="text-xs font-bold text-slate-900">₹{stay.pricePerNight}</span>
+                      <span className="font-normal text-[10px] text-stone-400 block">/night</span>
+                    </div>
                   </div>
                 ))}
               </div>
