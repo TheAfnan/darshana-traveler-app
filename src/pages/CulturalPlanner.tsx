@@ -22,6 +22,7 @@ import {
 import jsPDF from 'jspdf';
 import { getCulturalTripPlan, MONTHLY_EVENT_RADAR, type CulturalPlan } from '../data/culturalTripData';
 import { fetchTripAdvisorSpots, type TripAdvisorSpot } from '../services/tripAdvisorApi';
+import { fetchLiveTrainOptions, type LiveTrainOption } from '../services/irctcRapidApi';
 
 const CulturalPlanner: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,6 +33,7 @@ const CulturalPlanner: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [plan, setPlan] = useState<CulturalPlan>(() => getCulturalTripPlan(toCity, travelDate, fromCity));
   const [tripAdvisorSpots, setTripAdvisorSpots] = useState<TripAdvisorSpot[]>([]);
+  const [liveTrains, setLiveTrains] = useState<LiveTrainOption[]>([]);
 
   useEffect(() => {
     const dest = searchParams.get('to') || toCity;
@@ -39,16 +41,16 @@ const CulturalPlanner: React.FC = () => {
     const date = searchParams.get('date') || travelDate;
     setPlan(getCulturalTripPlan(dest, date, origin));
 
-    // Fetch TripAdvisor ratings
-    fetchTripAdvisorSpots(dest).then(spots => {
-      setTripAdvisorSpots(spots);
-    });
-  }, [searchParams, toCity]);
+    // Fetch TripAdvisor & IRCTC RapidAPIs
+    fetchTripAdvisorSpots(dest).then(spots => setTripAdvisorSpots(spots));
+    fetchLiveTrainOptions(origin, dest).then(trains => setLiveTrains(trains));
+  }, [searchParams, toCity, fromCity]);
 
   const handlePlanSearch = () => {
     if (!toCity.trim()) return;
     setIsGenerating(true);
     fetchTripAdvisorSpots(toCity).then(spots => setTripAdvisorSpots(spots));
+    fetchLiveTrainOptions(fromCity, toCity).then(trains => setLiveTrains(trains));
     setTimeout(() => {
       setPlan(getCulturalTripPlan(toCity, travelDate, fromCity));
       setIsGenerating(false);
@@ -425,6 +427,60 @@ const CulturalPlanner: React.FC = () => {
                   <span className="text-[10px] font-semibold text-emerald-800 pt-1 block">
                     🏆 {spot.rankingText}
                   </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* IRCTC Live Trains & Green Transit (Powered by RapidAPI) */}
+        {liveTrains.length > 0 && (
+          <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm space-y-3">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 pb-2.5 border-b border-stone-100">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 text-xs font-bold rounded-full flex items-center gap-1">
+                  🚆 IRCTC Live Rail Transit
+                </span>
+                <span className="text-xs text-slate-400 font-medium">• Live via RapidAPI</span>
+              </div>
+              <span className="text-[11px] text-slate-400">Direct Low-Emission Express Routes ({fromCity} ➔ {toCity})</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              {liveTrains.map((train, idx) => (
+                <div key={idx} className="bg-[#f8fafc] border border-slate-200/80 rounded-xl p-3.5 space-y-2 flex flex-col justify-between">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h5 className="font-bold text-xs text-slate-900">{train.trainName} (#{train.trainNumber})</h5>
+                      <span className="text-[10px] text-blue-700 font-semibold">{train.trainType} • Duration: {train.duration}</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                      -{train.co2SavedKg} kg CO2
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs text-slate-700 pt-1">
+                    <div>
+                      <span className="font-bold text-slate-900 block">{train.departureTime}</span>
+                      <span className="text-[10px] text-slate-400 font-medium">{train.fromStationCode} (Origin)</span>
+                    </div>
+                    <div className="flex-1 mx-3 border-t border-dashed border-slate-300 relative text-center">
+                      <span className="text-[9px] font-bold text-slate-400 bg-[#f8fafc] px-1 absolute -top-2 left-1/2 -translate-x-1/2 uppercase">Direct Rail</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-slate-900 block">{train.arrivalTime}</span>
+                      <span className="text-[10px] text-slate-400 font-medium">{train.toStationCode} (Dest)</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 pt-1 text-[10px] text-slate-500">
+                    <span>Available Classes:</span>
+                    {train.classes.map((cls, i) => (
+                      <span key={i} className="bg-white border border-slate-200 px-1.5 py-0.5 rounded font-bold text-slate-700">
+                        {cls}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
