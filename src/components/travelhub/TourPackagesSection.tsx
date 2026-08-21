@@ -17,6 +17,7 @@ import {
   Compass, 
   Utensils
 } from 'lucide-react';
+import nainitalLakeImg from '../../images/nainital-lake.jpg';
 
 export type TourCategory = 'all' | 'royal' | 'spiritual' | 'himalayan' | 'wellness' | 'workcation' | 'family';
 
@@ -579,7 +580,7 @@ export const PACKAGES_DATA: TourPackage[] = [
     pricePerPerson: 16400,
     rating: 4.89,
     reviewCount: 215,
-    image: 'https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=800&auto=format&fit=crop&q=80',
+    image: nainitalLakeImg,
     badge: 'Family Favorite',
     placesCovered: ['Nainital', 'Bhimtal', 'Pangot Bird Sanctuary', 'Jim Corbett National Park'],
     includes: [

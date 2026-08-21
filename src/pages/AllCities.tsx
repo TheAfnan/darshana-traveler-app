@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, MapPin, ArrowRight, Sparkles } from 'lucide-react';
 import lucknowRumiImg from '../images/lucknow-rumi-darwaza.jpg';
+import nainitalLakeImg from '../images/nainital-lake.jpg';
 
 interface CityItem {
   id: string;
@@ -42,7 +43,7 @@ const CITIES_DATA: CityItem[] = [
     region: 'North',
     isPopular: true,
     desc: 'Emerald crescent Naini Lake, Himalayan Naina Devi Shaktipeeth, and pine ridge walks.',
-    img: 'https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=800&auto=format&fit=crop&q=80',
+    img: nainitalLakeImg,
     tag: 'Lake District'
   },
   {

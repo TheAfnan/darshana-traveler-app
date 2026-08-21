@@ -1,5 +1,6 @@
 import React from 'react';
 import { CloudSun, MapPin, Star, ExternalLink, Sparkles } from 'lucide-react';
+import nainitalLakeImg from '../../images/nainital-lake.jpg';
 
 type DestinationCard = {
   id: string;
@@ -20,7 +21,7 @@ const popularDestinations: DestinationCard[] = [
     name: 'Nainital & Kumaon Lakes',
     region: 'Uttarakhand Himalayas',
     description: 'Emerald lake sailing, vintage colonial villas, and panoramic snow vistas of Nanda Devi.',
-    image: 'https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=800&auto=format&fit=crop&q=80',
+    image: nainitalLakeImg,
     weather: '18°C · Pleasant',
     mapLink: 'https://maps.app.goo.gl/9bN6tYn5N2G7b5V17',
     rating: 4.92,
