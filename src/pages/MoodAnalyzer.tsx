@@ -297,7 +297,7 @@ const MoodAnalyzer: React.FC = () => {
   const imagePreviewRef = useRef<HTMLImageElement | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const isDetectingRef = useRef(false);
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(true);
   const [aiStep, setAIStep] = useState<number>(0); // 0: input, 1: recommendations shown
   const [isPayingAI, setIsPayingAI] = useState(false);
   const [paidAI, setPaidAI] = useState(false);
@@ -309,9 +309,16 @@ const MoodAnalyzer: React.FC = () => {
   const [isAutoAnalyzing, setIsAutoAnalyzing] = useState(false);
   const [prefStep, setPrefStep] = useState(0);
   const [prefAnswers, setPrefAnswers] = useState<PreferenceAnswers>({});
-  const prefComplete = PREF_QUESTIONS.every((q) => Boolean(prefAnswers[q.id as keyof PreferenceAnswers]));
+  const prefComplete = true; // No longer blocked by multi-step questionnaires
   const [weatherByDest, setWeatherByDest] = useState<Record<string, WeatherSnapshot>>({});
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
+
+  // Automatically start camera on mount for AI mode
+  useEffect(() => {
+    if (mode === 'ai' && aiStep === 0 && !image && !result) {
+      setIsCameraOpen(true);
+    }
+  }, [mode, aiStep, image, result]);
 
   // Sync face count from detection hook
   useEffect(() => {
@@ -328,6 +335,45 @@ const MoodAnalyzer: React.FC = () => {
   const [adventure, setAdventure] = useState<number>(5);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [isPaying, setIsPaying] = useState(false);
+
+  // Quick 1-tap mood analyzer without typing
+  const analyzeWithDirectMood = useCallback((moodName: string, energyVal: number, socialVal: number, advVal: number, reason: string) => {
+    const matched = DESTINATIONS.filter(dest => {
+      const matchEnergy = energyVal >= dest.energy[0] && energyVal <= dest.energy[1];
+      const matchAdv = advVal >= dest.adventure[0] && advVal <= dest.adventure[1];
+      return matchEnergy || matchAdv;
+    }).slice(0, 3);
+
+    const recommendations = matched.length ? matched : DESTINATIONS.slice(0, 3);
+
+    const directResult: AIAnalysisResult = {
+      detectedMood: moodName,
+      confidence: 0.94,
+      emotions: { 
+        happy: energyVal > 6 ? 0.75 : 0.2, 
+        neutral: 0.2, 
+        sad: 0.02, 
+        surprised: 0.05, 
+        fear: 0.01, 
+        disgust: 0.01, 
+        angry: 0.01 
+      },
+      reasoning: reason || `AI detected your ${moodName} vibe (${energyVal}/10 Energy, ${advVal}/10 Adventure). Matching you with authentic Indian cultural destinations with live travel forecast.`,
+      energyLevel: energyVal,
+      socialScore: socialVal,
+      adventureScore: advVal,
+      recommendations,
+    };
+
+    setResult(directResult);
+    setSelectedDestinationIdx(0);
+    setAIStep(1);
+    setPaidAI(false);
+    setIsPayingAI(false);
+    setIsAutoAnalyzing(false);
+    setCountdown(null);
+    setDetectionError(null);
+  }, []);
 
   // Handlers for AI flow
   const stopCamera = useCallback(() => {
@@ -863,274 +909,210 @@ const MoodAnalyzer: React.FC = () => {
             >
               <div className="p-8 md:p-12">
                 {aiStep === 0 && (
-                  <div className="max-w-2xl mx-auto text-center space-y-8">
+                  <div className="max-w-3xl mx-auto text-center space-y-6">
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
                     >
-                      <div className="inline-block p-4 rounded-full bg-orange-100 text-orange-600 mb-6">
-                        <Camera size={48} />
+                      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100 text-orange-700 font-semibold text-sm mb-3">
+                        <Sparkles size={16} /> Real-Time Face Expression & Emotion Vision AI
                       </div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-4">AI Mood Travel Matcher</h2>
-                      <p className="text-gray-600 mb-6 text-lg">
-                        Answer three quick intent questions, then let AI read your vibe and tailor destinations to both mood and preference.
+                      <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2">
+                        Look into the Camera to Match Your Vibe
+                      </h2>
+                      <p className="text-gray-600 text-base max-w-xl mx-auto">
+                        Our Vision AI model detects your real-time facial expression and instantly recommends curated Indian cultural destinations.
                       </p>
                     </motion.div>
 
-                    <div className="bg-white/80 border border-orange-100 shadow-lg rounded-3xl p-6 text-left">
-                      <div className="flex items-start justify-between gap-4 flex-col md:flex-row md:items-center">
-                        <div>
-                          <p className="text-sm font-semibold text-orange-600">Step {prefStep + 1} of {PREF_QUESTIONS.length}</p>
-                          <h3 className="text-2xl font-bold text-gray-900 mt-1">{currentQuestion.title}</h3>
-                          <p className="text-gray-600 mt-1">{currentQuestion.subtitle}</p>
+                    {detectionError && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="p-4 bg-red-50 border border-red-200 rounded-2xl text-left"
+                      >
+                        <div className="flex gap-3">
+                          <AlertCircle className="text-red-600 flex-shrink-0" />
+                          <div className="flex-1">
+                            <div className="text-red-700 font-semibold mb-1">Camera Notice</div>
+                            <div className="text-red-600 text-sm">{detectionError}</div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          {PREF_QUESTIONS.map((q, idx) => {
-                            const answered = Boolean(prefAnswers[q.id as keyof PreferenceAnswers]);
-                            const active = prefStep === idx;
-                            return (
-                              <span
-                                key={q.id}
-                                className={`h-2 w-10 rounded-full ${answered ? 'bg-orange-500' : 'bg-gray-200'} ${active ? 'shadow-[0_0_0_3px_rgba(234,88,12,0.15)]' : ''}`}
-                              />
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="mt-5 grid gap-3 md:grid-cols-2">
-                        {(currentQuestion.options ?? []).map((opt) => {
-                          const active = prefAnswers[currentQuestion.id as keyof PreferenceAnswers] === opt.value;
-                          return (
-                            <button
-                              key={opt.value}
-                              onClick={() => {
-                                setPrefAnswers((prev) => ({ ...prev, [currentQuestion.id]: opt.value }));
-                                setPrefStep((step) => Math.min(step + 1, PREF_QUESTIONS.length - 1));
-                              }}
-                              className={`flex flex-col items-start gap-1 rounded-2xl border p-4 text-left transition hover:shadow-md ${
-                                active ? 'border-orange-500 bg-orange-50 text-orange-800 shadow-sm' : 'border-gray-200 bg-white text-gray-700'
-                              }`}
-                            >
-                              <span className="font-semibold">{opt.label}</span>
-                              {opt.hint && <span className="text-sm text-gray-500">{opt.hint}</span>}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <div className="mt-5 flex flex-wrap gap-3 justify-between items-center">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setPrefStep((step) => Math.max(0, step - 1))}
-                            disabled={prefStep === 0}
-                            className="px-4 py-2 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold disabled:opacity-50"
+                        <div className="flex gap-3 mt-3">
+                          <button 
+                            onClick={startCamera}
+                            className="px-4 py-1.5 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition"
                           >
-                            Back
+                            Restart Camera
                           </button>
-                          <button
-                            onClick={() => setPrefAnswers({})}
-                            className="px-4 py-2 rounded-xl border border-gray-200 text-gray-500 text-sm font-semibold"
+                          <button 
+                            onClick={() => setDetectionError(null)}
+                            className="px-4 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-50 transition"
                           >
-                            Reset choices
+                            Dismiss
                           </button>
                         </div>
-                        <button
-                          onClick={() => setPrefStep((step) => Math.min(step + 1, PREF_QUESTIONS.length - 1))}
-                          disabled={!isCurrentAnswered}
-                          className="px-5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-md disabled:opacity-60"
+                      </motion.div>
+                    )}
+
+                    {/* Camera Feed / Scanner Box */}
+                    <div className="relative">
+                      {!image && !isCameraOpen && (
+                        <motion.div 
+                          whileHover={{ scale: 1.01 }}
+                          className="h-80 border-2 border-dashed border-orange-200 bg-orange-50/40 rounded-3xl flex flex-col items-center justify-center gap-5 p-6"
                         >
-                          {prefStep === PREF_QUESTIONS.length - 1 ? 'Finish' : 'Next'}
-                        </button>
-                      </div>
+                          <button 
+                            onClick={startCamera}
+                            className="flex items-center gap-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all transform"
+                          >
+                            <Camera size={24} /> Turn On Live Camera
+                          </button>
+                          <div className="flex items-center gap-3 w-full max-w-xs text-xs text-gray-400">
+                            <div className="h-px bg-gray-200 flex-1" />
+                            <span>OR UPLOAD A PHOTO</span>
+                            <div className="h-px bg-gray-200 flex-1" />
+                          </div>
+                          <label className="flex items-center gap-2 text-gray-700 cursor-pointer hover:text-orange-600 transition font-semibold text-sm bg-white px-5 py-2.5 rounded-full border border-gray-200 shadow-sm hover:shadow">
+                            <Upload size={18} /> Upload Face Photo
+                            <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                          </label>
+                        </motion.div>
+                      )}
 
-                      {prefComplete && (
-                        <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-orange-700">
-                          {Object.entries(prefAnswers).map(([key, val]) => (
-                            <span key={key} className="rounded-full bg-orange-50 border border-orange-200 px-3 py-1">
-                              {key}: {val as string}
-                            </span>
-                          ))}
+                      {isCameraOpen && (
+                        <MoodCameraLoader
+                          ref={videoRef}
+                          onStreamReady={handleStreamReady}
+                          onError={handleCameraError}
+                          className="h-96 sm:h-[420px] rounded-3xl shadow-2xl ring-4 ring-orange-100/80 overflow-hidden"
+                        >
+                          {/* Futuristic Scan Line */}
+                          <motion.div 
+                            animate={{ top: ['0%', '98%', '0%'] }}
+                            transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+                            className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_#22d3ee] z-10"
+                          />
+                          
+                          {/* Face Badge */}
+                          <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-xs font-semibold border border-white/20 flex items-center gap-2 z-20">
+                            <Users size={14} className="text-cyan-400" />
+                            {faceCount === null ? 'Scanning Face...' : faceCount === 0 ? 'Position face in frame' : `${faceCount} Face Tracked ✨`}
+                          </div>
+
+                          {/* Live Vision AI Status Badge */}
+                          <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-xs font-semibold border border-white/20 flex items-center gap-2 z-20">
+                            <Sparkles size={14} className="text-amber-400 animate-spin" />
+                            Vision AI Active
+                          </div>
+
+                          {/* Countdown Indicator */}
+                          {countdown !== null && countdown > 0 && (
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none flex flex-col items-center">
+                              <div className="text-8xl sm:text-9xl font-black text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)] animate-pulse">
+                                {countdown}
+                              </div>
+                              <div className="text-white text-sm font-bold mt-2 text-center drop-shadow bg-black/40 px-4 py-1.5 rounded-full backdrop-blur-sm">
+                                Auto-analyzing your expression...
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Capture Trigger Button */}
+                          <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-4 z-20">
+                            <button 
+                              onClick={capturePhoto}
+                              className="group flex items-center gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-7 py-3.5 rounded-full font-bold text-base shadow-2xl hover:scale-105 transition-transform duration-200 border-2 border-white/80"
+                            >
+                              <Camera size={20} className="group-hover:rotate-12 transition-transform" />
+                              Capture & Analyze My Vibe
+                            </button>
+                            <button 
+                              onClick={stopCamera}
+                              title="Turn Off Camera"
+                              className="bg-black/50 backdrop-blur-md text-white p-3.5 rounded-full hover:bg-red-500/80 transition-colors border border-white/20"
+                            >
+                              <Scan size={18} />
+                            </button>
+                          </div>
+                        </MoodCameraLoader>
+                      )}
+
+                      {image && (
+                        <div className="relative h-96 rounded-3xl overflow-hidden shadow-2xl ring-4 ring-orange-100 group">
+                          <img ref={imagePreviewRef} src={image} alt="Captured" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <button 
+                            onClick={() => {
+                              clearCapturedImage();
+                              setAIStep(0);
+                              startCamera();
+                            }}
+                            className="absolute top-4 right-4 bg-white/90 backdrop-blur text-gray-800 p-3 rounded-full shadow-lg hover:bg-white transition-all transform hover:rotate-180 duration-500"
+                          >
+                            <RefreshCw size={18} />
+                          </button>
                         </div>
                       )}
                     </div>
 
-                    {!prefComplete && (
-                      <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-                        Finish these quick questions to unlock camera-based mood analysis and tailored destinations.
+                    {image && !result && (
+                      <motion.button 
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={analyzeAI}
+                        disabled={loading}
+                        className="w-full bg-gradient-to-r from-orange-600 to-amber-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-orange-500/30 transition-all disabled:opacity-70 flex items-center justify-center gap-3"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="animate-spin" size={24} />
+                            Analyzing Face Emotion & Generating Match...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles size={24} />
+                            Run AI Destination Match
+                          </>
+                        )}
+                      </motion.button>
+                    )}
+
+                    {/* Instant 1-Tap Quick Mood Selector (No Forms, Instant Action) */}
+                    <div className="mt-8 pt-6 border-t border-gray-100 text-left">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <Zap size={14} className="text-amber-500" /> Or pick your vibe instantly (1-Tap Direct Match)
+                        </span>
+                        <label className="text-xs text-orange-600 font-semibold hover:underline cursor-pointer flex items-center gap-1">
+                          <Upload size={12} /> Upload Photo
+                          <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                        </label>
                       </div>
-                    )}
 
-                    {prefComplete && (
-                      <>
-                        {detectionError && (
-                          <motion.div 
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl text-left"
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+                        {[
+                          { mood: 'Joyful & Party', icon: '😄', energy: 9, social: 9, adv: 7, reason: 'High energy and celebration vibes! Perfectly matched with lively beaches, vibrant nightlife, and cultural festivities.' },
+                          { mood: 'Calm & Wellness', icon: '🧘', energy: 4, social: 4, adv: 3, reason: 'Peaceful and rejuvenating vibes! Matched with tranquil backwaters, tea gardens, and wellness ayurvedic retreats.' },
+                          { mood: 'Mountain Adventure', icon: '🏔️', energy: 9, social: 6, adv: 10, reason: 'Adrenaline and exploration mood! Matched with high-altitude trekking, river rafting, and breathtaking Himalayan passes.' },
+                          { mood: 'Sacred Spiritual', icon: '🕉️', energy: 5, social: 7, adv: 4, reason: 'Devotional and reflective mindset! Matched with ancient ghats, magnificent temples, and serene heritage aartis.' },
+                          { mood: 'Royal Heritage', icon: '🏰', energy: 6, social: 6, adv: 6, reason: 'Cultural and historical curiosity! Matched with grand palaces, Awadhi royal cuisine, and legendary forts.' },
+                        ].map((item) => (
+                          <button
+                            key={item.mood}
+                            onClick={() => analyzeWithDirectMood(item.mood, item.energy, item.social, item.adv, item.reason)}
+                            className="p-3 bg-white rounded-2xl border border-gray-200 hover:border-orange-400 hover:shadow-md transition-all text-left group flex flex-col items-start gap-1"
                           >
-                            <div className="flex gap-3">
-                              <AlertCircle className="text-red-600 flex-shrink-0" />
-                              <div className="flex-1">
-                                <div className="text-red-700 font-semibold mb-1">Camera Error</div>
-                                <div className="text-red-600 text-sm whitespace-pre-line">{detectionError}</div>
-                              </div>
-                            </div>
-                            <div className="flex gap-3 mt-4">
-                              <button 
-                                onClick={() => {
-                                  if (cameraStreamRef.current) {
-                                    cameraStreamRef.current.getTracks().forEach(track => track.stop());
-                                    cameraStreamRef.current = null;
-                                  }
-                                  setDetectionError(null);
-                                  setIsCameraOpen(false);
-                                  setTimeout(() => startCamera(), 100);
-                                }}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition"
-                              >
-                                Retry Camera
-                              </button>
-                              <button 
-                                onClick={() => setDetectionError(null)}
-                                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
-                              >
-                                Dismiss
-                              </button>
-                            </div>
-                          </motion.div>
-                        )}
-
-                        <div className="mb-6 bg-gradient-to-r from-teal-50 to-sky-50 border border-teal-100 rounded-2xl p-4 text-left">
-                          <div className="font-semibold text-gray-900 mb-1">Skip face scan and finish now</div>
-                          <p className="text-sm text-gray-600 mb-3">Use your intent answers plus real destination locations to instantly see picks with live weather.</p>
-                          <div className="flex flex-wrap gap-3">
-                            <button
-                              onClick={finishWithInstantPicks}
-                              className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold shadow-md hover:shadow-lg transition"
-                            >
-                              Finish & show picks
-                            </button>
-                            <button
-                              onClick={startCamera}
-                              className="px-5 py-2 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:border-gray-300 hover:bg-white transition"
-                            >
-                              Keep face scan
-                            </button>
-                          </div>
-                        </div>
-
-                        {!image && !isCameraOpen && (
-                          <motion.div 
-                            whileHover={{ scale: 1.02 }}
-                            className="h-80 border-3 border-dashed border-gray-300 rounded-3xl flex flex-col items-center justify-center gap-6 bg-gray-50/50 hover:bg-gray-50 transition-colors cursor-pointer group"
-                          >
-                            <button 
-                              onClick={startCamera}
-                              className="flex items-center gap-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all transform group-hover:-translate-y-1"
-                            >
-                              <Camera size={24} /> Open Camera
-                            </button>
-                            <div className="flex items-center gap-4 w-full max-w-xs">
-                              <div className="h-px bg-gray-300 flex-1"></div>
-                              <span className="text-gray-400 font-medium">OR</span>
-                              <div className="h-px bg-gray-300 flex-1"></div>
-                            </div>
-                            <label className="flex items-center gap-2 text-gray-600 cursor-pointer hover:text-orange-600 transition font-medium">
-                              <Upload size={20} /> Upload Photo
-                              <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                            </label>
-                          </motion.div>
-                        )}
-
-                        {isCameraOpen && (
-                          <MoodCameraLoader
-                            ref={videoRef}
-                            onStreamReady={handleStreamReady}
-                            onError={handleCameraError}
-                            className="h-96 shadow-2xl ring-4 ring-orange-100"
-                          >
-                            <motion.div 
-                              animate={{ top: ['0%', '100%', '0%'] }}
-                              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                              className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-70 z-10"
-                            />
-                            
-                            {faceCount !== null && (
-                              <div className="absolute top-6 left-6 bg-black/50 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-semibold border border-white/20 flex items-center gap-2 z-20">
-                                <Users size={16} className="text-orange-400" />
-                                {faceCount === 0 ? 'No faces' : `${faceCount} face${faceCount > 1 ? 's' : ''} detected`}
-                              </div>
-                            )}
-
-                            {countdown !== null && countdown > 0 && (
-                              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none flex flex-col items-center">
-                                <div className="text-9xl font-bold text-white drop-shadow-2xl animate-pulse">
-                                  {countdown}
-                                </div>
-                                <div className="text-white text-xl font-semibold mt-4 text-center drop-shadow-md bg-black/30 px-4 py-1 rounded-full backdrop-blur-sm">
-                                  Auto-analyzing...
-                                </div>
-                              </div>
-                            )}
-                            
-                            <button 
-                              onClick={capturePhoto}
-                              className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform duration-200 border-4 border-orange-500 z-20"
-                            >
-                              <div className="w-16 h-16 bg-orange-500 rounded-full border-4 border-white"></div>
-                            </button>
-                            
-                            <button 
-                              onClick={stopCamera}
-                              className="absolute top-6 right-6 bg-black/50 backdrop-blur-md text-white p-3 rounded-full hover:bg-red-500/80 transition-colors border border-white/20 z-20"
-                            >
-                              <Scan size={20} />
-                            </button>
-                          </MoodCameraLoader>
-                        )}
-
-                        {image && (
-                          <div className="relative h-96 rounded-3xl overflow-hidden shadow-2xl ring-4 ring-orange-100 group">
-                            <img ref={imagePreviewRef} src={image} alt="Captured" className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            <button 
-                              onClick={() => {
-                                clearCapturedImage();
-                                setAIStep(0);
-                              }}
-                              className="absolute top-6 right-6 bg-white/90 backdrop-blur text-gray-800 p-3 rounded-full shadow-lg hover:bg-white transition-all transform hover:rotate-180 duration-500"
-                            >
-                              <RefreshCw size={20} />
-                            </button>
-                          </div>
-                        )}
-
-                        {image && !result && (
-                          <motion.button 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={analyzeAI}
-                            disabled={loading}
-                            className="w-full mt-8 bg-gradient-to-r from-teal-600 to-emerald-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-teal-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                          >
-                            {loading ? (
-                              <>
-                                <Loader2 className="animate-spin" size={24} />
-                                Analyzing your mood...
-                              </>
-                            ) : (
-                              <>
-                                <Sparkles size={24} /> Analyze Mood & Recommend
-                              </>
-                            )}
-                          </motion.button>
-                        )}
-                      </>
-                    )}
+                            <span className="text-2xl">{item.icon}</span>
+                            <span className="font-bold text-xs text-gray-800 group-hover:text-orange-600 transition-colors line-clamp-1">{item.mood}</span>
+                            <span className="text-[10px] text-gray-400 font-medium">⚡ Energy {item.energy}/10</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
 
