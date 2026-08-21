@@ -40,8 +40,8 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
     }
   }, [history, isOpen, loading]);
 
-  // If user is on the dedicated /assistant page, do not render floating widget to avoid overlap
-  if (location.pathname === '/assistant') {
+  // If user is on the dedicated /assistant or /booking page, do not render floating widget to avoid overlap
+  if (location.pathname === '/assistant' || location.pathname === '/booking') {
     return null;
   }
 
