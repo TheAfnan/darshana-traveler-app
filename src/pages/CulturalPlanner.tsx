@@ -1,8 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { 
-  Compass, 
   Calendar, 
   MapPin, 
   Sparkles, 
@@ -12,43 +11,41 @@ import {
   Home, 
   ArrowRight, 
   Download, 
-  Share2, 
   Users, 
-  CheckCircle2, 
-  PhoneCall, 
   Clock, 
-  Star,
-  Award,
-  Search
+  Search,
+  CheckCircle2,
+  PhoneCall,
+  Flame,
+  Award
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { getCulturalTripPlan, type CulturalPlan } from '../data/culturalTripData';
 
 const CulturalPlanner: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [fromCity, setFromCity] = useState(searchParams.get('from') || 'Lucknow');
-  const [toCity, setToCity] = useState(searchParams.get('to') || 'Varanasi');
-  const [travelDate, setTravelDate] = useState(searchParams.get('date') || '2026-11-15');
-  const [passengers, setPassengers] = useState(Number(searchParams.get('passengers')) || 2);
-  const [activeTab, setActiveTab] = useState<'all' | 'festivals' | 'gems' | 'food' | 'stays' | 'safety' | 'eco'>('all');
+  const [fromCity, setFromCity] = useState(searchParams.get('from') || 'Delhi');
+  const [toCity, setToCity] = useState(searchParams.get('to') || 'Lucknow');
+  const [travelDate, setTravelDate] = useState(searchParams.get('date') || '2026-05-19'); // Default May to showcase Bada Mangal!
   const [isGenerating, setIsGenerating] = useState(false);
-  const [plan, setPlan] = useState<CulturalPlan>(() => getCulturalTripPlan(toCity, travelDate));
+  const [plan, setPlan] = useState<CulturalPlan>(() => getCulturalTripPlan(toCity, travelDate, fromCity));
 
   useEffect(() => {
     const dest = searchParams.get('to') || toCity;
+    const origin = searchParams.get('from') || fromCity;
     const date = searchParams.get('date') || travelDate;
-    setPlan(getCulturalTripPlan(dest, date));
+    setPlan(getCulturalTripPlan(dest, date, origin));
   }, [searchParams]);
 
   const handlePlanSearch = () => {
     if (!toCity.trim()) return;
     setIsGenerating(true);
     setTimeout(() => {
-      setPlan(getCulturalTripPlan(toCity, travelDate));
+      setPlan(getCulturalTripPlan(toCity, travelDate, fromCity));
       setIsGenerating(false);
-    }, 600);
+      setSearchParams({ from: fromCity, to: toCity, date: travelDate });
+    }, 400);
   };
 
   const handleDownloadPDF = () => {
@@ -56,512 +53,353 @@ const CulturalPlanner: React.FC = () => {
     
     // Header
     doc.setFillColor(15, 23, 42); // slate-900
-    doc.rect(0, 0, 210, 38, 'F');
+    doc.rect(0, 0, 210, 36, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
+    doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('DarShana - AI Cultural Travel Itinerary', 14, 18);
+    doc.text('DarShana - Authentic Cultural Travel Plan', 14, 16);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Destination: ${plan.destination} | Travel Date: ${travelDate} | Travelers: ${passengers}`, 14, 28);
+    doc.text(`Journey: ${fromCity} -> ${plan.destination} | Date: ${travelDate}`, 14, 26);
     
-    let y = 48;
+    let y = 46;
     
-    // Destination Tagline
-    doc.setTextColor(234, 88, 12); // orange-600
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text(plan.tagline, 14, y);
-    y += 12;
+    // Month Highlight
+    if (plan.currentMonthHighlight) {
+      doc.setTextColor(234, 88, 12); // orange-600
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`SPECIAL: ${plan.currentMonthHighlight.title}`, 14, y);
+      y += 6;
+      doc.setTextColor(51, 65, 85);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(plan.currentMonthHighlight.description, 14, y, { maxWidth: 180 });
+      y += 14;
+    }
 
     // 1. Festivals
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(12);
-    doc.text('1. Festivals & Cultural Events:', 14, y);
-    y += 7;
+    doc.setFont('helvetica', 'bold');
+    doc.text('1. Local Festivals & Living Culture:', 14, y);
+    y += 6;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     plan.festivals.forEach(f => {
       doc.text(`* ${f.name} (${f.dates}): ${f.description}`, 16, y, { maxWidth: 180 });
-      y += 12;
+      y += 10;
     });
 
     // 2. Hidden Gems
     y += 4;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.text('2. Hidden Cultural Gems & Heritage Trails:', 14, y);
-    y += 7;
+    doc.text('2. Authentic Hidden Gems & Artisan Trails:', 14, y);
+    y += 6;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     plan.hiddenGems.forEach(g => {
       doc.text(`* ${g.title} (${g.location}): ${g.description}`, 16, y, { maxWidth: 180 });
-      y += 12;
+      y += 10;
     });
 
     // 3. Foods
     y += 4;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.text('3. Authentic Seasonal Foods & Street Delicacies:', 14, y);
-    y += 7;
+    doc.text('3. Authentic Street Foods & Must-Try Cuisines:', 14, y);
+    y += 6;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     plan.seasonalFoods.forEach(f => {
       doc.text(`* ${f.name} @ ${f.famousSpot} (${f.priceRange}): ${f.description}`, 16, y, { maxWidth: 180 });
-      y += 12;
+      y += 10;
     });
 
-    // 4. Safety & Eco
-    y += 4;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.text('4. Safety Helpline & Green Eco-Route:', 14, y);
-    y += 7;
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`* Emergency: Police 112 | Tourist Safety Score: ${plan.safety[0].score}/10`, 16, y);
-    y += 6;
-    doc.text(`* Eco-Route: ${plan.sustainability.greenRoute} (${plan.sustainability.co2SavedKg} kg CO2 Saved)`, 16, y);
-
     // Save PDF
-    doc.save(`DarShana_${plan.destination}_Cultural_Plan.pdf`);
+    doc.save(`DarShana_${plan.destination}_Trip_Plan.pdf`);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-10">
+    <div className="min-h-screen bg-[#faf8f5] py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto space-y-8">
 
-        {/* Hero Header */}
-        <div className="relative rounded-3xl overflow-hidden bg-slate-900 text-white shadow-2xl p-8 sm:p-12">
-          <img 
-            src={plan.bgImage} 
-            alt={plan.destination}
-            className="absolute inset-0 w-full h-full object-cover opacity-25 filter brightness-90"
-          />
-          <div className="relative z-10 max-w-3xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 text-xs font-bold uppercase tracking-wider">
-              <Sparkles size={14} /> AI Cultural Journey & Festival Matcher
+        {/* Top Search Bar */}
+        <div className="bg-white rounded-3xl shadow-lg border border-orange-100/60 p-6">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">From</label>
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5">
+                  <MapPin size={16} className="text-slate-400" />
+                  <input 
+                    type="text"
+                    value={fromCity}
+                    onChange={(e) => setFromCity(e.target.value)}
+                    placeholder="Departure (e.g. Delhi)"
+                    className="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Destination</label>
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5">
+                  <MapPin size={16} className="text-orange-500" />
+                  <input 
+                    type="text"
+                    value={toCity}
+                    onChange={(e) => setToCity(e.target.value)}
+                    placeholder="Destination (e.g. Lucknow)"
+                    className="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Travel Date</label>
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5">
+                  <Calendar size={16} className="text-amber-500" />
+                  <input 
+                    type="date"
+                    value={travelDate}
+                    onChange={(e) => setTravelDate(e.target.value)}
+                    className="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none"
+                  />
+                </div>
+              </div>
             </div>
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
-              {plan.destination} Cultural Expedition
-            </h1>
-            <p className="text-slate-300 text-base sm:text-lg">
-              {plan.tagline}
-            </p>
-            <div className="flex flex-wrap gap-4 pt-2 text-xs font-semibold text-slate-300">
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                <Clock size={14} className="text-amber-400" /> Best Time: {plan.bestMonths}
-              </span>
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                <Leaf size={14} className="text-emerald-400" /> {plan.sustainability.co2SavedKg} kg CO2 Offset
-              </span>
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                <ShieldCheck size={14} className="text-cyan-400" /> Safety Index: {plan.safety[0].score}/10
-              </span>
-            </div>
+
+            <button 
+              onClick={handlePlanSearch}
+              disabled={isGenerating}
+              className="w-full md:w-auto mt-2 md:mt-5 flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-600 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-md hover:shadow-orange-500/20 hover:scale-105 transition-all"
+            >
+              {isGenerating ? <Sparkles className="animate-spin" size={16} /> : <Search size={16} />}
+              <span>Plan Cultural Journey</span>
+            </button>
           </div>
-        </div>
 
-        {/* Interactive Search Bar / Filter */}
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">FROM (ORIGIN)</label>
-              <input 
-                type="text"
-                value={fromCity}
-                onChange={(e) => setFromCity(e.target.value)}
-                placeholder="e.g. Delhi, Lucknow"
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">TO (DESTINATION)</label>
-              <input 
-                type="text"
-                value={toCity}
-                onChange={(e) => setToCity(e.target.value)}
-                placeholder="e.g. Varanasi, Jaipur, Goa"
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">TRAVEL DATES</label>
-              <input 
-                type="date"
-                value={travelDate}
-                onChange={(e) => setTravelDate(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-            <div className="flex items-end gap-2">
-              <button 
-                onClick={handlePlanSearch}
-                disabled={isGenerating}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2.5 px-6 rounded-xl font-bold text-sm shadow-lg shadow-orange-500/20 hover:scale-105 transition-all"
-              >
-                {isGenerating ? <Sparkles className="animate-spin" size={16} /> : <Search size={16} />}
-                Generate Plan
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Header & Quick Navigation Tabs */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex flex-wrap gap-2">
+          {/* Quick Destination Chips */}
+          <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-100 text-xs font-semibold text-slate-500">
+            <span className="text-[11px] uppercase tracking-wider text-slate-400">Popular:</span>
             {[
-              { id: 'all', label: '🌟 All 6 Pillars' },
-              { id: 'festivals', label: '🎪 Festivals & Events' },
-              { id: 'gems', label: '🏛️ Hidden Gems' },
-              { id: 'food', label: '🍽️ Seasonal Food' },
-              { id: 'stays', label: '🏨 Budget & Eco Stays' },
-              { id: 'safety', label: '🛡️ Safety & SOS' },
-              { id: 'eco', label: '🌱 Green Route' }
-            ].map(tab => (
+              { name: 'Lucknow (May Bada Mangal)', dest: 'Lucknow', date: '2026-05-19' },
+              { name: 'Varanasi (Dev Deepawali)', dest: 'Varanasi', date: '2026-11-15' },
+              { name: 'Jaipur (Teej Festival)', dest: 'Jaipur', date: '2026-08-05' },
+              { name: 'Goa (Viva Carnival)', dest: 'Goa', date: '2026-02-14' },
+            ].map((chip) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  activeTab === tab.id 
-                    ? 'bg-slate-900 text-white shadow-md' 
-                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                }`}
+                key={chip.name}
+                onClick={() => {
+                  setToCity(chip.dest);
+                  setTravelDate(chip.date);
+                  setPlan(getCulturalTripPlan(chip.dest, chip.date, fromCity));
+                }}
+                className="px-3 py-1 bg-orange-50 text-orange-700 hover:bg-orange-100 rounded-full transition-colors"
               >
-                {tab.label}
+                {chip.name}
               </button>
             ))}
           </div>
-
-          <div className="flex gap-2 w-full sm:w-auto">
-            <button 
-              onClick={handleDownloadPDF}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-white text-slate-800 border border-slate-200 hover:border-orange-500 px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition"
-            >
-              <Download size={15} className="text-orange-500" /> Download PDF Itinerary
-            </button>
-            <Link 
-              to={`/guides`}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md hover:scale-105 transition"
-            >
-              <Users size={15} /> Book Local Guide
-            </Link>
-          </div>
         </div>
 
-        {/* 6-PILLAR INTERACTIVE GRID (PPT EXACT MATCH) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-          {/* 1. FESTIVALS & LOCAL EVENTS */}
-          {(activeTab === 'all' || activeTab === 'festivals') && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-3xl p-6 border border-orange-100 shadow-xl relative overflow-hidden flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-orange-100 text-orange-600 rounded-2xl">
-                    <Calendar size={22} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-orange-600">Pillar 1</span>
-                    <h3 className="text-xl font-bold text-slate-900">Festivals & Cultural Events</h3>
-                  </div>
+        {/* HERO TITLE & MONTH HIGHLIGHT (GOLDEN CARD) */}
+        {plan.currentMonthHighlight && (
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 rounded-3xl p-1 text-white shadow-xl"
+          >
+            <div className="bg-slate-950/90 backdrop-blur-md rounded-[22px] p-6 sm:p-8">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-400/20 border border-amber-400/40 text-amber-300 rounded-full text-xs font-extrabold tracking-wide uppercase">
+                  <Flame size={14} className="text-amber-400" /> {plan.currentMonthHighlight.badge}
                 </div>
+                <div className="flex items-center gap-3 text-xs text-slate-300">
+                  <span>Journey: <strong className="text-white">{fromCity} ➔ {plan.destination}</strong></span>
+                  <span>•</span>
+                  <span>Date: <strong className="text-white">{travelDate}</strong></span>
+                </div>
+              </div>
 
-                <div className="space-y-4 pt-2">
-                  {plan.festivals.map((f, idx) => (
-                    <div key={idx} className="bg-orange-50/50 border border-orange-100 rounded-2xl p-4 space-y-2">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-sm text-slate-900">{f.name}</h4>
-                        <span className="text-[11px] font-bold text-orange-700 bg-orange-100 px-2.5 py-0.5 rounded-full">{f.dates}</span>
-                      </div>
-                      <p className="text-xs text-slate-600 leading-relaxed">{f.description}</p>
-                      <div className="text-[11px] text-orange-800 bg-orange-100/60 p-2 rounded-xl">
-                        💡 <strong>Insider Tip:</strong> {f.insiderTip}
-                      </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">
+                {plan.currentMonthHighlight.title}
+              </h2>
+
+              <p className="text-slate-200 text-sm sm:text-base leading-relaxed mb-6">
+                {plan.currentMonthHighlight.description}
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-white/10 text-xs">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                  <span className="text-amber-300 font-bold block mb-1">📍 Where to experience:</span>
+                  <span className="text-slate-200">{plan.currentMonthHighlight.whereToExperience}</span>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                  <span className="text-emerald-300 font-bold block mb-1">✨ Cultural Significance:</span>
+                  <span className="text-slate-200">{plan.currentMonthHighlight.whySpecial}</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* 3 CORE PILLARS (CLEAN & ELEGANT) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* 1. LIVING CULTURE & FESTIVALS */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                <div className="p-2.5 bg-orange-100 text-orange-600 rounded-2xl">
+                  <Calendar size={20} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">Local Festivals & Traditions</h3>
+                  <p className="text-xs text-slate-400">Authentic regional celebrations</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {plan.festivals.map((f, i) => (
+                  <div key={i} className="bg-orange-50/40 border border-orange-100 rounded-2xl p-4 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-bold text-sm text-slate-900">{f.name}</h4>
+                      <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">{f.dates}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 mt-4 flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-medium">Synced with Cultural Calendar</span>
-                <Link to="/festivals" className="font-bold text-orange-600 hover:underline flex items-center gap-1">
-                  View All Festivals <ArrowRight size={12} />
-                </Link>
-              </div>
-            </motion.div>
-          )}
-
-          {/* 2. CITIES/VILLAGES & HIDDEN GEMS */}
-          {(activeTab === 'all' || activeTab === 'gems') && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white rounded-3xl p-6 border border-purple-100 shadow-xl relative overflow-hidden flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-purple-100 text-purple-600 rounded-2xl">
-                    <Compass size={22} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-600">Pillar 2</span>
-                    <h3 className="text-xl font-bold text-slate-900">Cities, Villages & Hidden Gems</h3>
-                  </div>
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  {plan.hiddenGems.map((g, idx) => (
-                    <div key={idx} className="bg-purple-50/40 border border-purple-100 rounded-2xl p-4 space-y-1.5">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-sm text-slate-900">{g.title}</h4>
-                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">{g.category}</span>
-                      </div>
-                      <p className="text-xs text-slate-600 leading-relaxed">{g.description}</p>
-                      <div className="text-[11px] text-slate-500 font-medium">
-                        📍 {g.location} • ⏰ {g.bestTimeToVisit}
-                      </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">{f.description}</p>
+                    <div className="text-[11px] text-orange-900 bg-orange-100/60 p-2 rounded-xl">
+                      💡 <strong>Tip:</strong> {f.insiderTip}
                     </div>
-                  ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-2 text-xs text-slate-400 flex justify-between items-center">
+              <span>Verified Cultural Calendar</span>
+              <span className="font-bold text-orange-600">Dekho Apna Desh</span>
+            </div>
+          </div>
+
+          {/* 2. HIDDEN GEMS & SECRET TRAILS */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                <div className="p-2.5 bg-purple-100 text-purple-600 rounded-2xl">
+                  <Sparkles size={20} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">Hidden Gems & Artisan Trails</h3>
+                  <p className="text-xs text-slate-400">Beyond common tourist spots</p>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 mt-4 flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-medium">Local Artisan Trails</span>
-                <Link to="/ar-guide" className="font-bold text-purple-600 hover:underline flex items-center gap-1">
-                  Launch AR Guide <ArrowRight size={12} />
-                </Link>
-              </div>
-            </motion.div>
-          )}
-
-          {/* 3. SEASONAL FOODS & STREET SPECIALTIES */}
-          {(activeTab === 'all' || activeTab === 'food') && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="bg-white rounded-3xl p-6 border border-amber-100 shadow-xl relative overflow-hidden flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-amber-100 text-amber-600 rounded-2xl">
-                    <Utensils size={22} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-600">Pillar 3</span>
-                    <h3 className="text-xl font-bold text-slate-900">Seasonal Foods & Street Eats</h3>
-                  </div>
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  {plan.seasonalFoods.map((f, idx) => (
-                    <div key={idx} className="bg-amber-50/40 border border-amber-100 rounded-2xl p-4 space-y-1.5">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-sm text-slate-900">{f.name}</h4>
-                        <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">{f.priceRange}</span>
-                      </div>
-                      <p className="text-xs text-slate-600 leading-relaxed">{f.description}</p>
-                      <div className="text-[11px] text-amber-900 font-medium bg-amber-100/50 px-2 py-1 rounded-lg">
-                        📍 <strong>Iconic Spot:</strong> {f.famousSpot}
-                      </div>
+              <div className="space-y-3">
+                {plan.hiddenGems.map((g, i) => (
+                  <div key={i} className="bg-purple-50/40 border border-purple-100 rounded-2xl p-4 space-y-1.5">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-bold text-sm text-slate-900">{g.title}</h4>
+                      <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">{g.category}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 mt-4 flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-medium">100% Authentic Spots</span>
-                <span className="font-bold text-amber-600">Gourmet Verified</span>
-              </div>
-            </motion.div>
-          )}
-
-          {/* 4. BUDGET & HERITAGE STAYS */}
-          {(activeTab === 'all' || activeTab === 'stays') && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-3xl p-6 border border-blue-100 shadow-xl relative overflow-hidden flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl">
-                    <Home size={22} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-600">Pillar 4</span>
-                    <h3 className="text-xl font-bold text-slate-900">Budget & Heritage Eco-Stays</h3>
-                  </div>
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  {plan.budgetStays.map((s, idx) => (
-                    <div key={idx} className="bg-blue-50/40 border border-blue-100 rounded-2xl p-4 space-y-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-bold text-sm text-slate-900">{s.name}</h4>
-                          <span className="text-[10px] font-semibold text-blue-600">{s.type}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-base font-black text-slate-900">₹{s.pricePerNight}</span>
-                          <span className="text-[10px] text-slate-400 block">/night</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {s.amenities.map((a, i) => (
-                          <span key={i} className="text-[10px] bg-white border border-blue-100 text-slate-700 px-2 py-0.5 rounded-md">
-                            ✓ {a}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="text-[10px] text-emerald-700 font-bold">
-                        🌱 Eco Rating: {s.ecoScore}
-                      </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">{g.description}</p>
+                    <div className="text-[11px] text-slate-500 font-medium">
+                      📍 {g.location}
                     </div>
-                  ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-2 text-xs text-slate-400 flex justify-between items-center">
+              <span>Artisans & Heritage</span>
+              <Link to="/guides" className="font-bold text-purple-600 hover:underline">
+                Hire Local Guide ➔
+              </Link>
+            </div>
+          </div>
+
+          {/* 3. ICONIC FOOD & BUDGET STAYS */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                <div className="p-2.5 bg-amber-100 text-amber-600 rounded-2xl">
+                  <Utensils size={20} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">Authentic Food & Stays</h3>
+                  <p className="text-xs text-slate-400">Legendary flavors & eco homestays</p>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 mt-4 flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-medium">Verified Homestays</span>
-                <Link to="/booking" className="font-bold text-blue-600 hover:underline flex items-center gap-1">
-                  Check Booking <ArrowRight size={12} />
-                </Link>
-              </div>
-            </motion.div>
-          )}
-
-          {/* 5. SAFETY & CROWD INSIGHTS */}
-          {(activeTab === 'all' || activeTab === 'safety') && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="bg-white rounded-3xl p-6 border border-emerald-100 shadow-xl relative overflow-hidden flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-emerald-100 text-emerald-600 rounded-2xl">
-                    <ShieldCheck size={22} />
+              {/* Foods */}
+              <div className="space-y-2.5">
+                <h5 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Must-Try Food Spots:</h5>
+                {plan.seasonalFoods.slice(0, 2).map((food, i) => (
+                  <div key={i} className="bg-amber-50/40 border border-amber-100 rounded-2xl p-3 space-y-1">
+                    <div className="flex justify-between items-start">
+                      <h6 className="font-bold text-xs text-slate-900">{food.name}</h6>
+                      <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">{food.priceRange}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600">{food.description}</p>
+                    <span className="text-[10px] text-amber-900 font-bold block">📍 {food.famousSpot}</span>
                   </div>
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600">Pillar 5</span>
-                    <h3 className="text-xl font-bold text-slate-900">Safety & Crowd Status</h3>
-                  </div>
-                </div>
-
-                <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-700">Safety Rating</span>
-                    <span className="text-sm font-black text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
-                      ⭐ {plan.safety[0].score} / 10
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-slate-600 font-medium">Current Crowd Status</span>
-                    <span className="font-bold text-slate-800">{plan.safety[0].crowdLevel}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Emergency Numbers:</h5>
-                  <div className="grid grid-cols-2 gap-2">
-                    {plan.safety[0].emergencyContacts.map((c, i) => (
-                      <div key={i} className="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-center">
-                        <span className="text-[10px] text-slate-500 block">{c.service}</span>
-                        <span className="text-sm font-extrabold text-slate-900 flex items-center justify-center gap-1">
-                          <PhoneCall size={12} className="text-emerald-600" /> {c.number}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="text-[11px] text-slate-600 bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1">
-                  <strong>Safety Insights:</strong>
-                  <ul className="list-disc pl-4 space-y-1 text-slate-500">
-                    {plan.safety[0].insiderSafetyTips.map((tip, idx) => (
-                      <li key={idx}>{tip}</li>
-                    ))}
-                  </ul>
-                </div>
+                ))}
               </div>
 
-              <div className="pt-4 border-t border-slate-100 mt-4 flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-medium">24x7 Verified SOS Help</span>
-                <Link to="/safety" className="font-bold text-emerald-600 hover:underline flex items-center gap-1">
-                  Safety Dashboard <ArrowRight size={12} />
-                </Link>
-              </div>
-            </motion.div>
-          )}
-
-          {/* 6. SUSTAINABLE & RESPONSIBLE TOURISM */}
-          {(activeTab === 'all' || activeTab === 'eco') && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white rounded-3xl p-6 border border-teal-100 shadow-xl relative overflow-hidden flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-teal-100 text-teal-600 rounded-2xl">
-                    <Leaf size={22} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-600">Pillar 6</span>
-                    <h3 className="text-xl font-bold text-slate-900">Sustainable Tourism & Rewards</h3>
-                  </div>
-                </div>
-
-                <div className="bg-teal-50/50 border border-teal-100 rounded-2xl p-4 space-y-3">
-                  <div className="flex justify-between items-center">
+              {/* Stays */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <h5 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Recommended Homestay:</h5>
+                {plan.budgetStays.slice(0, 1).map((stay, i) => (
+                  <div key={i} className="bg-blue-50/40 border border-blue-100 rounded-2xl p-3 flex justify-between items-center">
                     <div>
-                      <span className="text-xs font-bold text-slate-700 block">Carbon Emission Saved</span>
-                      <span className="text-[11px] text-slate-500">vs Flight/Diesel Car</span>
+                      <h6 className="font-bold text-xs text-slate-900">{stay.name}</h6>
+                      <span className="text-[10px] text-blue-600 block">{stay.type} • {stay.ecoScore}</span>
                     </div>
-                    <span className="text-base font-black text-teal-700 bg-teal-100 px-3 py-1 rounded-full">
-                      -{plan.sustainability.co2SavedKg} kg CO2
-                    </span>
+                    <div className="text-right">
+                      <span className="font-black text-sm text-slate-900">₹{stay.pricePerNight}</span>
+                      <span className="text-[10px] text-slate-400 block">/night</span>
+                    </div>
                   </div>
-
-                  <div className="flex justify-between items-center pt-2 border-t border-teal-100">
-                    <span className="text-xs font-bold text-slate-700">DarShana Eco Points</span>
-                    <span className="text-sm font-black text-amber-600 flex items-center gap-1">
-                      <Award size={16} /> +{plan.sustainability.ecoRewardPoints} Pts
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Recommended Low-Emission Route:</span>
-                    <p className="font-semibold text-slate-800 mt-0.5">{plan.sustainability.greenRoute}</p>
-                  </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Local Community Impact:</span>
-                    <p className="text-slate-600 mt-0.5">{plan.sustainability.localInitiative}</p>
-                  </div>
-                </div>
+                ))}
               </div>
+            </div>
 
-              <div className="pt-4 border-t border-slate-100 mt-4 flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-medium">Dekho Apna Desh Mission</span>
-                <Link to="/rewards" className="font-bold text-teal-600 hover:underline flex items-center gap-1">
-                  Redeem Rewards <ArrowRight size={12} />
-                </Link>
-              </div>
-            </motion.div>
-          )}
+            <div className="pt-2 text-xs text-slate-400 flex justify-between items-center">
+              <span>Local Awadhi Cuisine</span>
+              <span className="font-bold text-amber-600">Gourmet Verified</span>
+            </div>
+          </div>
 
+        </div>
+
+        {/* BOTTOM UTILITY BAR: SAFETY, ECO TRANSIT & PDF DOWNLOAD */}
+        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-wrap items-center gap-4 text-xs">
+            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-800 px-4 py-2 rounded-xl font-semibold border border-emerald-100">
+              <ShieldCheck size={16} className="text-emerald-600" />
+              <span>Safety Index: <strong>{plan.safety[0].score}/10</strong> (Police: 112 / Women Helpline: 1090)</span>
+            </div>
+            <div className="flex items-center gap-2 bg-teal-50 text-teal-800 px-4 py-2 rounded-xl font-semibold border border-teal-100">
+              <Leaf size={16} className="text-teal-600" />
+              <span>Eco-Transit: <strong>-{plan.sustainability.co2SavedKg} kg CO2</strong> (+{plan.sustainability.ecoRewardPoints} DarShana Pts)</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <button 
+              onClick={handleDownloadPDF}
+              className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-2xl font-bold text-xs shadow-md transition"
+            >
+              <Download size={14} className="text-orange-400" /> Download PDF Itinerary
+            </button>
+            <Link 
+              to="/guides"
+              className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-2xl font-bold text-xs shadow-md hover:scale-105 transition"
+            >
+              <Users size={14} /> Book Local Guide
+            </Link>
+          </div>
         </div>
 
       </div>

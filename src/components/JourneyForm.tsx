@@ -21,11 +21,13 @@ const JourneyForm: React.FC<JourneyFormProps> = ({ onSearch }) => {
   const [passengers, setPassengers] = useState(1);
 
   const handleSearch = () => {
+    const destination = to.trim() || 'Lucknow';
+    const origin = from.trim() || 'Delhi';
+    const travelDate = date || '2026-05-19';
     if (onSearch) {
-      onSearch({ from, to, date, passengers });
+      onSearch({ from: origin, to: destination, date: travelDate, passengers });
     }
-    const destination = to.trim() || 'Varanasi';
-    navigate(`/planner?from=${encodeURIComponent(from || 'Lucknow')}&to=${encodeURIComponent(destination)}&date=${encodeURIComponent(date || '2026-11-15')}&passengers=${passengers}`);
+    navigate(`/planner?from=${encodeURIComponent(origin)}&to=${encodeURIComponent(destination)}&date=${encodeURIComponent(travelDate)}&passengers=${passengers}`);
   };
 
   return (
