@@ -183,9 +183,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
       )}
 
       <div
-        className={`bg-white rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden transition-all duration-300 relative w-full z-10 ${
-          isLoginView ? "max-w-md md:max-w-2xl" : "max-w-md"
-        } my-auto max-h-[92vh] overflow-y-auto border border-white/20 shadow-slate-950/50`}
+        className="bg-white rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden transition-all duration-300 relative w-full max-w-md md:max-w-2xl my-auto max-h-[92vh] overflow-y-auto border border-white/20 shadow-slate-950/50 z-10"
       >
         {/* Close Button */}
         <button
@@ -195,28 +193,28 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
           <X size={18} />
         </button>
 
-        {/* Left Illustration */}
+        {/* Left Traveler Illustration (Visible on both Login & Sign Up) */}
         <div
-          className={`relative bg-amber-50 transition-all duration-300 ${
-            isLoginView ? "hidden md:block md:w-5/12 min-h-[400px]" : "hidden"
-          }`}
+          className="relative bg-amber-50 transition-all duration-300 hidden md:block md:w-5/12 min-h-[420px]"
         >
           <img
             src={loginImage}
             alt="Darshana Cultural Traveler"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/30 to-transparent flex flex-col justify-end p-6 text-white">
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent flex flex-col justify-end p-6 text-white">
             <h2 className="text-2xl font-bold font-serif mb-1 text-white">DarShana</h2>
-            <p className="text-xs text-amber-200 opacity-90 leading-relaxed font-sans">Discover India's living cultural traditions deeply.</p>
+            <p className="text-xs text-amber-200 opacity-90 leading-relaxed font-sans">
+              {isLoginView 
+                ? "Discover India's living cultural traditions deeply." 
+                : "Join thousands of travelers exploring India's heritage."}
+            </p>
           </div>
         </div>
 
         {/* Right Form Section */}
         <div
-          className={`flex flex-col justify-center transition-all duration-300 ${
-            isLoginView ? "w-full md:w-7/12 p-5 sm:p-7" : "w-full p-6 sm:p-8"
-          }`}
+          className="flex flex-col justify-center transition-all duration-300 w-full md:w-7/12 p-5 sm:p-7"
         >
           <div className="w-full">
             {/* Header */}
@@ -225,7 +223,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                 {isLoginView ? "Welcome to DarShana" : "Create Traveler Account"}
               </h2>
               <p className="text-stone-500 text-xs font-normal">
-                {isLoginView ? "Login to access your cultural itineraries" : "Sign up to explore festivals & heritage"}
+                {isLoginView ? "Login to access your cultural itineraries" : "Sign up to explore festivals, food & heritage"}
               </p>
             </div>
 
@@ -291,7 +289,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                         />
                         <input
                           type="email"
-                          className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
+                          className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-amber-600 focus:bg-white text-xs sm:text-sm transition"
                           placeholder="name@gmail.com"
                           value={loginEmail}
                           onChange={(e) => setLoginEmail(e.target.value)}
@@ -300,7 +298,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                       </div>
                     </div>
 
-                    <button className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xs">
+                    <button className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer">
                       Continue <ArrowRight size={15} />
                     </button>
                   </form>
@@ -314,7 +312,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                         <button
                           type="button"
                           onClick={() => setLoginStep(1)}
-                          className="text-[11px] text-amber-700 hover:underline"
+                          className="text-[11px] text-amber-700 hover:underline cursor-pointer"
                         >
                           Change Email
                         </button>
@@ -327,7 +325,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                         />
                         <input
                           type="password"
-                          className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
+                          className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-amber-600 focus:bg-white text-xs sm:text-sm transition"
                           placeholder="Enter your password"
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
@@ -338,7 +336,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
 
                     <button
                       disabled={isLoading}
-                      className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all shadow-xs"
+                      className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all shadow-xs cursor-pointer"
                     >
                       {isLoading ? "Verifying..." : "Sign In"}
                     </button>
@@ -360,7 +358,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                   <button
                     type="button"
                     onClick={handleGoogleLogin}
-                    className="w-full bg-white border border-stone-200/90 py-2 rounded-xl flex items-center justify-center gap-2 hover:bg-stone-50 text-xs sm:text-sm font-medium text-stone-700 shadow-xs transition"
+                    className="w-full bg-white border border-stone-200/90 py-2 rounded-xl flex items-center justify-center gap-2 hover:bg-stone-50 text-xs sm:text-sm font-medium text-stone-700 shadow-xs transition cursor-pointer"
                   >
                     <img
                       src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -373,7 +371,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                   <button
                     type="button"
                     onClick={handleDemoLogin}
-                    className="w-full bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 py-1.5 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-900 transition"
+                    className="w-full bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 py-1.5 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-900 transition cursor-pointer"
                   >
                     <span>⚡ Instant Demo Login (1-Click Guest)</span>
                   </button>
@@ -383,71 +381,101 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
 
             {/* SIGNUP FORM */}
             {!isLoginView && (
-              <form onSubmit={handleSignUp} className="space-y-3">
-                <div className="relative">
-                  <User
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
-                    size={15}
-                  />
-                  <input
-                    type="text"
-                    className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
-                    placeholder="Full Name"
-                    value={signupName}
-                    onChange={(e) => setSignupName(e.target.value)}
-                  />
+              <div className="space-y-3">
+                <form onSubmit={handleSignUp} className="space-y-2.5">
+                  <div className="relative">
+                    <User
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                      size={15}
+                    />
+                    <input
+                      type="text"
+                      className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-amber-600 focus:bg-white text-xs sm:text-sm transition"
+                      placeholder="Full Name"
+                      value={signupName}
+                      onChange={(e) => setSignupName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <Mail
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                      size={15}
+                    />
+                    <input
+                      type="email"
+                      className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-amber-600 focus:bg-white text-xs sm:text-sm transition"
+                      placeholder="Gmail / Email Address"
+                      value={signupEmail}
+                      onChange={(e) => setSignupEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <Lock
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                      size={15}
+                    />
+                    <input
+                      type="password"
+                      className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-amber-600 focus:bg-white text-xs sm:text-sm transition"
+                      placeholder="Password (min 6 characters)"
+                      value={signupPassword}
+                      onChange={(e) => setSignupPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <Lock
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                      size={15}
+                    />
+                    <input
+                      type="password"
+                      className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-amber-600 focus:bg-white text-xs sm:text-sm transition"
+                      placeholder="Confirm Password"
+                      value={signupConfirmPassword}
+                      onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all shadow-xs cursor-pointer"
+                  >
+                    {isLoading ? "Sending Verification Link..." : "Create Account & Verify Gmail"}
+                  </button>
+                </form>
+
+                {/* Divider */}
+                <div className="relative my-2.5">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-stone-200" />
+                  </div>
+                  <div className="relative flex justify-center text-[10px]">
+                    <span className="px-2 bg-white text-stone-400 font-medium">OR</span>
+                  </div>
                 </div>
 
-                <div className="relative">
-                  <Mail
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
-                    size={15}
-                  />
-                  <input
-                    type="email"
-                    className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
-                    placeholder="Gmail / Email Address"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                  />
-                </div>
-
-                <div className="relative">
-                  <Lock
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
-                    size={15}
-                  />
-                  <input
-                    type="password"
-                    className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
-                    placeholder="Password (min 6 characters)"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                  />
-                </div>
-
-                <div className="relative">
-                  <Lock
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
-                    size={15}
-                  />
-                  <input
-                    type="password"
-                    className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
-                    placeholder="Confirm Password"
-                    value={signupConfirmPassword}
-                    onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                  />
-                </div>
-
+                {/* Social Sign up */}
                 <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all shadow-xs"
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  className="w-full bg-white border border-stone-200/90 py-1.5 rounded-xl flex items-center justify-center gap-2 hover:bg-stone-50 text-xs font-medium text-stone-700 shadow-xs transition cursor-pointer"
                 >
-                  {isLoading ? "Sending Verification Link..." : "Create Account & Verify Gmail"}
+                  <img
+                    src="https://www.svgrepo.com/show/475656/google-color.svg"
+                    className="w-4 h-4"
+                    alt="Google"
+                  />
+                  Sign up with Google
                 </button>
-              </form>
+              </div>
             )}
           </div>
         </div>
