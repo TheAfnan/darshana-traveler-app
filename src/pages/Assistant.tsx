@@ -1,5 +1,21 @@
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { AlertCircle, Bot, Compass, Heart, Languages, MapPin, MessageSquare, Mic, Send, Shield, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { 
+  AlertCircle, 
+  Bot, 
+  Compass, 
+  Heart, 
+  Languages, 
+  MapPin, 
+  MessageSquare, 
+  Mic, 
+  Send, 
+  Shield, 
+  ThumbsDown, 
+  ThumbsUp, 
+  Sparkles,
+  Globe,
+  ChevronRight
+} from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +23,7 @@ import { ASSISTANT_QA } from '../data/assistantQA';
 import { auth } from '../firebase.config';
 import { fetchQuestionsFromDB, saveChatToDB, saveFeedback } from '../services/databaseService';
 import { getChatResponse } from '../services/geminiService';
+import darshanaIcon from '../images/darshana-icon-only.png';
 
 interface Message {
   id: number;
@@ -21,7 +38,6 @@ interface QuickCategory {
   id: string;
   label: string;
   icon: React.ComponentType<any>;
-  color: string;
   questions: string[];
 }
 
@@ -69,11 +85,6 @@ const STATIC_KNOWLEDGE_BASE: StaticKnowledgeEntry[] = [
     answer: "India is a land of festivals! Check out the 'Cultural Odyssey' section to see upcoming festivals, their significance, and dates."
   },
   {
-    id: 'mood-ai',
-    variants: ['mood ai', 'mood analyzer', 'suggest trip based on mood'],
-    answer: "Our Mood AI feature suggests destinations based on how you feel. Go to the 'Mood AI' section, tell us your mood, and we'll recommend the perfect getaway."
-  },
-  {
     id: 'sustainable',
     variants: ['sustainable travel', 'eco friendly', 'green travel'],
     answer: "We promote sustainable tourism. Visit the 'Eco Travel' section to find eco-friendly stays, green routes, and tips to reduce your carbon footprint."
@@ -91,22 +102,12 @@ const STATIC_KNOWLEDGE_BASE: StaticKnowledgeEntry[] = [
   {
     id: 'support',
     variants: ['contact support', 'customer care', 'help desk'],
-    answer: 'You can reach our support team via the \'Contact Us\' page or email us at support@darshana.com.'
+    answer: "You can reach our support team via the 'Contact Us' page or email us at support@darshana.com."
   },
   {
     id: 'best-time',
     variants: ['best time to visit', 'weather', 'season'],
     answer: 'The best time to visit depends on the destination. Generally, October to March is great for most of India. Check specific destination details for more info.'
-  },
-  {
-    id: 'refund',
-    variants: ['refund policy', 'cancellation', 'money back'],
-    answer: 'Cancellations and refunds depend on the specific booking policy of the hotel or transport provider. Please check your booking details for more information.'
-  },
-  {
-    id: 'language',
-    variants: ['language', 'hindi', 'english', 'change language'],
-    answer: "You can change the app language from the 'Language' settings in the sidebar menu."
   }
 ];
 
@@ -149,33 +150,28 @@ const findDynamicKnowledge = (
   let bestLanguage: 'en' | 'hi' = 'en';
   let bestScore = 0;
 
-  const considerCandidate = (entry: KnowledgeBaseEntry, candidate: string | undefined, language: 'en' | 'hi') => {
-    if (!candidate) {
-      return;
-    }
-    const candidateNormalized = normalizeText(candidate);
-    if (!candidateNormalized) {
+  const considerCandidate = (entry: KnowledgeBaseEntry, rawQuestion?: string, language: 'en' | 'hi' = 'en') => {
+    if (!rawQuestion) {
       return;
     }
 
-    let score = normalizedInput === candidateNormalized ? 1 : tokenOverlapScore(inputTokens, toTokenSet(candidate));
+    const normalizedCandidate = normalizeText(rawQuestion);
+    if (!normalizedCandidate) {
+      return;
+    }
 
     if (
-      score < 1 &&
-      (candidateNormalized.includes(normalizedInput) || normalizedInput.includes(candidateNormalized))
+      normalizedCandidate === normalizedInput ||
+      normalizedInput.includes(normalizedCandidate) ||
+      normalizedCandidate.includes(normalizedInput)
     ) {
-      score = Math.max(score, 0.9);
-    }
-
-    if (score === 0) {
+      bestEntry = entry;
+      bestLanguage = language;
+      bestScore = 1;
       return;
     }
 
-    const hasTagMatch = entry.tags?.some((tag) => normalizedInput.includes(normalizeText(tag))) ?? false;
-    if (hasTagMatch) {
-      score = Math.min(1, score + 0.2);
-    }
-
+    const score = tokenOverlapScore(inputTokens, toTokenSet(rawQuestion));
     if (score > bestScore) {
       bestEntry = entry;
       bestLanguage = language;
@@ -238,7 +234,6 @@ const findExtendedQA = (
       continue;
     }
 
-    // Exact or substring match gets top confidence
     if (
       normalizedQuestion === normalizedInput ||
       normalizedInput.includes(normalizedQuestion) ||
@@ -263,23 +258,27 @@ const extractMapLocation = (text: string): string | undefined => {
 
 const Assistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { id: 0, role: 'model', text: 'नमस्ते! मैं सारथी हूँ, आपका AI यात्रा साथी। 🙏\n\nHello! I\'m Sarthi, your AI travel companion. 🙏\n\nPlease select a category below or ask me anything about traveling in India!' }
+    { 
+      id: 0, 
+      role: 'model', 
+      text: 'नमस्ते! मैं सारथी हूँ, आपका AI यात्रा साथी। 🙏\n\nHello! I\'m Sarthi, your AI travel companion. Select a category below or ask me anything about traveling across India!' 
+    }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [listening, setListening] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(true);
-  const [categories, setCategories] = useState<QuickCategory[]>([
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const categories: QuickCategory[] = [
     {
       id: 'itinerary',
       label: 'Yatrika (Itinerary)',
       icon: Compass,
-      color: 'orange',
       questions: [
         'Plan a 7-day North India itinerary',
         'Best South India tour route',
-        'How many days per destination?',
         'Best time to visit Rajasthan?',
         'Budget itinerary for 5 days'
       ]
@@ -288,12 +287,9 @@ const Assistant: React.FC = () => {
       id: 'safety',
       label: 'Safety & Security',
       icon: Shield,
-      color: 'red',
       questions: [
         'Safety tips for solo travelers',
         'Is it safe to travel at night?',
-        'Areas to avoid in major cities',
-        'Stay safe using public transport',
         'Emergency precautions'
       ]
     },
@@ -301,38 +297,29 @@ const Assistant: React.FC = () => {
       id: 'emergency',
       label: 'Emergency Numbers',
       icon: AlertCircle,
-      color: 'rose',
       questions: [
         'Emergency numbers in India',
-        'How to contact the police',
-        'Medical emergency services',
         'Tourist helpline numbers',
-        'Report a crime or incident'
+        'Medical emergency services'
       ]
     },
     {
       id: 'culture',
       label: 'Culture & Language',
       icon: Languages,
-      color: 'purple',
       questions: [
         'Essential Hindi phrases',
         'Major festivals in India',
-        'Indian dining etiquette',
-        'Religious sites significance',
-        'Regional Indian cuisines'
+        'Indian dining etiquette'
       ]
     },
     {
       id: 'experience',
       label: 'Experiences',
       icon: Heart,
-      color: 'pink',
       questions: [
         'Best adventure activities',
         'Top 10 must-visit destinations',
-        'Best trekking routes',
-        'Water sports and beaches',
         'Cultural experiences'
       ]
     },
@@ -340,315 +327,249 @@ const Assistant: React.FC = () => {
       id: 'practical',
       label: 'Practical Info',
       icon: MessageSquare,
-      color: 'cyan',
       questions: [
-        'Required travel documents',
         'Train vs Bus vs Flight',
-        'Currency and payment methods',
-        'Accommodation options',
+        'Currency & payment methods',
         'Visa requirements'
       ]
     }
-  ]);
-  const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeBaseEntry[]>([]);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  ];
 
-  const speakResponse = useCallback(
-    (text: string) => {
-      if (!('speechSynthesis' in window)) {
-        return;
-      }
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = i18n.language === 'hi' ? 'hi-IN' : 'en-US';
-      utterance.rate = 0.9;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
-    },
-    [i18n.language]
-  );
+  const [dbQuestions, setDbQuestions] = useState<KnowledgeBaseEntry[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+
+  const allowAccess = isDemoMode || Boolean(user);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser) {
-        setIsDemoMode(false);
-      }
     });
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
-  // Load questions from backend when component mounts
   useEffect(() => {
     const loadQuestions = async () => {
-      const questions = (await fetchQuestionsFromDB()) as KnowledgeBaseEntry[];
-      setKnowledgeBase(questions);
-      if (questions.length > 0) {
-        // Update categories with DB questions
-        setCategories(prevCats =>
-          prevCats.map(cat => ({
-            ...cat,
-            questions: questions
-              .filter(q => q.category === cat.id)
-              .slice(0, 5)
-              .map(q => q.question)
-          }))
-        );
+      try {
+        const data = await fetchQuestionsFromDB();
+        setDbQuestions(data);
+      } catch {
+        // Fallback
       }
     };
     loadQuestions();
   }, []);
 
-  const allowAccess = user || isDemoMode;
-
-  useEffect(() => {
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const toggleListening = () => {
-    setListening(!listening);
-    if (!listening) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.lang = i18n.language === 'hi' ? 'hi-IN' : 'en-US';
-        recognition.onresult = (event: any) => {
-          const transcript = Array.from(event.results)
-            .map((result: any) => result[0].transcript)
-            .join('');
-          setInput(transcript);
-          setListening(false);
-        };
-        recognition.onerror = () => {
-          setListening(false);
-        };
-        recognition.start();
-      }
-    }
   };
 
-  const handleSend = async (text: string = input) => {
-    if (!text.trim()) return;
-    
-    const userMsg: Message = { id: Date.now(), role: 'user', text };
-    setMessages(prev => [...prev, userMsg]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
+
+  const handleSend = async (messageText?: string) => {
+    const textToSend = messageText || input;
+    if (!textToSend.trim()) return;
+
+    const userMessage: Message = { id: Date.now(), role: 'user', text: textToSend };
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      const normalizedInput = normalizeText(text);
-      const inputTokens = toTokenSet(text);
-      const dynamicMatch = findDynamicKnowledge(normalizedInput, inputTokens, knowledgeBase);
+      if (user) {
+        await saveChatToDB(user.uid, userMessage);
+      }
 
-      let knowledgeAnswer: string | null = null;
+      const inputTokens = toTokenSet(textToSend);
+      const normalizedInput = normalizeText(textToSend);
+      let reply = '';
+      let detectedLocation: string | undefined;
 
+      const dynamicMatch = findDynamicKnowledge(normalizedInput, inputTokens, dbQuestions);
       if (dynamicMatch) {
         const { entry, matchedLanguage } = dynamicMatch;
-        if (i18n.language === 'hi' && entry.answerHi) {
-          knowledgeAnswer = entry.answerHi;
-        } else if (matchedLanguage === 'hi' && entry.answerHi) {
-          knowledgeAnswer = entry.answerHi;
+        if (matchedLanguage === 'hi') {
+          reply = entry.answerHi || entry.answer;
         } else {
-          knowledgeAnswer = entry.answer;
+          reply = entry.answer || entry.answerHi || '';
         }
-      } else {
+      }
+
+      if (!reply) {
+        const staticMatch = tryStaticKnowledge(normalizedInput, inputTokens);
+        if (staticMatch) {
+          reply = staticMatch.answer;
+        }
+      }
+
+      if (!reply) {
         const extendedMatch = findExtendedQA(normalizedInput, inputTokens);
         if (extendedMatch) {
-          knowledgeAnswer = extendedMatch.answer;
-        } else {
-          const staticMatch = tryStaticKnowledge(normalizedInput, inputTokens);
-          if (staticMatch) {
-            knowledgeAnswer = staticMatch.answer;
-          }
+          reply = extendedMatch.answer;
         }
       }
 
-      if (knowledgeAnswer) {
-        const aiMsg: Message = {
-          id: Date.now() + 1,
-          role: 'model',
-          text: knowledgeAnswer,
-        };
-        const mapLocation = extractMapLocation(knowledgeAnswer);
-        if (mapLocation) {
-          aiMsg.mapLocation = mapLocation;
-        }
-        setMessages(prev => [...prev, aiMsg]);
-        speakResponse(knowledgeAnswer);
-
-        if (user) {
-          const updatedMessages = [...messages, userMsg, aiMsg];
-          await saveChatToDB(user.uid, updatedMessages);
-        }
-        return;
+      if (!reply) {
+        reply = await getChatResponse(
+          messages.map((m) => ({ text: m.text, role: m.role })),
+          textToSend
+        );
       }
 
-      const responseText = await getChatResponse(messages, text);
-      const finalText = responseText || 'Sorry, I encountered an error. Please try again.';
+      detectedLocation = extractMapLocation(reply) || extractMapLocation(textToSend);
 
-      const aiMsg: Message = {
+      const botMessage: Message = {
         id: Date.now() + 1,
         role: 'model',
-        text: finalText,
+        text: reply,
+        mapLocation: detectedLocation
       };
 
-      const mapLocation = extractMapLocation(finalText);
-      if (mapLocation) {
-        aiMsg.mapLocation = mapLocation;
-      }
-
-      setMessages(prev => [...prev, aiMsg]);
-      speakResponse(finalText);
+      setMessages((prev) => [...prev, botMessage]);
 
       if (user) {
-        const updatedMessages = [...messages, userMsg, aiMsg];
-        await saveChatToDB(user.uid, updatedMessages);
+        await saveChatToDB(user.uid, botMessage);
       }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      const fallbackText = 'क्षमा करें, त्रुटि हुई। कृपया पुनः प्रयास करें। / Sorry, an error occurred. Please try again.';
-      setMessages(prev => [...prev, { 
-        id: Date.now() + 2, 
-        role: 'model', 
-        text: fallbackText 
-      }]);
-      speakResponse(fallbackText);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: 'model',
+          text: 'I apologize, but I am having trouble connecting. Please check your connection or try again.'
+        }
+      ]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleFeedback = (id: number, type: 'like' | 'dislike') => {
-    setMessages(prev =>
-      prev.map(msg => {
-        if (msg.id === id) {
-          return {
-            ...msg,
-            liked: type === 'like' ? !msg.liked : false,
-            disliked: type === 'dislike' ? !msg.disliked : false
-          };
-        }
-        return msg;
-      })
+  const handleFeedback = async (id: number, feedback: 'like' | 'dislike') => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === id
+          ? {
+              ...msg,
+              liked: feedback === 'like',
+              disliked: feedback === 'dislike'
+            }
+          : msg
+      )
     );
 
-    // Save feedback to database
     if (user) {
-      saveFeedback(user.uid, {
-        liked: type === 'like',
-        disliked: type === 'dislike'
-      });
+      await saveFeedback(user.uid, id, feedback);
     }
   };
 
-  const getColorClasses = (color: string) => {
-    const colorMap: { [key: string]: string } = {
-      orange: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100',
-      red: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100',
-      rose: 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100',
-      purple: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100',
-      pink: 'bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100',
-      cyan: 'bg-cyan-50 text-cyan-700 border-cyan-200 hover:bg-cyan-100'
-    };
-    return colorMap[color] || colorMap.orange;
-  };
+  const toggleListening = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Speech recognition is not supported in your browser.');
+      return;
+    }
 
-  const getIconColor = (color: string) => {
-    const iconMap: { [key: string]: string } = {
-      orange: 'text-orange-600',
-      red: 'text-red-600',
-      rose: 'text-rose-600',
-      purple: 'text-purple-600',
-      pink: 'text-pink-600',
-      cyan: 'text-cyan-600'
-    };
-    return iconMap[color] || iconMap.orange;
-  };
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = i18n.language === 'hi' ? 'hi-IN' : 'en-IN';
+    recognition.continuous = false;
 
-  if (!allowAccess) {
-    return (
-      <div className="min-h-[calc(100vh-80px)] flex items-center justify-center bg-gradient-to-br from-stone-50 to-stone-100 px-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-md w-full text-center border border-stone-200">
-          <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Bot size={40} className="text-orange-600" />
-          </div>
-          <h2 className="text-3xl font-serif font-bold text-stone-800 mb-2">Sarthi</h2>
-          <div className="w-12 h-1 bg-orange-500 mx-auto rounded-full mb-4"></div>
-          <p className="text-stone-600 mb-8 text-base">{t('Please login to use the chatbot.')}</p>
-          <button
-            onClick={() => navigate('/register')}
-            className="w-full px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition shadow-md"
-          >
-            {t('Login')}
-          </button>
-        </div>
-      </div>
-    );
-  }
+    if (!listening) {
+      recognition.start();
+      setListening(true);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setListening(false);
+      };
+      recognition.onerror = () => setListening(false);
+      recognition.onend = () => setListening(false);
+    } else {
+      recognition.stop();
+      setListening(false);
+    }
+  };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 min-h-[calc(100vh-100px)] flex flex-col bg-stone-50">
-      <div className="flex-1 bg-white rounded-2xl shadow-md border border-stone-200 overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="bg-teal-900 p-5 flex items-center justify-between gap-3 text-white">
+    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 min-h-[calc(100vh-90px)] flex flex-col font-sans">
+      <div className="flex-1 bg-white rounded-3xl shadow-sm border border-stone-200 overflow-hidden flex flex-col">
+        
+        {/* Header with DarShana Brand Mark & Language Toggle */}
+        <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 px-5 py-4 flex items-center justify-between gap-3 text-white">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-              <Bot size={28} />
+            <div className="w-11 h-11 rounded-2xl bg-white/10 p-0.5 border border-white/20 flex items-center justify-center shrink-0 shadow-inner">
+              <img src={darshanaIcon} alt="Sarthi" className="w-full h-full rounded-2xl object-cover" />
             </div>
             <div>
-              <h2 className="font-bold text-lg">{t('Yatra Sahayak')}</h2>
-              <p className="text-xs text-teal-100">{t('Your Travel Companion')}</p>
+              <div className="flex items-center gap-2">
+                <h2 className="font-serif font-bold text-base sm:text-lg text-white">Sarthi AI</h2>
+                <span className="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                  GEMINI POWERED
+                </span>
+              </div>
+              <p className="text-xs text-emerald-200">Your Cultural Travel Companion</p>
             </div>
           </div>
+
+          {/* Restyled Language Toggle Pill */}
           <button
             onClick={() => {
               const newLang = i18n.language === 'en' ? 'hi' : 'en';
               i18n.changeLanguage(newLang);
               localStorage.setItem('language', newLang);
             }}
-            className="px-3 py-2 bg-teal-800 hover:bg-teal-700 rounded-lg text-sm font-medium transition"
+            className="px-3.5 py-1.5 bg-white/15 hover:bg-white/25 border border-white/20 rounded-full text-xs font-semibold text-white transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
             title="Toggle Language"
           >
-            {i18n.language === 'en' ? 'हिन्दी' : 'English'}
+            <Globe size={13} className="text-emerald-300" />
+            <span>{i18n.language === 'en' ? 'हिन्दी' : 'English'}</span>
           </button>
         </div>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-stone-50">
-          {messages.map((msg, idx) => {
+        {/* Messages Scroll Area */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3.5 bg-[#faf9f6]">
+          {messages.map((msg) => {
             const isAi = msg.role === 'model';
             return (
-              <div key={idx} className={`flex ${isAi ? 'justify-start' : 'justify-end'}`}>
+              <div key={msg.id} className={`flex ${isAi ? 'justify-start' : 'justify-end'}`}>
                 <div
-                  className={`max-w-[75%] rounded-2xl px-5 py-3 ${
+                  className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed ${
                     isAi
-                      ? 'bg-white text-stone-800 border border-stone-200 rounded-tl-none shadow-sm'
-                      : 'bg-orange-600 text-white rounded-tr-none shadow-sm'
+                      ? 'bg-white text-slate-800 border border-stone-200 rounded-tl-none shadow-xs'
+                      : 'bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-tr-none shadow-xs'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.text}</p>
+                  <p className="whitespace-pre-wrap">{msg.text}</p>
+                  
                   {msg.mapLocation && (
-                    <div className="mt-3 flex items-center gap-2 text-orange-600 font-medium text-sm">
-                      <MapPin size={16} />
+                    <div className="mt-2.5 flex items-center gap-1.5 text-orange-600 font-semibold text-xs">
+                      <MapPin size={14} />
                       <span>{msg.mapLocation}</span>
                     </div>
                   )}
-                  {isAi && (
-                    <div className="mt-3 flex gap-4">
+
+                  {/* Feedback Buttons: ONLY for actual AI answers (NOT for initial greeting msg.id === 0) */}
+                  {isAi && msg.id !== 0 && (
+                    <div className="mt-2.5 pt-2 border-t border-stone-100 flex items-center gap-3">
                       <button
-                        aria-label="Like"
+                        aria-label="Helpful"
                         onClick={() => handleFeedback(msg.id, 'like')}
-                        className={`transition ${msg.liked ? 'text-orange-600' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`p-1 rounded-md transition cursor-pointer ${
+                          msg.liked ? 'text-orange-600 bg-orange-50' : 'text-stone-400 hover:text-stone-700'
+                        }`}
                       >
-                        <ThumbsUp size={16} />
+                        <ThumbsUp size={14} />
                       </button>
                       <button
-                        aria-label="Dislike"
+                        aria-label="Not helpful"
                         onClick={() => handleFeedback(msg.id, 'dislike')}
-                        className={`transition ${msg.disliked ? 'text-stone-600' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`p-1 rounded-md transition cursor-pointer ${
+                          msg.disliked ? 'text-stone-700 bg-stone-100' : 'text-stone-400 hover:text-stone-700'
+                        }`}
                       >
-                        <ThumbsDown size={16} />
+                        <ThumbsDown size={14} />
                       </button>
                     </div>
                   )}
@@ -656,76 +577,89 @@ const Assistant: React.FC = () => {
               </div>
             );
           })}
+
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-stone-200 shadow-sm flex gap-2">
-                <span className="w-2 h-2 bg-stone-400 rounded-full animate-bounce"></span>
-                <span className="w-2 h-2 bg-stone-400 rounded-full animate-bounce delay-75"></span>
-                <span className="w-2 h-2 bg-stone-400 rounded-full animate-bounce delay-150"></span>
+              <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-none border border-stone-200 shadow-xs flex items-center gap-2 text-xs text-slate-500">
+                <span className="w-2 h-2 bg-orange-500 rounded-full animate-bounce"></span>
+                <span className="w-2 h-2 bg-orange-500 rounded-full animate-bounce delay-75"></span>
+                <span className="w-2 h-2 bg-orange-500 rounded-full animate-bounce delay-150"></span>
+                <span className="ml-1 text-slate-600 font-medium">Sarthi is typing...</span>
               </div>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Quick Categories */}
-        {messages.length < 6 && (
-          <div className="px-6 py-4 bg-white border-t border-stone-200 space-y-3">
-            <p className="text-xs text-stone-600 font-semibold uppercase">Quick Categories</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {categories.map(category => (
-                <div key={category.id} className={`p-3 rounded-lg border-2 ${getColorClasses(category.color)} cursor-pointer transition`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <category.icon size={16} className={getIconColor(category.color)} />
-                    <span className="font-semibold text-xs">{category.label}</span>
-                  </div>
-                  <div className="space-y-1">
-                    {category.questions.slice(0, 2).map((q, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSend(q)}
-                        className="text-xs text-left hover:underline line-clamp-1 opacity-75 hover:opacity-100 transition"
-                      >
-                        • {q.substring(0, 25)}...
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
+        {/* Compact Quick Categories Section (Neutral Cards + Brand Orange/Green Icons) */}
+        {messages.length < 5 && (
+          <div className="px-4 py-3 bg-white border-t border-stone-200 space-y-2">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              Quick Suggestions
+            </span>
+            
+            {/* Horizontal Scrollable Compact Chips */}
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+              {categories.map((cat, idx) => {
+                const Icon = cat.icon;
+                const iconColor = idx % 2 === 0 ? 'text-orange-600' : 'text-emerald-700';
+                const isExpanded = selectedCategory === cat.id;
+                
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      if (isExpanded) {
+                        setSelectedCategory(null);
+                      } else {
+                        setSelectedCategory(cat.id);
+                        handleSend(cat.questions[0]);
+                      }
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 hover:border-orange-300 text-xs font-semibold text-slate-800 transition shrink-0 cursor-pointer shadow-2xs group"
+                  >
+                    <Icon size={15} className={`${iconColor} group-hover:scale-110 transition-transform shrink-0`} />
+                    <span>{cat.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* Input Area */}
-        <div className="p-6 bg-white border-t border-stone-200">
-          <div className="flex items-center gap-3 bg-stone-100 rounded-xl px-5 py-3 focus-within:ring-2 focus-within:ring-orange-500 transition ring-offset-1">
+        {/* Sticky Input Area */}
+        <div className="p-3 sm:p-4 bg-white border-t border-stone-200 sticky bottom-0 z-10">
+          <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-2xl px-3 py-2 focus-within:border-orange-500 focus-within:bg-white transition">
             <button
               onClick={toggleListening}
-              className={`p-2 rounded-lg transition ${listening ? 'bg-orange-600 text-white' : 'bg-stone-300 text-stone-700 hover:bg-stone-400'}`}
+              className={`p-2 rounded-xl transition cursor-pointer ${
+                listening ? 'bg-orange-600 text-white' : 'bg-stone-200 text-slate-600 hover:bg-stone-300'
+              }`}
               aria-label={listening ? 'Stop listening' : 'Start listening'}
               title="Voice Input"
             >
-              <Mic size={20} />
+              <Mic size={17} />
             </button>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder={t('Ask about destinations, food, or culture...')}
-              className="flex-1 bg-transparent border-none focus:outline-none text-stone-800 placeholder-stone-500 text-base"
+              placeholder={t('Ask Sarthi about routes, monuments, culture, safety...')}
+              className="flex-1 bg-transparent border-none focus:outline-none text-slate-800 placeholder-stone-400 text-xs sm:text-sm"
             />
             <button
               onClick={() => handleSend()}
               disabled={!input.trim() || isLoading}
-              className="p-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 transition shadow-sm"
+              className="p-2.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold rounded-xl disabled:opacity-40 transition shadow-sm cursor-pointer"
               title="Send Message"
               aria-label="Send message"
             >
-              <Send size={20} />
+              <Send size={16} />
             </button>
           </div>
         </div>
+
       </div>
     </div>
   );

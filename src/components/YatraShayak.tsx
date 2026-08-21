@@ -1,7 +1,9 @@
 import { Bot, Compass, Loader2, MessageCircle, RefreshCw, Send, Shield, Sparkles, User, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { yatraShayakApi } from '../services/api';
 import { getChatResponse } from '../services/geminiService';
+import darshanaIcon from '../images/darshana-icon-only.png';
 
 interface YatraShayakProps {
   onSafetyClick?: () => void;
@@ -15,6 +17,7 @@ const QUICK_SUGGESTIONS = [
 ];
 
 const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [history, setHistory] = useState<{ type: 'user' | 'bot'; text: string; time: string }[]>([
@@ -37,6 +40,11 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
     }
   }, [history, isOpen, loading]);
 
+  // If user is on the dedicated /assistant page, do not render floating widget to avoid overlap
+  if (location.pathname === '/assistant') {
+    return null;
+  }
+
   const sendMessage = async (textToSend?: string) => {
     const query = textToSend || message;
     if (!query.trim() || loading) return;
@@ -47,7 +55,6 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
     setLoading(true);
 
     try {
-      // First try backend API
       const res = await yatraShayakApi.chat(query);
       const botTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       if (res.success && res.data && (res.data as any).response) {
@@ -56,7 +63,6 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
         return;
       }
       
-      // Fallback to Gemini AI service
       const reply = await getChatResponse(history, query);
       setHistory(prev => [...prev, { type: 'bot', text: reply, time: botTime }]);
     } catch (error) {
@@ -79,7 +85,6 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
     ]);
   };
 
-  // Render markdown bold, lists, and headers formatting nicely
   const renderFormattedMessage = (text: string) => {
     if (!text) return null;
     const lines = text.split('\n');
@@ -90,7 +95,6 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
       const isBullet = line.trim().startsWith('* ') || line.trim().startsWith('- ');
       let content = isBullet ? line.trim().replace(/^[\*\-]\s+/, '') : line;
 
-      // Handle bold syntax **bold text**
       const parts = content.split(/(\*\*.*?\*\*)/g);
       const formattedParts = parts.map((part, partIdx) => {
         if (part.startsWith('**') && part.endsWith('**')) {
@@ -122,11 +126,13 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
 
   return (
     <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-3 font-sans">
-      {/* Floating Teaser pill when closed */}
+      {/* Floating Teaser Pill ONLY when closed */}
       {!isOpen && (
         <div className="flex flex-col items-end animate-bounce-slow">
-          <div className="bg-slate-900/90 backdrop-blur-xl border border-amber-500/30 py-2.5 px-4 rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] mb-2 flex items-center gap-2.5 hover:border-amber-400 transition-all cursor-pointer"
-               onClick={() => setIsOpen(true)}>
+          <div 
+            className="bg-slate-900/95 backdrop-blur-xl border border-amber-500/30 py-2.5 px-4 rounded-2xl shadow-xl mb-2 flex items-center gap-2.5 hover:border-amber-400 transition-all cursor-pointer"
+            onClick={() => setIsOpen(true)}
+          >
             <div className="relative">
               <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full inline-block animate-ping absolute top-0 right-0"></span>
               <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block"></span>
@@ -143,7 +149,7 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
             {onSafetyClick && (
               <button
                 onClick={onSafetyClick}
-                className="bg-gradient-to-r from-rose-600 to-red-500 text-white p-3.5 rounded-full shadow-[0_8px_20px_-4px_rgba(225,29,72,0.6)] hover:scale-105 transition-all group"
+                className="bg-gradient-to-r from-rose-600 to-red-500 text-white p-3.5 rounded-full shadow-lg hover:scale-105 transition-all group cursor-pointer"
                 title="Emergency SOS Dashboard"
               >
                 <Shield className="w-5 h-5 animate-pulse" />
@@ -155,7 +161,7 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
 
             <button
               onClick={() => setIsOpen(true)}
-              className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 p-4 rounded-full shadow-[0_10px_30px_-5px_rgba(245,158,11,0.6)] hover:scale-110 transition-all flex items-center justify-center relative group"
+              className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 p-4 rounded-full shadow-xl hover:scale-110 transition-all flex items-center justify-center relative group cursor-pointer"
               aria-label="Open Sarthi AI Assistant"
             >
               <MessageCircle size={26} className="text-slate-950 fill-slate-950" />
@@ -168,148 +174,129 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
         </div>
       )}
 
-      {/* Expanded Chatbot Modal */}
+      {/* Main Sarthi Chat Modal */}
       {isOpen && (
-        <div className="w-80 sm:w-[380px] h-[540px] rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] border border-amber-500/20 bg-slate-950/95 backdrop-blur-2xl flex flex-col transition-all duration-300 animate-in fade-in slide-in-from-bottom-5">
+        <div className="w-[360px] sm:w-[420px] h-[580px] bg-slate-950/95 backdrop-blur-2xl border border-amber-500/30 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-100 animate-in fade-in zoom-in-95 duration-200">
+          
           {/* Header */}
-          <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-800 p-4 border-b border-amber-500/20 flex items-center justify-between shadow-md relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent pointer-events-none" />
-            
-            <div className="flex items-center gap-3 relative z-10">
+          <div className="p-4 bg-slate-900/90 border-b border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-400 p-0.5 shadow-md flex items-center justify-center">
-                  <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center text-amber-400 font-bold text-lg">
-                    <Bot size={20} className="text-amber-400" />
-                  </div>
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 p-0.5 shadow-md flex items-center justify-center">
+                  <img src={darshanaIcon} alt="Sarthi" className="w-full h-full rounded-2xl object-cover" />
                 </div>
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
+                <span className="w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full absolute -bottom-0.5 -right-0.5"></span>
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-bold text-slate-100 text-sm tracking-wide">SARTHI AI</h3>
-                  <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] px-1.5 py-0.5 rounded-full font-mono">
                     GEMINI
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 flex items-center gap-1">
-                  <Compass size={11} className="text-amber-400" /> Yatra Sahayak • Active
+                <p className="text-[11px] text-emerald-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+                  Active Travel Assistant
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 relative z-10">
-              <button
+            <div className="flex items-center gap-1">
+              <button 
                 onClick={handleClearHistory}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-amber-300 hover:bg-slate-800/80 transition-colors"
+                className="p-1.5 text-slate-400 hover:text-amber-300 hover:bg-white/5 rounded-xl transition cursor-pointer"
                 title="Reset conversation"
               >
                 <RefreshCw size={15} />
               </button>
-              <button
+              <button 
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
-                aria-label="Close chat"
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition cursor-pointer"
+                title="Close chat"
               >
                 <X size={18} />
               </button>
             </div>
           </div>
 
-          {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-slate-950 via-slate-900/40 to-slate-950 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
-            {history.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex gap-2.5 ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                {msg.type === 'bot' && (
-                  <div className="w-7 h-7 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 mt-1 text-amber-400">
-                    <Bot size={14} />
-                  </div>
-                )}
-
-                <div className={`group relative max-w-[84%] flex flex-col ${msg.type === 'user' ? 'items-end' : 'items-start'}`}>
-                  <div
-                    className={`px-4 py-3 rounded-2xl text-xs sm:text-sm shadow-lg ${
-                      msg.type === 'user'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-medium rounded-tr-xs'
-                        : 'bg-slate-900/90 border border-slate-800/90 text-slate-200 rounded-tl-xs backdrop-blur-md'
-                    }`}
-                  >
-                    {msg.type === 'user' ? (
-                      <p className="leading-relaxed">{msg.text}</p>
-                    ) : (
-                      renderFormattedMessage(msg.text)
-                    )}
-                  </div>
-                  <span className="text-[9px] text-slate-500 mt-1 px-1">{msg.time}</span>
-                </div>
-
-                {msg.type === 'user' && (
-                  <div className="w-7 h-7 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center shrink-0 mt-1 text-orange-400">
-                    <User size={14} />
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {/* Typing Loader */}
-            {loading && (
-              <div className="flex gap-2.5 justify-start items-center">
-                <div className="w-7 h-7 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <Bot size={14} />
-                </div>
-                <div className="bg-slate-900/90 border border-slate-800/90 px-4 py-3 rounded-2xl rounded-tl-xs text-xs text-amber-300/90 flex items-center gap-2 shadow-md">
-                  <Loader2 className="animate-spin text-amber-400" size={14} />
-                  <span className="font-medium text-xs tracking-wide">Sarthi is thinking...</span>
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Quick Suggestions Chips */}
-          <div className="px-3 py-2 bg-slate-950/80 border-t border-slate-900/80 flex overflow-x-auto gap-2 no-scrollbar">
-            {QUICK_SUGGESTIONS.map((sug, i) => (
+          {/* Quick suggestions pills */}
+          <div className="px-3 py-2 bg-slate-900/50 border-b border-white/5 flex gap-1.5 overflow-x-auto scrollbar-none">
+            {QUICK_SUGGESTIONS.map((sug, idx) => (
               <button
-                key={i}
-                onClick={() => sendMessage(sug)}
-                disabled={loading}
-                className="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 hover:border-amber-500/40 text-[11px] text-slate-300 hover:text-amber-300 whitespace-nowrap transition-all shrink-0 hover:bg-slate-800/60"
+                key={idx}
+                onClick={() => sendMessage(sug.replace(/^.+?\s/, ''))}
+                className="text-[11px] bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-400/40 text-slate-300 hover:text-amber-200 px-2.5 py-1 rounded-full whitespace-nowrap transition shrink-0 cursor-pointer"
               >
                 {sug}
               </button>
             ))}
           </div>
 
-          {/* Input Footer */}
-          <div className="p-3 bg-slate-900/90 border-t border-slate-800/80">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                sendMessage();
-              }}
-              className="flex items-center gap-2 bg-slate-950/90 border border-slate-800 rounded-2xl px-3 py-1.5 focus-within:border-amber-500/60 focus-within:ring-1 focus-within:ring-amber-500/30 transition-all shadow-inner"
-            >
+          {/* Chat Messages */}
+          <div className="flex-1 p-4 overflow-y-auto space-y-3.5 scrollbar-thin scrollbar-thumb-white/10">
+            {history.map((msg, index) => {
+              const isUser = msg.type === 'user';
+              return (
+                <div key={index} className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+                  {!isUser && (
+                    <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden">
+                      <img src={darshanaIcon} alt="Sarthi" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  {isUser && (
+                    <div className="w-7 h-7 rounded-xl bg-slate-700 flex items-center justify-center shrink-0 mt-0.5 text-slate-300">
+                      <User size={14} />
+                    </div>
+                  )}
+                  
+                  <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-xs shadow-sm ${
+                    isUser 
+                      ? 'bg-amber-600 text-white rounded-tr-none' 
+                      : 'bg-slate-900 border border-white/10 text-slate-200 rounded-tl-none'
+                  }`}>
+                    {isUser ? <p className="leading-relaxed">{msg.text}</p> : renderFormattedMessage(msg.text)}
+                    <span className={`text-[9px] block mt-1.5 opacity-60 ${isUser ? 'text-right text-amber-100' : 'text-left text-slate-400'}`}>
+                      {msg.time}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+
+            {loading && (
+              <div className="flex items-start gap-2.5">
+                <div className="w-7 h-7 rounded-xl bg-amber-600 flex items-center justify-center shrink-0 overflow-hidden">
+                  <img src={darshanaIcon} alt="Sarthi" className="w-full h-full object-cover" />
+                </div>
+                <div className="bg-slate-900 border border-white/10 rounded-2xl rounded-tl-none px-4 py-3 text-xs text-amber-300 flex items-center gap-2">
+                  <Loader2 size={14} className="animate-spin text-amber-400" />
+                  <span className="font-medium text-xs">Sarthi is thinking...</span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Sticky Input Bar */}
+          <div className="p-3 bg-slate-900/90 border-t border-white/10">
+            <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex items-center gap-2">
               <input
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Ask Sarthi about routes, food, safety..."
-                className="flex-1 bg-transparent text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none py-1.5"
+                className="flex-1 bg-slate-950 border border-white/15 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none transition"
               />
               <button
                 type="submit"
-                disabled={loading || !message.trim()}
-                className="p-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0 shadow-md"
-                aria-label="Send message"
-                title="Send"
+                disabled={!message.trim() || loading}
+                className="p-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-40 text-slate-950 font-bold rounded-xl transition shadow-sm cursor-pointer"
               >
-                <Send size={15} className="fill-slate-950" />
+                <Send size={15} />
               </button>
             </form>
           </div>
+
         </div>
       )}
     </div>
