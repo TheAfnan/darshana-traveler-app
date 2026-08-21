@@ -192,7 +192,12 @@ const CulturalPlanner: React.FC = () => {
       <div className="max-w-5xl mx-auto space-y-8">
 
         {/* Page Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-900 rounded-full text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Hugging Face AI Dataset Connected</span>
+            <span className="text-[10px] bg-amber-200/80 px-1.5 py-0.5 rounded font-mono">JSONL RAG Graph</span>
+          </div>
           <h1 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900">
             Cultural Journey Planner
           </h1>
