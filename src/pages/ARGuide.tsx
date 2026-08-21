@@ -11,6 +11,7 @@ import {
   Compass, 
   BookOpen, 
   ArrowRight,
+  Sparkles,
   Image as ImageIcon
 } from 'lucide-react';
 import { analyzeMonumentPhoto, CURATED_MONUMENTS_DATA } from '../services/monumentScanApi';
@@ -180,187 +181,193 @@ export const ARGuide: React.FC = () => {
   const activePhoto = capturedImage || monumentResult?.imageUrl || CURATED_MONUMENTS_DATA['taj mahal'].imageUrl;
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 pb-20 selection:bg-orange-500 selection:text-white">
-      {/* Header Banner */}
-      <div className="max-w-6xl mx-auto px-4 pt-24 pb-8 text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-slate-300 text-xs font-medium">
-          <Landmark size={13} className="text-orange-500" />
-          <span>Heritage Lens & Monument Identifier</span>
-        </div>
-        <h1 className="text-3xl sm:text-5xl font-sans font-extrabold text-white tracking-tight">
-          Monument Scan & History Guide
-        </h1>
-        <p className="text-slate-400 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-          Point your camera or upload a photo of any Indian landmark to discover its architecture, history, and key insights.
-        </p>
-      </div>
+    <div className="min-h-screen bg-[#faf9f6] text-slate-800 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-4xl mx-auto space-y-6">
 
-      <div className="max-w-4xl mx-auto px-4">
+        {/* Page Header (Matching Cultural Planner & App Aesthetic) */}
+        <div className="text-center space-y-2 mb-6">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200/80 rounded-full text-xs font-semibold shadow-2xs">
+            <Landmark size={13} className="text-amber-700" />
+            <span>Heritage Lens & Monument Identifier</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900 tracking-tight">
+            Monument Scan & History Guide
+          </h1>
+          <p className="text-slate-500 text-sm max-w-xl mx-auto leading-relaxed">
+            Point your camera or upload a photo of any Indian landmark to discover its architecture, history, and key insights.
+          </p>
+        </div>
+
         {/* VIEWPORT & SCANNER CONTAINER */}
         {!monumentResult ? (
           <div className="space-y-6">
-            <div className="relative rounded-3xl overflow-hidden bg-[#0e1322] border border-slate-800 shadow-2xl aspect-[4/3] sm:aspect-[16/9] flex items-center justify-center">
+            <div className="bg-white rounded-3xl border border-stone-200 p-4 sm:p-5 shadow-xs space-y-4">
               
-              {/* Live Video Feed */}
-              {cameraActive && !capturedImage && (
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                />
-              )}
+              {/* Camera Video Viewport */}
+              <div className="relative rounded-2xl overflow-hidden bg-slate-950 border border-stone-800 shadow-inner aspect-[4/3] sm:aspect-[16/9] flex items-center justify-center">
+                
+                {/* Live Video Feed */}
+                {cameraActive && !capturedImage && (
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                )}
 
-              {/* Captured Image Preview */}
-              {capturedImage && (
-                <img
-                  src={capturedImage}
-                  alt="Captured Landmark"
-                  className="w-full h-full object-cover"
-                />
-              )}
+                {/* Captured Image Preview */}
+                {capturedImage && (
+                  <img
+                    src={capturedImage}
+                    alt="Captured Landmark"
+                    className="w-full h-full object-cover"
+                  />
+                )}
 
-              {/* Hidden Canvas for capture */}
-              <canvas ref={canvasRef} className="hidden" />
+                {/* Hidden Canvas for capture */}
+                <canvas ref={canvasRef} className="hidden" />
 
-              {/* AR HUD Overlay */}
-              <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2 bg-slate-950/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium text-slate-200">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    <span>{cameraActive ? 'Camera Active' : 'Ready to Scan'}</span>
+                {/* Viewfinder Overlay */}
+                <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-5">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium text-slate-200">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                      <span>{cameraActive ? 'Camera Active' : 'Ready to Scan'}</span>
+                    </div>
+                    <div className="text-[11px] font-mono text-slate-300 bg-slate-900/80 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
+                      1.0X
+                    </div>
                   </div>
-                  <div className="text-[11px] font-mono text-slate-400 bg-slate-950/70 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
-                    1.0X
+
+                  {/* Center Reticle */}
+                  <div className="relative w-48 sm:w-64 h-48 sm:h-64 mx-auto border border-white/30 rounded-2xl flex items-center justify-center">
+                    <div className="absolute -top-1 -left-1 w-5 h-5 border-t-2 border-l-2 border-white rounded-tl-lg" />
+                    <div className="absolute -top-1 -right-1 w-5 h-5 border-t-2 border-r-2 border-white rounded-tr-lg" />
+                    <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-2 border-l-2 border-white rounded-bl-lg" />
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-2 border-r-2 border-white rounded-br-lg" />
+
+                    {isScanning && (
+                      <motion.div
+                        animate={{ y: [-70, 70, -70] }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                        className="w-full h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"
+                      />
+                    )}
+
+                    {!isScanning && (
+                      <span className="text-xs text-white font-medium px-3 py-1 bg-slate-900/80 backdrop-blur-md rounded-full border border-white/10 shadow-sm">
+                        Align Landmark
+                      </span>
+                    )}
                   </div>
-                </div>
 
-                {/* Center Reticle */}
-                <div className="relative w-48 sm:w-72 h-48 sm:h-72 mx-auto border border-white/20 rounded-3xl flex items-center justify-center">
-                  <div className="absolute -top-1 -left-1 w-5 h-5 border-t-2 border-l-2 border-white rounded-tl-xl" />
-                  <div className="absolute -top-1 -right-1 w-5 h-5 border-t-2 border-r-2 border-white rounded-tr-xl" />
-                  <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-2 border-l-2 border-white rounded-bl-xl" />
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-2 border-r-2 border-white rounded-br-xl" />
-
-                  {isScanning && (
-                    <motion.div
-                      animate={{ y: [-80, 80, -80] }}
-                      transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                      className="w-full h-0.5 bg-gradient-to-r from-transparent via-orange-400 to-transparent"
-                    />
-                  )}
-
-                  {!isScanning && (
-                    <span className="text-xs text-slate-300 font-medium px-3 py-1 bg-slate-950/80 backdrop-blur-md rounded-full border border-white/10">
-                      Align Monument
+                  <div className="text-center">
+                    <span className="text-xs text-slate-200 bg-slate-900/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 inline-block shadow-md">
+                      {isScanning ? 'Analyzing architecture...' : 'Point at monument facade or dome'}
                     </span>
-                  )}
+                  </div>
                 </div>
 
-                <div className="text-center">
-                  <span className="text-xs text-slate-300 bg-slate-950/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 inline-block shadow-md">
-                    {isScanning ? 'Analyzing architecture...' : 'Point at facade or dome and capture'}
-                  </span>
-                </div>
+                {/* Camera Fallback State */}
+                {cameraError && !capturedImage && (
+                  <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-3 z-20">
+                    <div className="w-12 h-12 rounded-full bg-stone-900 border border-stone-800 flex items-center justify-center">
+                      <Camera size={22} className="text-amber-500" />
+                    </div>
+                    <div className="space-y-1 max-w-sm">
+                      <h3 className="text-sm font-bold text-white">Camera Access</h3>
+                      <p className="text-xs text-slate-300 leading-relaxed">{cameraError}</p>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                      <button
+                        onClick={startCamera}
+                        disabled={isRequestingCamera}
+                        className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                      >
+                        <RefreshCw size={13} className={isRequestingCamera ? 'animate-spin' : ''} />
+                        <span>{isRequestingCamera ? 'Connecting...' : 'Allow Camera'}</span>
+                      </button>
+                      <button
+                        onClick={() => nativeCameraInputRef.current?.click()}
+                        className="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Camera size={13} className="text-amber-400" />
+                        <span>Take Photo</span>
+                      </button>
+                      <button
+                        onClick={() => galleryInputRef.current?.click()}
+                        className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-slate-300 text-xs font-semibold rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Upload size={13} />
+                        <span>Upload</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Camera Fallback State */}
-              {cameraError && !capturedImage && (
-                <div className="absolute inset-0 bg-[#0e1322]/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 z-20">
-                  <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                    <Camera size={24} className="text-orange-400" />
-                  </div>
-                  <div className="space-y-1 max-w-sm">
-                    <h3 className="text-sm font-semibold text-white">Camera Access</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">{cameraError}</p>
-                  </div>
-                  
-                  <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
-                    <button
-                      onClick={startCamera}
-                      disabled={isRequestingCamera}
-                      className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <RefreshCw size={13} className={isRequestingCamera ? 'animate-spin' : ''} />
-                      <span>{isRequestingCamera ? 'Connecting...' : 'Allow Camera'}</span>
-                    </button>
-                    <button
-                      onClick={() => nativeCameraInputRef.current?.click()}
-                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Camera size={13} className="text-orange-400" />
-                      <span>Take Photo</span>
-                    </button>
-                    <button
-                      onClick={() => galleryInputRef.current?.click()}
-                      className="px-4 py-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Upload size={13} />
-                      <span>Upload</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+              {/* Action Buttons Bar */}
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                {cameraActive && (
+                  <button
+                    onClick={handleCaptureFrame}
+                    disabled={isScanning}
+                    className="w-full sm:w-auto px-7 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Camera size={15} />
+                    <span>{isScanning ? 'Identifying...' : 'Capture & Identify'}</span>
+                  </button>
+                )}
 
-            {/* SCANNER CONTROLS */}
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              {cameraActive && (
+                {/* Native Mobile Camera Snap */}
+                <input
+                  ref={nativeCameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
                 <button
-                  onClick={handleCaptureFrame}
+                  onClick={() => nativeCameraInputRef.current?.click()}
                   disabled={isScanning}
-                  className="w-full sm:w-auto px-7 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
+                  className="px-5 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-semibold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
                 >
-                  <Camera size={16} />
-                  <span>{isScanning ? 'Identifying...' : 'Capture & Identify'}</span>
+                  <Camera size={15} className="text-amber-700" />
+                  <span>Snap with Phone Camera</span>
                 </button>
-              )}
 
-              {/* Native Mobile Camera Snap */}
-              <input
-                ref={nativeCameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <button
-                onClick={() => nativeCameraInputRef.current?.click()}
-                disabled={isScanning}
-                className="px-5 py-3 bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-slate-200 font-semibold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Camera size={15} className="text-orange-400" />
-                <span>Snap with Camera</span>
-              </button>
+                {/* Upload From Gallery */}
+                <input
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => galleryInputRef.current?.click()}
+                  disabled={isScanning}
+                  className="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-200 text-slate-700 font-medium text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <ImageIcon size={15} className="text-stone-500" />
+                  <span>Choose Photo</span>
+                </button>
+              </div>
 
-              {/* Upload From Gallery */}
-              <input
-                ref={galleryInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <button
-                onClick={() => galleryInputRef.current?.click()}
-                disabled={isScanning}
-                className="px-5 py-3 bg-slate-800/50 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <ImageIcon size={15} className="text-slate-400" />
-                <span>Choose Photo</span>
-              </button>
             </div>
 
-            {/* QUICK PRESET SELECTOR */}
-            <div className="bg-[#0e1322] border border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-3">
+            {/* QUICK PRESET DEMO CARD */}
+            <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-xs space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Landmark size={14} className="text-orange-500" />
+                <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                  <Landmark size={14} className="text-amber-600" />
                   Popular Landmark Demos
                 </span>
-                <span className="text-[11px] text-slate-500">Instant Preview</span>
+                <span className="text-[11px] text-slate-400">Instant Preview</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {[
@@ -374,7 +381,7 @@ export const ARGuide: React.FC = () => {
                   <button
                     key={demo.key}
                     onClick={() => handleSelectCuratedPreset(demo.key)}
-                    className="px-3 py-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-orange-500/40 rounded-lg text-xs text-slate-300 hover:text-white transition cursor-pointer"
+                    className="px-3 py-1.5 bg-stone-50 hover:bg-amber-50 hover:text-amber-900 border border-stone-200 hover:border-amber-300 rounded-xl text-xs text-slate-700 transition cursor-pointer"
                   >
                     {demo.name}
                   </button>
@@ -383,80 +390,80 @@ export const ARGuide: React.FC = () => {
             </div>
           </div>
         ) : (
-          /* RESULT VIEW: CLEAN SAAS MONUMENT CARD */
+          /* RESULT VIEW: CLEAN MATCHING MONUMENT CARD */
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <div className="bg-[#0e1322] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-xs">
               
-              {/* Header Editorial Image */}
-              <div className="relative h-64 sm:h-80 bg-slate-950 overflow-hidden">
+              {/* Destination Editorial Showcase Header */}
+              <div className="relative h-64 sm:h-80 bg-slate-900 overflow-hidden text-white">
                 <img
                   src={activePhoto}
                   alt={monumentResult.name}
-                  className="w-full h-full object-cover filter brightness-95"
+                  className="w-full h-full object-cover opacity-85 filter brightness-95"
                 />
                 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0e1322] via-[#0e1322]/50 to-transparent p-6 sm:p-8 flex flex-col justify-end">
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent p-6 sm:p-8 flex flex-col justify-end">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="px-2.5 py-1 bg-slate-900/90 border border-slate-700 text-slate-200 text-xs font-medium rounded-full flex items-center gap-1.5 shadow-sm">
-                      <MapPin size={12} className="text-orange-500" />
+                    <span className="px-3 py-1 bg-slate-900/80 backdrop-blur-md border border-white/20 text-white text-xs font-semibold rounded-full flex items-center gap-1.5 shadow-sm">
+                      <MapPin size={12} className="text-amber-400" />
                       {monumentResult.location}
                     </span>
                   </div>
 
-                  <h2 className="text-2xl sm:text-4xl font-sans font-extrabold text-white tracking-tight">
+                  <h2 className="text-2xl sm:text-4xl font-serif font-bold text-white mb-1">
                     {monumentResult.name}
                   </h2>
                 </div>
               </div>
 
-              {/* Architecture Details Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-5 sm:p-6 bg-slate-950/40 border-b border-slate-800/80 text-xs">
-                <div className="p-3.5 bg-slate-900/60 border border-slate-800/80 rounded-xl space-y-1">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Historic Era</span>
-                  <p className="font-semibold text-slate-200">{monumentResult.era}</p>
+              {/* Architecture Quick Facts Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-5 sm:p-6 bg-stone-50/80 border-b border-stone-100 text-xs">
+                <div className="p-3.5 bg-white border border-stone-200 rounded-xl space-y-1 shadow-2xs">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Historic Era</span>
+                  <p className="font-semibold text-slate-800">{monumentResult.era}</p>
                 </div>
-                <div className="p-3.5 bg-slate-900/60 border border-slate-800/80 rounded-xl space-y-1">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Commissioned By</span>
-                  <p className="font-semibold text-slate-200">{monumentResult.builtBy}</p>
+                <div className="p-3.5 bg-white border border-stone-200 rounded-xl space-y-1 shadow-2xs">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Commissioned By</span>
+                  <p className="font-semibold text-slate-800">{monumentResult.builtBy}</p>
                 </div>
-                <div className="p-3.5 bg-slate-900/60 border border-slate-800/80 rounded-xl space-y-1">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Architectural Style</span>
-                  <p className="font-semibold text-slate-200">{monumentResult.architectureStyle}</p>
+                <div className="p-3.5 bg-white border border-stone-200 rounded-xl space-y-1 shadow-2xs">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Architectural Style</span>
+                  <p className="font-semibold text-slate-800">{monumentResult.architectureStyle}</p>
                 </div>
               </div>
 
               {/* Navigation Tabs */}
-              <div className="flex border-b border-slate-800 px-6 pt-3 gap-1">
+              <div className="flex border-b border-stone-200 px-6 pt-3 gap-2">
                 <button
                   onClick={() => setActiveTab('history')}
-                  className={`pb-3 px-4 text-xs font-semibold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
+                  className={`pb-3 px-4 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
                     activeTab === 'history'
-                      ? 'border-orange-500 text-white'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                      ? 'border-amber-600 text-amber-900'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   <BookOpen size={14} /> Historical Overview
                 </button>
                 <button
                   onClick={() => setActiveTab('facts')}
-                  className={`pb-3 px-4 text-xs font-semibold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
+                  className={`pb-3 px-4 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
                     activeTab === 'facts'
-                      ? 'border-orange-500 text-white'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                      ? 'border-amber-600 text-amber-900'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   <History size={14} /> Key Insights
                 </button>
                 <button
                   onClick={() => setActiveTab('nearby')}
-                  className={`pb-3 px-4 text-xs font-semibold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
+                  className={`pb-3 px-4 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
                     activeTab === 'nearby'
-                      ? 'border-orange-500 text-white'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                      ? 'border-amber-600 text-amber-900'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   <Compass size={14} /> Nearby Sights
@@ -466,11 +473,11 @@ export const ARGuide: React.FC = () => {
               {/* Tab Contents */}
               <div className="p-6 sm:p-8 space-y-4">
                 {activeTab === 'history' && (
-                  <div className="space-y-2.5">
-                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                       Cultural Heritage
                     </h4>
-                    <p className="text-slate-300 text-sm leading-relaxed font-normal">
+                    <p className="text-slate-700 text-sm leading-relaxed font-normal">
                       {monumentResult.history}
                     </p>
                   </div>
@@ -478,13 +485,13 @@ export const ARGuide: React.FC = () => {
 
                 {activeTab === 'facts' && (
                   <div className="space-y-3">
-                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                       Architecture & Design Highlights
                     </h4>
                     <ul className="space-y-2.5">
                       {monumentResult.funFacts.map((fact, idx) => (
-                        <li key={idx} className="flex items-start gap-3 text-xs sm:text-sm text-slate-300 bg-slate-900/50 p-3.5 rounded-xl border border-slate-800/80">
-                          <span className="w-5 h-5 rounded-full bg-white/5 text-orange-400 font-semibold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                        <li key={idx} className="flex items-start gap-3 text-xs sm:text-sm text-slate-700 bg-stone-50 p-3.5 rounded-xl border border-stone-200/80">
+                          <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
                             {idx + 1}
                           </span>
                           <span className="leading-relaxed">{fact}</span>
@@ -496,14 +503,14 @@ export const ARGuide: React.FC = () => {
 
                 {activeTab === 'nearby' && (
                   <div className="space-y-3">
-                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                       Explore Around Location
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                       {(monumentResult.nearbySpots || ['Heritage Walk Promenade', 'Old Bazaar Lane', 'Archaeological Museum']).map((spot, idx) => (
-                        <div key={idx} className="p-3.5 bg-slate-900/50 border border-slate-800/80 rounded-xl text-xs text-slate-300 flex items-center gap-2">
-                          <MapPin size={13} className="text-orange-500 shrink-0" />
-                          <span className="font-medium">{spot}</span>
+                        <div key={idx} className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-slate-800 flex items-center gap-2">
+                          <MapPin size={13} className="text-amber-600 shrink-0" />
+                          <span className="font-semibold">{spot}</span>
                         </div>
                       ))}
                     </div>
@@ -511,11 +518,11 @@ export const ARGuide: React.FC = () => {
                 )}
               </div>
 
-              {/* Action Bar */}
-              <div className="bg-slate-950/80 p-5 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Clean Action Bar */}
+              <div className="bg-stone-50 p-5 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <button
                   onClick={handleReset}
-                  className="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-stone-100 border border-stone-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
                 >
                   <RefreshCw size={14} /> Scan Another Landmark
                 </button>
@@ -523,7 +530,7 @@ export const ARGuide: React.FC = () => {
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <Link
                     to="/travelhub"
-                    className="w-full sm:w-auto px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-xl transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                   >
                     <span>Explore in Travel Hub</span>
                     <ArrowRight size={14} />
