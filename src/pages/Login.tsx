@@ -163,25 +163,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
   };
 
   return (
-    <div
-      className={`${
-        isModal
-          ? "fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
-          : "min-h-screen relative bg-slate-950 flex items-center justify-center"
-      } flex items-center justify-center p-3 sm:p-4 overflow-y-auto`}
-    >
-      {/* Background Image for standalone /login page */}
-      {!isModal && (
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1548013146-72479768bada?w=1920&auto=format&fit=crop&q=80"
-            alt="Heritage Background"
-            className="w-full h-full object-cover opacity-35 filter brightness-75 scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-slate-900/40 backdrop-blur-xs" />
-        </div>
-      )}
-
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
       <div
         className="bg-white rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden transition-all duration-300 relative w-full max-w-md md:max-w-2xl my-auto max-h-[92vh] overflow-y-auto border border-white/20 shadow-slate-950/50 z-10"
       >

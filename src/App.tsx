@@ -77,8 +77,8 @@ const App: React.FC = () => {
             <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<GuestOnly><Login /></GuestOnly>} />
-            <Route path="/register" element={<GuestOnly><Login /></GuestOnly>} />
+            <Route path="/login" element={<GuestOnly><><Home /><Login isModal={true} /></></GuestOnly>} />
+            <Route path="/register" element={<GuestOnly><><Home /><Login isModal={true} /></></GuestOnly>} />
             <Route path="/home" element={<Home />} />
             <Route path="/planner" element={<CulturalPlanner />} />
             <Route path="/cultural-engine" element={<CulturalPlanner />} />
