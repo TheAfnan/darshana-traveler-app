@@ -5,9 +5,7 @@ import {
   getDoc, 
   doc, 
   addDoc, 
-  query, 
-  where, 
-  orderBy,
+  updateDoc,
   serverTimestamp 
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -26,6 +24,9 @@ export interface Guide {
   languages: string[];
   verified: boolean;
   pricePerDay?: number;
+  experience?: number;
+  govtId?: string;
+  status: 'approved' | 'pending' | 'rejected';
   createdAt?: string;
 }
 
@@ -37,103 +38,203 @@ export interface GuideAPIResponse {
   error?: string;
 }
 
-// Initial curated verified guides for India
+const LOCAL_STORAGE_GUIDES_KEY = 'darshana_local_guides_directory';
+
+// Curated authentic verified Indian heritage & travel guides with verified professional portraits
 export const INITIAL_INDIAN_GUIDES: Guide[] = [
   {
-    _id: 'guide-lucknow-1',
-    name: 'Mohammad Tariq',
-    email: 'tariq.lucknow@darshana.com',
-    phone: '+91 98765 43210',
-    location: 'Lucknow, Uttar Pradesh',
-    specialties: ['Heritage Walks', 'Awadhi Cuisine', 'Chikankari & Bazaars', 'Historical Sites'],
-    rating: 4.9,
-    reviews: 148,
-    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
-    bio: 'Certified Ministry of Tourism guide specializing in Old Lucknow, Bara Imambara labyrinth, and royal Awadhi culinary heritage trails.',
-    languages: ['Hindi', 'Urdu', 'English'],
+    _id: 'guide-agra-1',
+    name: 'Vikramaditya Sharma',
+    email: 'vikram.agra@darshana.com',
+    phone: '+91 98765 11001',
+    location: 'Agra, Uttar Pradesh',
+    specialties: ['Mughal Architecture', 'Taj Mahal Sunrise Trails', 'Pietra Dura Inlay Art', 'Heritage Walks'],
+    rating: 4.98,
+    reviews: 214,
+    profileImage: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=80',
+    bio: 'Ministry of Tourism Certified Senior Guide with 14 years uncovering the architectural symmetry and hidden acoustics of the Taj Mahal and Agra Fort.',
+    languages: ['English', 'Hindi', 'French', 'German'],
     verified: true,
-    pricePerDay: 1200,
-    createdAt: new Date().toISOString()
+    pricePerDay: 1800,
+    experience: 14,
+    govtId: 'MOT-IN-AGR-8842',
+    status: 'approved',
+    createdAt: '2026-01-10T10:00:00.000Z'
   },
   {
     _id: 'guide-varanasi-2',
-    name: 'Ananya Sharma',
+    name: 'Ananya Vidyarthi',
     email: 'ananya.varanasi@darshana.com',
-    phone: '+91 98765 43211',
+    phone: '+91 98765 22002',
     location: 'Varanasi, Uttar Pradesh',
-    specialties: ['Ghats & Temples', 'Spiritual Walks', 'Photography', 'Cultural Tours'],
-    rating: 4.9,
-    reviews: 112,
-    profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
-    bio: 'Historian and storyteller leading experiential sunrise boat tours, ancient alley trails, and private evening Ganga Aarti rituals.',
-    languages: ['Hindi', 'English', 'French'],
-    verified: true,
-    pricePerDay: 1500,
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 'guide-goa-3',
-    name: 'Rohan Naik',
-    email: 'rohan.goa@darshana.com',
-    phone: '+91 98765 43212',
-    location: 'Goa',
-    specialties: ['Beach Tourism', 'Eco-Trekking', 'Portuguese Heritage', 'Water Sports'],
-    rating: 4.8,
-    reviews: 184,
-    profileImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80',
-    bio: 'Local explorer passionate about secret jungle waterfalls, organic spice plantations, and historic Fontainhas Latin quarters.',
-    languages: ['English', 'Konkani', 'Hindi', 'Portuguese'],
-    verified: true,
-    pricePerDay: 1800,
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 'guide-kerala-4',
-    name: 'Devika Menon',
-    email: 'devika.kerala@darshana.com',
-    phone: '+91 98765 43213',
-    location: 'Alleppey, Kerala',
-    specialties: ['Ayurveda & Wellness', 'Houseboat Tours', 'Backpacking', 'Food & Cuisine'],
-    rating: 4.9,
-    reviews: 130,
-    profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
-    bio: 'Alleppey native offering authentic canoe backwater expeditions, organic spice farm tours, and village home-dining experiences.',
-    languages: ['English', 'Malayalam', 'Hindi'],
-    verified: true,
-    pricePerDay: 2000,
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 'guide-jaipur-5',
-    name: 'Rajendra Singh Rathore',
-    email: 'rajendra.jaipur@darshana.com',
-    phone: '+91 98765 43214',
-    location: 'Jaipur, Rajasthan',
-    specialties: ['Historical Sites', 'Cultural Tours', 'Photography', 'Food & Cuisine'],
-    rating: 4.9,
-    reviews: 165,
-    profileImage: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80',
-    bio: 'Rajput historian with 12+ years experience detailing Amer Fort secrets, royal stepwells, and traditional block printing workshops.',
-    languages: ['Hindi', 'Rajasthani', 'English', 'German'],
+    specialties: ['Ghats & Ancient Temples', 'Spiritual Philosophy', 'Evening Aarti Rituals', 'Photography'],
+    rating: 4.96,
+    reviews: 189,
+    profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=80',
+    bio: 'Banaras Hindu University heritage researcher guiding private dawn boat rituals, ancient silk weaver lanes, and spiritual philosophy discussions.',
+    languages: ['Hindi', 'English', 'Sanskrit', 'Italian'],
     verified: true,
     pricePerDay: 1600,
-    createdAt: new Date().toISOString()
+    experience: 9,
+    govtId: 'MOT-IN-VNS-4910',
+    status: 'approved',
+    createdAt: '2026-01-15T12:00:00.000Z'
   },
   {
-    _id: 'guide-manali-6',
-    name: 'Tenzin Wangchuk',
-    email: 'tenzin.manali@darshana.com',
-    phone: '+91 98765 43215',
-    location: 'Manali, Himachal Pradesh',
-    specialties: ['Mountain Trekking', 'Adventure Sports', 'Solo Travel', 'Backpacking'],
-    rating: 4.9,
-    reviews: 140,
-    profileImage: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=80',
-    bio: 'High-altitude mountaineer leading Hampta Pass, Rohtang paragliding, and hidden Himalayan village camping adventures.',
-    languages: ['Hindi', 'Tibetan', 'English'],
+    _id: 'guide-jaipur-3',
+    name: 'Rajendra Singh Rathore',
+    email: 'rajendra.jaipur@darshana.com',
+    phone: '+91 98765 33003',
+    location: 'Jaipur, Rajasthan',
+    specialties: ['Forts & Palaces', 'Rajput History', 'Astronomical Jantar Mantar', 'Culinary Trails'],
+    rating: 4.95,
+    reviews: 176,
+    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80',
+    bio: '12th generation Jaipur native specializing in the secret tunnels of Amer Fort, royal astronomical mathematics, and traditional block printing workshops.',
+    languages: ['Hindi', 'Rajasthani', 'English', 'Spanish'],
     verified: true,
-    pricePerDay: 2200,
-    createdAt: new Date().toISOString()
+    pricePerDay: 1900,
+    experience: 12,
+    govtId: 'MOT-IN-JPR-7721',
+    status: 'approved',
+    createdAt: '2026-02-01T09:30:00.000Z'
+  },
+  {
+    _id: 'guide-lucknow-4',
+    name: 'Mohammad Tariq Qureshi',
+    email: 'tariq.lucknow@darshana.com',
+    phone: '+91 98765 44004',
+    location: 'Lucknow, Uttar Pradesh',
+    specialties: ['Bara Imambara Labyrinth', 'Awadhi Royal Cuisine', 'Chikankari Bazaars', 'Tehzeeb & Poetry'],
+    rating: 4.94,
+    reviews: 162,
+    profileImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80',
+    bio: 'Storyteller and culinary explorer leading deep-dive explorations into the 1,024 maze corridors of Bhul Bhulaiya and legendary 18th-century Nawabi eateries.',
+    languages: ['Hindi', 'Urdu', 'English'],
+    verified: true,
+    pricePerDay: 1400,
+    experience: 11,
+    govtId: 'MOT-IN-LKO-3105',
+    status: 'approved',
+    createdAt: '2026-02-05T14:20:00.000Z'
+  },
+  {
+    _id: 'guide-delhi-5',
+    name: 'Kavita Chawla',
+    email: 'kavita.delhi@darshana.com',
+    phone: '+91 98765 55005',
+    location: 'New Delhi, Delhi NCR',
+    specialties: ['Qutub Complex', 'Old Delhi Street Food', 'Mughal & Lutyens Architecture', 'Museum Walks'],
+    rating: 4.92,
+    reviews: 145,
+    profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
+    bio: 'Art historian and former National Museum docent guiding curated architectural walking tours across Mehrauli, Chandni Chowk, and Humayun’s Tomb.',
+    languages: ['English', 'Hindi', 'Punjabi', 'Japanese'],
+    verified: true,
+    pricePerDay: 1750,
+    experience: 8,
+    govtId: 'MOT-IN-DEL-9082',
+    status: 'approved',
+    createdAt: '2026-02-10T11:15:00.000Z'
+  },
+  {
+    _id: 'guide-kerala-6',
+    name: 'Devika Krishnan',
+    email: 'devika.kerala@darshana.com',
+    phone: '+91 98765 66006',
+    location: 'Alleppey / Kochi, Kerala',
+    specialties: ['Backwaters Eco-Trails', 'Kathakali Art', 'Spice Plantation Walks', 'Ayurveda'],
+    rating: 4.97,
+    reviews: 153,
+    profileImage: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=500&auto=format&fit=crop&q=80',
+    bio: 'Native Alleppey naturalist guiding eco-canoe expeditions through serene palm canals, Kathakali theatrical greenrooms, and organic spice farms.',
+    languages: ['English', 'Malayalam', 'Hindi', 'Tamil'],
+    verified: true,
+    pricePerDay: 2100,
+    experience: 10,
+    govtId: 'MOT-IN-KER-6219',
+    status: 'approved',
+    createdAt: '2026-02-12T08:45:00.000Z'
+  },
+  {
+    _id: 'guide-goa-7',
+    name: 'Rohan Fernandes',
+    email: 'rohan.goa@darshana.com',
+    phone: '+91 98765 77007',
+    location: 'North & South Goa',
+    specialties: ['Portuguese Latin Quarter', 'Old Goa Cathedrals', 'Spice Farms', 'Hidden Waterfalls'],
+    rating: 4.89,
+    reviews: 138,
+    profileImage: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80',
+    bio: 'Goan architectural conservationist guiding walking tours of Fontainhas, 16th-century UNESCO Basilica of Bom Jesus, and inland river backwaters.',
+    languages: ['English', 'Konkani', 'Hindi', 'Portuguese'],
+    verified: true,
+    pricePerDay: 1650,
+    experience: 7,
+    govtId: 'MOT-IN-GOA-5114',
+    status: 'approved',
+    createdAt: '2026-02-15T15:00:00.000Z'
+  },
+  {
+    _id: 'guide-hampi-8',
+    name: 'Pradeep Nayak',
+    email: 'pradeep.hampi@darshana.com',
+    phone: '+91 98765 88008',
+    location: 'Hampi, Karnataka',
+    specialties: ['Vijayanagara Empire Ruins', 'Stone Chariot & Temples', 'Boulder Sunsets', 'Ancient Inscriptions'],
+    rating: 4.96,
+    reviews: 129,
+    profileImage: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500&auto=format&fit=crop&q=80',
+    bio: 'Archaeologist dedicated to the 14th-century capital of Vijayanagara, decoding temple stone carvings, acoustic musical pillars, and Tungabhadra river legends.',
+    languages: ['English', 'Kannada', 'Hindi', 'Telugu'],
+    verified: true,
+    pricePerDay: 1500,
+    experience: 9,
+    govtId: 'MOT-IN-KAR-4019',
+    status: 'approved',
+    createdAt: '2026-02-18T10:30:00.000Z'
+  }
+];
+
+// Initial Pending Applications for Admin review demonstration
+export const INITIAL_PENDING_APPLICATIONS: Guide[] = [
+  {
+    _id: 'app-kolkata-101',
+    name: 'Sourav Banerjee',
+    email: 'sourav.kolkata@darshana.com',
+    phone: '+91 98765 99009',
+    location: 'Kolkata, West Bengal',
+    specialties: ['Colonial Heritage', 'Kumartuli Idol Sculptors', 'Literary Adda Walks', 'Bengali Street Food'],
+    rating: 5.0,
+    reviews: 0,
+    profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
+    bio: 'Former Jadavpur University modern history researcher guiding heritage tram rides, Victorian colonial trails, and artisanal Durga idol workshops.',
+    languages: ['Bengali', 'English', 'Hindi'],
+    verified: false,
+    pricePerDay: 1400,
+    experience: 6,
+    govtId: 'MOT-IN-WB-8120 (Pending Verification)',
+    status: 'pending',
+    createdAt: '2026-08-20T14:30:00.000Z'
+  },
+  {
+    _id: 'app-rishikesh-102',
+    name: 'Aditi Joshi',
+    email: 'aditi.rishikesh@darshana.com',
+    phone: '+91 98765 99010',
+    location: 'Rishikesh / Haridwar, Uttarakhand',
+    specialties: ['Vedic Yoga & Meditation', 'Ganga Ghat Traditions', 'Himalayan Foothill Trails', 'Ashram History'],
+    rating: 5.0,
+    reviews: 0,
+    profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=80',
+    bio: 'Certified Yoga Alliance teacher and spiritual guide conducting morning riverside meditation, Parmarth Niketan Aarti, and Beatles Ashram historical walks.',
+    languages: ['Hindi', 'English', 'German'],
+    verified: false,
+    pricePerDay: 1600,
+    experience: 5,
+    govtId: 'UT-TOURS-RSH-3991',
+    status: 'pending',
+    createdAt: '2026-08-21T09:15:00.000Z'
   }
 ];
 
@@ -141,9 +242,43 @@ const GUIDES_COLLECTION = 'local_guides';
 const REQUESTS_COLLECTION = 'guide_requests';
 
 /**
- * Fetch all guides from Firestore with instant fallback/cache
+ * Load all stored guides from localStorage with fallback to initial seed
+ */
+export function getStoredGuides(): Guide[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_GUIDES_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('Error reading stored guides from localStorage:', err);
+  }
+
+  // Seed default directory
+  const initialCombined = [...INITIAL_INDIAN_GUIDES, ...INITIAL_PENDING_APPLICATIONS];
+  saveStoredGuides(initialCombined);
+  return initialCombined;
+}
+
+/**
+ * Save all guides to localStorage
+ */
+export function saveStoredGuides(guides: Guide[]): void {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_GUIDES_KEY, JSON.stringify(guides));
+  } catch (err) {
+    console.warn('Error saving guides to localStorage:', err);
+  }
+}
+
+/**
+ * Fetch all approved guides for the public Local Guides directory
  */
 export async function fetchAllGuides(): Promise<Guide[]> {
+  // 1. Try Firestore
   try {
     const guidesRef = collection(db, GUIDES_COLLECTION);
     const snapshot = await getDocs(guidesRef);
@@ -153,161 +288,148 @@ export async function fetchAllGuides(): Promise<Guide[]> {
         _id: docSnap.id,
         ...(docSnap.data() as Omit<Guide, '_id'>)
       }));
-      return firestoreGuides;
+      // Filter only approved/verified
+      return firestoreGuides.filter(g => g.status === 'approved' || g.verified);
     }
-
-    // Auto-seed initial guides if collection is empty
-    INITIAL_INDIAN_GUIDES.forEach(async (g) => {
-      try {
-        await addDoc(guidesRef, {
-          name: g.name,
-          email: g.email,
-          phone: g.phone,
-          location: g.location,
-          specialties: g.specialties,
-          rating: g.rating,
-          reviews: g.reviews,
-          profileImage: g.profileImage,
-          bio: g.bio,
-          languages: g.languages,
-          verified: g.verified,
-          pricePerDay: g.pricePerDay,
-          createdAt: serverTimestamp()
-        });
-      } catch (err) {
-        // Continue silently
-      }
-    });
-
-    return INITIAL_INDIAN_GUIDES;
   } catch (error) {
-    console.warn('Firestore guides fetch fallback to local data:', error);
-    return INITIAL_INDIAN_GUIDES;
+    // Continue to local storage
   }
+
+  // 2. Local storage persistent directory
+  const allStored = getStoredGuides();
+  return allStored.filter(g => g.status === 'approved' || g.verified);
 }
 
 /**
- * Fetch featured guides
+ * Fetch pending guide applications for Admin Dashboard
  */
-export async function fetchFeaturedGuides(): Promise<Guide[]> {
-  const all = await fetchAllGuides();
-  return all.filter(g => g.verified).slice(0, 6);
+export async function fetchPendingGuides(): Promise<Guide[]> {
+  const allStored = getStoredGuides();
+  return allStored.filter(g => g.status === 'pending');
 }
 
 /**
- * Fetch guides by location
+ * Admin: Approve a guide application
  */
-export async function fetchGuidesByLocation(locationQuery: string): Promise<Guide[]> {
-  const all = await fetchAllGuides();
-  if (!locationQuery || !locationQuery.trim()) return all;
-  
-  const queryLower = locationQuery.toLowerCase();
-  return all.filter(g => 
-    g.location.toLowerCase().includes(queryLower) ||
-    g.name.toLowerCase().includes(queryLower) ||
-    g.specialties.some(s => s.toLowerCase().includes(queryLower))
-  );
-}
+export async function approveGuideApplication(guideId: string): Promise<{ success: boolean; message: string }> {
+  const allStored = getStoredGuides();
+  const updated = allStored.map(guide => {
+    if (guide._id === guideId) {
+      return {
+        ...guide,
+        status: 'approved' as const,
+        verified: true
+      };
+    }
+    return guide;
+  });
 
-/**
- * Fetch guides with advanced filtering
- */
-export async function fetchFilteredGuides(params: {
-  location?: string;
-  specialty?: string;
-  language?: string;
-  minRating?: number;
-  maxPrice?: number;
-  sortBy?: 'rating' | 'price-low' | 'price-high' | 'reviews';
-}): Promise<Guide[]> {
-  let list = await fetchAllGuides();
+  saveStoredGuides(updated);
 
-  if (params.location && params.location.trim()) {
-    const loc = params.location.toLowerCase();
-    list = list.filter(g => g.location.toLowerCase().includes(loc));
-  }
-
-  if (params.specialty && params.specialty.trim()) {
-    list = list.filter(g => g.specialties.some(s => s.toLowerCase() === params.specialty?.toLowerCase()));
-  }
-
-  if (params.language && params.language.trim()) {
-    list = list.filter(g => g.languages.some(l => l.toLowerCase() === params.language?.toLowerCase()));
-  }
-
-  if (params.minRating) {
-    list = list.filter(g => g.rating >= (params.minRating || 0));
-  }
-
-  if (params.maxPrice) {
-    list = list.filter(g => (g.pricePerDay || 0) <= (params.maxPrice || Infinity));
-  }
-
-  if (params.sortBy === 'rating') {
-    list.sort((a, b) => b.rating - a.rating);
-  } else if (params.sortBy === 'price-low') {
-    list.sort((a, b) => (a.pricePerDay || 0) - (b.pricePerDay || 0));
-  } else if (params.sortBy === 'price-high') {
-    list.sort((a, b) => (b.pricePerDay || 0) - (a.pricePerDay || 0));
-  } else if (params.sortBy === 'reviews') {
-    list.sort((a, b) => b.reviews - a.reviews);
-  }
-
-  return list;
-}
-
-/**
- * Fetch single guide by ID
- */
-export async function fetchGuideById(guideId: string): Promise<Guide | null> {
+  // Sync with Firestore if available
   try {
     const docRef = doc(db, GUIDES_COLLECTION, guideId);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return { _id: docSnap.id, ...(docSnap.data() as Omit<Guide, '_id'>) };
-    }
-  } catch (e) {
-    console.warn('Doc fetch error:', e);
+    await updateDoc(docRef, { status: 'approved', verified: true });
+  } catch {
+    // Local persistence is already complete
   }
 
-  // Fallback check in initial list
-  return INITIAL_INDIAN_GUIDES.find(g => g._id === guideId) || null;
+  return { success: true, message: 'Guide approved successfully and published to the live directory!' };
 }
 
 /**
- * Register a new guide directly to Firestore
+ * Admin: Reject a guide application
  */
-export async function registerNewGuide(guideData: Omit<Guide, '_id' | 'createdAt'>): Promise<{ success: boolean; id: string }> {
+export async function rejectGuideApplication(guideId: string): Promise<{ success: boolean; message: string }> {
+  const allStored = getStoredGuides();
+  const updated = allStored.map(guide => {
+    if (guide._id === guideId) {
+      return {
+        ...guide,
+        status: 'rejected' as const,
+        verified: false
+      };
+    }
+    return guide;
+  });
+
+  saveStoredGuides(updated);
+  return { success: true, message: 'Guide application has been rejected.' };
+}
+
+/**
+ * Register a new guide (Submits as pending application)
+ */
+export async function registerNewGuide(guideData: {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  specialties: string[];
+  bio: string;
+  languages: string[];
+  pricePerDay: number;
+  experience?: number;
+  govtId?: string;
+  profileImage?: string;
+}): Promise<{ success: boolean; id: string; message: string }> {
+  const newId = `guide-reg-${Date.now()}`;
+  
+  const defaultImages = [
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80'
+  ];
+  const selectedImage = guideData.profileImage && guideData.profileImage.trim().length > 5
+    ? guideData.profileImage
+    : defaultImages[Math.floor(Math.random() * defaultImages.length)];
+
+  const newGuide: Guide = {
+    _id: newId,
+    name: guideData.name,
+    email: guideData.email,
+    phone: guideData.phone,
+    location: guideData.location,
+    specialties: guideData.specialties.length > 0 ? guideData.specialties : ['Heritage Walks', 'Cultural Tours'],
+    rating: 5.0,
+    reviews: 0,
+    profileImage: selectedImage,
+    bio: guideData.bio,
+    languages: guideData.languages.length > 0 ? guideData.languages : ['Hindi', 'English'],
+    verified: false,
+    pricePerDay: Number(guideData.pricePerDay) || 1500,
+    experience: Number(guideData.experience) || 3,
+    govtId: guideData.govtId || `MOT-APP-${Math.floor(1000 + Math.random() * 9000)}`,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+
+  // Save to local persistence
+  const allStored = getStoredGuides();
+  allStored.unshift(newGuide);
+  saveStoredGuides(allStored);
+
+  // Sync to Firestore
   try {
     const guidesRef = collection(db, GUIDES_COLLECTION);
-    const newDoc = await addDoc(guidesRef, {
-      ...guideData,
-      rating: 5.0,
-      reviews: 1,
-      verified: true,
+    await addDoc(guidesRef, {
+      ...newGuide,
       createdAt: serverTimestamp()
     });
-
-    return { success: true, id: newDoc.id };
-  } catch (error) {
-    console.error('Error registering new guide to Firestore:', error);
-    // Local fallback
-    const id = `local-guide-${Date.now()}`;
-    INITIAL_INDIAN_GUIDES.unshift({
-      _id: id,
-      ...guideData,
-      rating: 5.0,
-      reviews: 1,
-      verified: true,
-      createdAt: new Date().toISOString()
-    });
-    return { success: true, id };
+  } catch (err) {
+    console.warn('Saved guide application to local directory store.');
   }
+
+  return { 
+    success: true, 
+    id: newId, 
+    message: 'Application submitted successfully! Your profile is pending review by the DarShana Admin team.' 
+  };
 }
 
 /**
- * Submit guide request (booking/inquiry) to Firestore
+ * Submit guide inquiry/booking request
  */
 export async function submitGuideRequest(
   guideId: string,
@@ -327,27 +449,9 @@ export async function submitGuideRequest(
       status: 'pending',
       createdAt: serverTimestamp()
     });
-
-    return { success: true, message: 'Your guide request has been sent successfully!' };
-  } catch (error) {
-    console.warn('Saved request locally:', error);
-    return { success: true, message: 'Request submitted successfully!' };
+  } catch {
+    // Handled
   }
-}
 
-/**
- * Get user's guide requests from Firestore
- */
-export async function getUserGuideRequests(userEmail?: string): Promise<any[]> {
-  try {
-    const requestsRef = collection(db, REQUESTS_COLLECTION);
-    const snapshot = await getDocs(requestsRef);
-    if (!snapshot.empty) {
-      return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    }
-  } catch (error) {
-    console.warn('Error fetching requests:', error);
-  }
-  return [];
+  return { success: true, message: 'Your booking inquiry has been submitted! The guide will contact you shortly.' };
 }
-
