@@ -167,103 +167,89 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
       className={`${
         isModal
           ? "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-          : "min-h-screen bg-orange-50/50"
-      } flex items-center justify-center p-4`}
+          : "min-h-screen bg-stone-100/60"
+      } flex items-center justify-center p-3 sm:p-4 overflow-y-auto`}
     >
       <div
-        className={`bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-all duration-500 relative
-        ${isLoginView ? "w-[600px] h-[400px] md:flex-row" : "max-w-[380px]"}`}
+        className={`bg-white rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden transition-all duration-300 relative w-full ${
+          isLoginView ? "max-w-md md:max-w-2xl" : "max-w-md"
+        } my-auto max-h-[92vh] overflow-y-auto border border-stone-200/80`}
       >
         {/* Close Button */}
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 z-20 p-2 bg-white/80 rounded-full hover:bg-gray-100 shadow-sm"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-30 p-2 bg-white/90 rounded-full hover:bg-stone-100 shadow-sm border border-stone-200/60 text-stone-600 transition"
         >
-          <X size={20} className="text-gray-600" />
+          <X size={18} />
         </button>
 
         {/* Left Illustration */}
         <div
-          className={`relative bg-orange-100 transition-all duration-500 ${
-            isLoginView ? "hidden md:block w-1/2" : "w-full h-40"
+          className={`relative bg-amber-50 transition-all duration-300 ${
+            isLoginView ? "hidden md:block md:w-5/12 min-h-[400px]" : "hidden"
           }`}
         >
           <img
             src={loginImage}
-            alt="Travel"
+            alt="Darshana Cultural Traveler"
             className="absolute inset-0 w-full h-full object-cover"
           />
-
-          {isLoginView ? (
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex flex-col justify-end p-12 text-white">
-              <h2 className="text-4xl font-bold mb-4 font-serif">DarShana</h2>
-              <p className="text-lg opacity-90">Discover India deeply.</p>
-            </div>
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-              <h2 className="text-4xl font-bold font-serif text-white drop-shadow-lg">
-                DarShana
-              </h2>
-            </div>
-          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/30 to-transparent flex flex-col justify-end p-6 text-white">
+            <h2 className="text-2xl font-bold font-serif mb-1 text-white">DarShana</h2>
+            <p className="text-xs text-amber-200 opacity-90 leading-relaxed font-sans">Discover India's living cultural traditions deeply.</p>
+          </div>
         </div>
 
-        {/* Right Section */}
+        {/* Right Form Section */}
         <div
-          className={`flex flex-col justify-center transition-all duration-500 ${
-            isLoginView ? "w-full md:w-1/2 p-6" : "w-full p-6"
+          className={`flex flex-col justify-center transition-all duration-300 ${
+            isLoginView ? "w-full md:w-7/12 p-5 sm:p-7" : "w-full p-6 sm:p-8"
           }`}
         >
-          <div className="max-w-md mx-auto w-full">
+          <div className="w-full">
             {/* Header */}
             <div className="text-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800 font-serif mb-1">
-                {isLoginView ? "Welcome Back" : "Create an Account"}
+              <h2 className="text-lg sm:text-xl font-bold text-stone-900 font-sans tracking-tight mb-0.5">
+                {isLoginView ? "Welcome to DarShana" : "Create Traveler Account"}
               </h2>
-              <p className="text-gray-500 text-[10px]">
-                {isLoginView ? "Login to continue" : "Start exploring India"}
+              <p className="text-stone-500 text-xs font-normal">
+                {isLoginView ? "Login to access your cultural itineraries" : "Sign up to explore festivals & heritage"}
               </p>
             </div>
 
-            {/* Toggle */}
-            {isLoginView && (
-              <div className="flex bg-gray-100 p-1 rounded-full mb-4 relative">
-                <div
-                  className={`absolute w-1/2 h-full rounded-full bg-white shadow-sm transition-all ${
-                    isLoginView ? "left-0" : "left-1/2"
-                  }`}
-                ></div>
+            {/* Toggle Tabs */}
+            <div className="flex bg-stone-100 p-1 rounded-xl mb-4 relative">
+              <button
+                onClick={() => {
+                  setIsLoginView(true);
+                  setLoginStep(1);
+                  setError("");
+                  setVerificationNotice("");
+                }}
+                className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  isLoginView ? "bg-white text-stone-900 shadow-xs" : "text-stone-500 hover:text-stone-800"
+                }`}
+              >
+                Login
+              </button>
 
-                <button
-                  onClick={() => {
-                    setIsLoginView(true);
-                    setLoginStep(1);
-                    setError("");
-                  }}
-                  className={`flex-1 py-2.5 text-sm font-medium z-10 ${
-                    isLoginView ? "text-orange-600" : "text-gray-500"
-                  }`}
-                >
-                  Login
-                </button>
-
-                <button
-                  onClick={() => {
-                    setIsLoginView(false);
-                    setError("");
-                  }}
-                  className={`flex-1 py-2.5 text-sm font-medium z-10 ${
-                    !isLoginView ? "text-orange-600" : "text-gray-500"
-                  }`}
-                >
-                  Sign Up
-                </button>
-              </div>
-            )}
+              <button
+                onClick={() => {
+                  setIsLoginView(false);
+                  setError("");
+                  setVerificationNotice("");
+                }}
+                className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  !isLoginView ? "bg-white text-stone-900 shadow-xs" : "text-stone-500 hover:text-stone-800"
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
 
             {/* Verification Notice */}
             {verificationNotice && (
-              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs rounded-xl flex items-start gap-2 leading-relaxed">
+              <div className="mb-3.5 p-3 bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs rounded-xl flex items-start gap-2 leading-relaxed">
                 <span className="text-base leading-none shrink-0">📬</span>
                 <span>{verificationNotice}</span>
               </div>
@@ -271,7 +257,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
 
             {/* Error */}
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200/80 text-red-600 text-xs rounded-xl flex items-start gap-2 leading-relaxed">
+              <div className="mb-3.5 p-3 bg-red-50 border border-red-200/80 text-red-600 text-xs rounded-xl flex items-start gap-2 leading-relaxed">
                 <span className="text-base leading-none shrink-0">⚠️</span>
                 <span>{error}</span>
               </div>
@@ -279,22 +265,22 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
 
             {/* LOGIN FORM */}
             {isLoginView && (
-              <div className="space-y-4">
+              <div className="space-y-3.5">
                 {loginStep === 1 ? (
-                  <form onSubmit={handleLoginStep1} className="space-y-4">
+                  <form onSubmit={handleLoginStep1} className="space-y-3.5">
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Email / Mobile Number
+                      <label className="block text-xs font-medium text-stone-700 mb-1">
+                        Email Address
                       </label>
                       <div className="relative">
                         <Mail
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                          size={16}
+                          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                          size={15}
                         />
                         <input
-                          type="text"
-                          className="w-full pl-10 pr-3 py-2 border rounded-lg outline-none text-sm"
-                          placeholder="Enter Email or Mobile"
+                          type="email"
+                          className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
+                          placeholder="name@gmail.com"
                           value={loginEmail}
                           onChange={(e) => setLoginEmail(e.target.value)}
                           autoFocus
@@ -302,21 +288,21 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                       </div>
                     </div>
 
-                    <button className="w-full bg-red-600 text-white py-2.5 rounded-lg hover:bg-red-700 transition-all flex items-center justify-center gap-2 text-sm">
-                      Continue <ArrowRight size={16} />
+                    <button className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xs">
+                      Continue <ArrowRight size={15} />
                     </button>
                   </form>
                 ) : (
-                  <form onSubmit={handleLoginFinal} className="space-y-4">
+                  <form onSubmit={handleLoginFinal} className="space-y-3.5">
                     <div>
-                      <div className="flex justify-between mb-1">
-                        <label className="text-xs font-medium text-gray-700">
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-xs font-medium text-stone-700">
                           Password
                         </label>
                         <button
                           type="button"
                           onClick={() => setLoginStep(1)}
-                          className="text-[10px] text-orange-600"
+                          className="text-[11px] text-amber-700 hover:underline"
                         >
                           Change Email
                         </button>
@@ -324,13 +310,13 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
 
                       <div className="relative">
                         <Lock
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                          size={16}
+                          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                          size={15}
                         />
                         <input
                           type="password"
-                          className="w-full pl-10 pr-3 py-2 border rounded-lg outline-none text-sm"
-                          placeholder="Password"
+                          className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
+                          placeholder="Enter your password"
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
                           autoFocus
@@ -340,20 +326,20 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
 
                     <button
                       disabled={isLoading}
-                      className="w-full bg-red-600 text-white py-2.5 rounded-lg hover:bg-red-700 transition-all text-sm"
+                      className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all shadow-xs"
                     >
-                      {isLoading ? "Verifying..." : "Login"}
+                      {isLoading ? "Verifying..." : "Sign In"}
                     </button>
                   </form>
                 )}
 
                 {/* Divider */}
-                <div className="relative my-4">
+                <div className="relative my-3">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200" />
+                    <div className="w-full border-t border-stone-200" />
                   </div>
                   <div className="relative flex justify-center text-[10px]">
-                    <span className="px-2 bg-white text-gray-500">OR</span>
+                    <span className="px-2 bg-white text-stone-400 font-medium">OR</span>
                   </div>
                 </div>
 
@@ -362,7 +348,7 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                   <button
                     type="button"
                     onClick={handleGoogleLogin}
-                    className="w-full bg-white border border-gray-200 py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 text-sm font-medium text-gray-700 shadow-xs transition"
+                    className="w-full bg-white border border-stone-200/90 py-2 rounded-xl flex items-center justify-center gap-2 hover:bg-stone-50 text-xs sm:text-sm font-medium text-stone-700 shadow-xs transition"
                   >
                     <img
                       src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -375,21 +361,11 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                   <button
                     type="button"
                     onClick={handleDemoLogin}
-                    className="w-full bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 py-2 rounded-lg flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-900 transition"
+                    className="w-full bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 py-1.5 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-900 transition"
                   >
                     <span>⚡ Instant Demo Login (1-Click Guest)</span>
                   </button>
                 </div>
-
-                <p className="text-center text-[10px] mt-2">
-                  Don’t have an account?{" "}
-                  <button
-                    onClick={() => setIsLoginView(false)}
-                    className="text-orange-600"
-                  >
-                    Sign Up
-                  </button>
-                </p>
               </div>
             )}
 
@@ -398,12 +374,12 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
               <form onSubmit={handleSignUp} className="space-y-3">
                 <div className="relative">
                   <User
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                    size={15}
                   />
                   <input
                     type="text"
-                    className="w-full pl-10 pr-4 py-2.5 border rounded-full text-sm"
+                    className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
                     placeholder="Full Name"
                     value={signupName}
                     onChange={(e) => setSignupName(e.target.value)}
@@ -412,13 +388,13 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
 
                 <div className="relative">
                   <Mail
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                    size={15}
                   />
                   <input
-                    type="text"
-                    className="w-full pl-10 pr-4 py-2.5 border rounded-full text-sm"
-                    placeholder="Email / Phone"
+                    type="email"
+                    className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
+                    placeholder="Gmail / Email Address"
                     value={signupEmail}
                     onChange={(e) => setSignupEmail(e.target.value)}
                   />
@@ -426,13 +402,13 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
 
                 <div className="relative">
                   <Lock
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                    size={15}
                   />
                   <input
                     type="password"
-                    className="w-full pl-10 pr-4 py-2.5 border rounded-full text-sm"
-                    placeholder="Password"
+                    className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
+                    placeholder="Password (min 6 characters)"
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
                   />
@@ -440,12 +416,12 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
 
                 <div className="relative">
                   <Lock
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                    size={15}
                   />
                   <input
                     type="password"
-                    className="w-full pl-10 pr-4 py-2.5 border rounded-full text-sm"
+                    className="w-full pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:border-stone-400 text-xs sm:text-sm transition"
                     placeholder="Confirm Password"
                     value={signupConfirmPassword}
                     onChange={(e) => setSignupConfirmPassword(e.target.value)}
@@ -455,20 +431,10 @@ const Login: React.FC<LoginProps> = ({ onClose, isModal = false }) => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-orange-500 text-white py-3 rounded-full font-bold hover:bg-orange-600 transition"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all shadow-xs"
                 >
-                  {isLoading ? "Creating..." : "Sign Up"}
+                  {isLoading ? "Sending Verification Link..." : "Create Account & Verify Gmail"}
                 </button>
-
-                <p className="text-center text-xs mt-1">
-                  Already have an account?{" "}
-                  <button
-                    onClick={() => setIsLoginView(true)}
-                    className="text-orange-600"
-                  >
-                    Login
-                  </button>
-                </p>
               </form>
             )}
           </div>
