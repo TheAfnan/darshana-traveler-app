@@ -6,8 +6,6 @@ import {
   Compass, 
   ArrowRight, 
   CheckCircle2,
-  Play,
-  MapPin,
   ChevronDown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -31,50 +29,54 @@ const TravelHub: React.FC = () => {
   return (
     <div className="min-h-screen relative overflow-x-hidden bg-[#faf8f5] text-stone-800 font-sans">
       
-      {/* 1. CINEMATIC VIDEO HERO SECTION (Like travelhubindia.com) */}
+      {/* 1. CINEMATIC TRAVEL HERO (Dynamic Visual Landscape + Luxury Glassmorphism) */}
       <div className="relative min-h-[580px] lg:min-h-[640px] flex items-center justify-center overflow-hidden bg-slate-950 text-white">
         
-        {/* Background Looping Video */}
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          className="absolute inset-0 w-full h-full object-cover opacity-60 scale-105 transition-opacity duration-1000"
-          poster="https://images.unsplash.com/photo-1548013146-72479768bbaa?w=1600&auto=format&fit=crop&q=80"
-        >
-          <source src="https://cdn.pixabay.com/video/2020/05/25/40149-425482329_large.mp4" type="video/mp4" />
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-beautiful-river-flowing-through-the-forest-42468-large.mp4" type="video/mp4" />
-        </video>
+        {/* Dynamic Cinematic Landscape Layer (Rich High-Def Backdrop with Ambient Motion) */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-10000 transform hover:scale-105 scale-100 opacity-60"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1920&auto=format&fit=crop&q=85')`
+          }}
+        />
 
-        {/* Cinematic Dark Gradient Vignette */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-slate-950" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_20%,_rgba(0,0,0,0.6)_100%)]" />
+        {/* Secondary Scenic Blend Layer */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-30 pointer-events-none"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1548013146-72479768bbaa?w=1920&auto=format&fit=crop&q=85')`
+          }}
+        />
+
+        {/* Cinematic Gradient Overlays (Never pitch black, warm atmospheric lighting) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-slate-950/70" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_30%,_rgba(2,6,23,0.7)_100%)]" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Hero Content Container */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 pt-16 pb-16">
           
           {/* Top Golden Badge */}
           <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/40 px-4 py-1.5 rounded-full backdrop-blur-md shadow-lg">
-            <Sparkles size={13} className="text-amber-300" />
-            <span className="text-xs font-bold uppercase tracking-widest text-amber-200">
+            <Sparkles size={14} className="text-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-widest text-amber-300">
               EXTRAORDINARY INDIAN JOURNEYS
             </span>
           </div>
 
           {/* Main Cinematic Title */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold font-serif text-white tracking-tight leading-[1.12] drop-shadow-md">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold font-serif text-white tracking-tight leading-[1.12] drop-shadow-lg">
             Discover India with <span className="text-amber-400">DarShana</span> Travel Hub
           </h1>
 
           {/* Subtitle */}
-          <p className="text-stone-200 text-base sm:text-lg max-w-2xl mx-auto font-light leading-relaxed drop-shadow-sm">
+          <p className="text-stone-200 text-base sm:text-lg max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">
             Handcrafted cultural itineraries, boutique royal stays, private AC transit, and authentic culinary trails across India.
           </p>
 
           {/* Floating Glassmorphism Theme Bar */}
           <div className="pt-4 max-w-4xl mx-auto">
-            <div className="bg-black/40 backdrop-blur-md border border-white/20 p-2 sm:p-2.5 rounded-2xl sm:rounded-full shadow-2xl flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+            <div className="bg-slate-900/80 backdrop-blur-xl border border-stone-700/80 p-2 sm:p-2.5 rounded-2xl sm:rounded-full shadow-2xl flex flex-wrap items-center justify-center gap-2">
               {[
                 { id: 'all', label: 'All Expeditions' },
                 { id: 'royal', label: '👑 Royal Heritage' },
@@ -83,33 +85,36 @@ const TravelHub: React.FC = () => {
                 { id: 'wellness', label: '🌿 Wellness' },
                 { id: 'workcation', label: '💻 Workcation' },
                 { id: 'family', label: '🐅 Wildlife & Family' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => handleSelectCategory(tab.id as TourCategory)}
-                  className={`px-3.5 py-2 rounded-xl sm:rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                    activeCategory === tab.id
-                      ? 'bg-amber-500 text-slate-950 font-bold shadow-md scale-105'
-                      : 'text-stone-200 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+              ].map((tab) => {
+                const isActive = activeCategory === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleSelectCategory(tab.id as TourCategory)}
+                    className={`px-4 py-2 rounded-xl sm:rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer border ${
+                      isActive
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold shadow-lg shadow-amber-500/25 scale-105'
+                        : 'bg-black/40 text-stone-200 border-stone-700 hover:bg-black/70 hover:text-white hover:border-stone-500'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Trust Strip */}
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 pt-4 text-xs text-stone-300">
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1.5 font-medium">
               <ShieldCheck size={15} className="text-amber-400" /> 100% Verified Boutique Stays
             </span>
-            <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1.5">
+            <span className="hidden sm:inline text-stone-600">•</span>
+            <span className="flex items-center gap-1.5 font-medium">
               <Star size={14} className="text-amber-400 fill-amber-400" /> 4.95/5 Traveler Rating
             </span>
-            <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1.5">
+            <span className="hidden sm:inline text-stone-600">•</span>
+            <span className="flex items-center gap-1.5 font-medium">
               <CheckCircle2 size={15} className="text-emerald-400" /> Free Date Rescheduling
             </span>
           </div>
@@ -117,8 +122,11 @@ const TravelHub: React.FC = () => {
         </div>
 
         {/* Bottom Scroll Indicator */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-stone-400 flex flex-col items-center gap-1 opacity-70 hover:opacity-100 transition cursor-pointer" onClick={scrollToPackages}>
-          <span className="text-[10px] uppercase tracking-widest font-semibold text-stone-300">Explore Packages</span>
+        <div 
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 text-stone-400 flex flex-col items-center gap-1 opacity-80 hover:opacity-100 transition cursor-pointer" 
+          onClick={scrollToPackages}
+        >
+          <span className="text-[10px] uppercase tracking-widest font-semibold text-amber-300">Explore Packages</span>
           <ChevronDown size={16} className="animate-bounce text-amber-400" />
         </div>
       </div>
