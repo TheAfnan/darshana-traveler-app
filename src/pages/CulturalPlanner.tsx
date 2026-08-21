@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -20,7 +20,7 @@ import {
   Award
 } from 'lucide-react';
 import jsPDF from 'jspdf';
-import { getCulturalTripPlan, type CulturalPlan } from '../data/culturalTripData';
+import { getCulturalTripPlan, MONTHLY_EVENT_RADAR, type CulturalPlan } from '../data/culturalTripData';
 
 const CulturalPlanner: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -183,10 +183,11 @@ const CulturalPlanner: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-100 text-xs font-semibold text-slate-500">
             <span className="text-[11px] uppercase tracking-wider text-slate-400">Popular:</span>
             {[
+              { name: 'Ayodhya (Nov Deepotsav)', dest: 'Ayodhya', date: '2026-11-01' },
               { name: 'Lucknow (May Bada Mangal)', dest: 'Lucknow', date: '2026-05-19' },
-              { name: 'Varanasi (Dev Deepawali)', dest: 'Varanasi', date: '2026-11-15' },
-              { name: 'Jaipur (Teej Festival)', dest: 'Jaipur', date: '2026-08-05' },
-              { name: 'Goa (Viva Carnival)', dest: 'Goa', date: '2026-02-14' },
+              { name: 'Varanasi (Nov Dev Deepawali)', dest: 'Varanasi', date: '2026-11-15' },
+              { name: 'Jaipur (Aug Teej Festival)', dest: 'Jaipur', date: '2026-08-05' },
+              { name: 'Goa (Feb Viva Carnival)', dest: 'Goa', date: '2026-02-14' },
             ].map((chip) => (
               <button
                 key={chip.name}
@@ -199,6 +200,55 @@ const CulturalPlanner: React.FC = () => {
               >
                 {chip.name}
               </button>
+            ))}
+          </div>
+        </div>
+
+        {/* WHEN & WHERE TO GO (MONTH-WISE EVENT RADAR) */}
+        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 uppercase tracking-wider">
+                <Sparkles size={14} /> When & Where to Go Engine
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">
+                Discover India by Season: Where the Magic is Happening Right Now
+              </h3>
+            </div>
+            <span className="text-xs text-slate-400">1-Tap to auto-plan for peak festive season</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-2">
+            {Object.values(MONTHLY_EVENT_RADAR).map((radar) => (
+              <div key={radar.monthNum} className="bg-slate-50 border border-slate-200/70 rounded-2xl p-4 space-y-2.5 hover:border-orange-300 transition-all">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                    📅 {radar.monthName}
+                  </span>
+                  <span className="text-[10px] font-bold text-orange-700 bg-orange-100/80 px-2 py-0.5 rounded-full">
+                    {radar.topDestinations[0].city}
+                  </span>
+                </div>
+
+                <p className="text-xs font-bold text-slate-800 line-clamp-1">
+                  {radar.topDestinations[0].icon} {radar.topDestinations[0].event}
+                </p>
+                <p className="text-[11px] text-slate-500 line-clamp-2">
+                  {radar.topDestinations[0].description}
+                </p>
+
+                <button
+                  onClick={() => {
+                    const top = radar.topDestinations[0];
+                    setToCity(top.city);
+                    setTravelDate(top.targetDate);
+                    setPlan(getCulturalTripPlan(top.city, top.targetDate, fromCity));
+                  }}
+                  className="w-full text-center text-xs font-bold text-orange-600 bg-white hover:bg-orange-600 hover:text-white border border-orange-200 py-1.5 rounded-xl transition-colors shadow-sm"
+                >
+                  Explore {radar.topDestinations[0].city} in {radar.monthName} ➔
+                </button>
+              </div>
             ))}
           </div>
         </div>

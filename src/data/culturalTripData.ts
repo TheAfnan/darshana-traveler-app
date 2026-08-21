@@ -1,4 +1,4 @@
-﻿// src/data/culturalTripData.ts
+// src/data/culturalTripData.ts
 
 export interface CulturalPlan {
   destination: string;
@@ -58,6 +58,169 @@ export interface CulturalPlan {
   };
 }
 
+export interface MonthRadar {
+  monthName: string;
+  monthNum: number;
+  highlightTheme: string;
+  topDestinations: {
+    city: string;
+    event: string;
+    description: string;
+    badge: string;
+    icon: string;
+    targetDate: string;
+  }[];
+}
+
+export const MONTHLY_EVENT_RADAR: Record<number, MonthRadar> = {
+  11: {
+    monthName: 'November',
+    monthNum: 11,
+    highlightTheme: 'Sacred Illumination & Grand Deepotsav Season',
+    topDestinations: [
+      {
+        city: 'Ayodhya',
+        event: 'Grand Deepotsav & Ram Mandir Illumination',
+        description: 'Over 2.5 million earthen diyas lit along Ram Ki Paidi & Saryu riverbanks with Ramayana drone & laser show.',
+        badge: '🌟 Top Pick for Nov',
+        icon: '🪔',
+        targetDate: '2026-11-01'
+      },
+      {
+        city: 'Varanasi',
+        event: 'Dev Deepawali on 84 Ghats',
+        description: 'All 84 stone ghats lit with 1.5M diyas on Kartik Purnima under midnight fireworks.',
+        badge: 'Spiritual Wonder',
+        icon: '🕉️',
+        targetDate: '2026-11-15'
+      },
+      {
+        city: 'Pushkar',
+        event: 'Pushkar Camel Fair & Desert Carnival',
+        description: 'World famous camel trading, hot air ballooning, and sacred lake dip under full moon.',
+        badge: 'Desert Heritage',
+        icon: '🐪',
+        targetDate: '2026-11-20'
+      }
+    ]
+  },
+  5: {
+    monthName: 'May',
+    monthNum: 5,
+    highlightTheme: 'Living Ganga-Jamuni Feasts & High Himalayan Passes',
+    topDestinations: [
+      {
+        city: 'Lucknow',
+        event: 'Bada Mangal (Jyeshtha Festival)',
+        description: '400-year-old communal feast festival with 10,000+ free street bhandaras and cold sharbat kiosks across Lucknow.',
+        badge: '🌟 Top Pick for May',
+        icon: '🍲',
+        targetDate: '2026-05-19'
+      },
+      {
+        city: 'Ladakh',
+        event: 'High Mountain Pass Openings & Monasteries',
+        description: 'Khardung La & Zanskar passes opening with clear high-altitude Himalayan skies.',
+        badge: 'Himalayan Wonder',
+        icon: '🏔️',
+        targetDate: '2026-05-25'
+      }
+    ]
+  },
+  10: {
+    monthName: 'October',
+    monthNum: 10,
+    highlightTheme: 'Grand Festive Triumphs & Autumn Colors',
+    topDestinations: [
+      {
+        city: 'Kolkata',
+        event: 'UNESCO Durga Puja Pandal Carnival',
+        description: 'The City of Joy transforms into an open-air art gallery with 3,000+ architectural pandals and dhak drum beats.',
+        badge: '🌟 Top Pick for Oct',
+        icon: '🪔',
+        targetDate: '2026-10-18'
+      },
+      {
+        city: 'Kullu',
+        event: 'Kullu Dussehra & Valley of Gods Gathering',
+        description: '300+ village deities arriving at Dhalpur Maidan in traditional wooden palanquins.',
+        badge: 'Himalayan Heritage',
+        icon: '🏔️',
+        targetDate: '2026-10-22'
+      }
+    ]
+  },
+  3: {
+    monthName: 'March',
+    monthNum: 3,
+    highlightTheme: 'Colors, Flowers & Royal Spring Feasts',
+    topDestinations: [
+      {
+        city: 'Mathura & Vrindavan',
+        event: 'World-Famous Braj Ki Holi & Lathmar Celebrations',
+        description: '7-day divine celebration with flower petals, natural tesu flower gulal, and Barsana folk songs.',
+        badge: '🌟 Top Pick for March',
+        icon: '🎨',
+        targetDate: '2026-03-24'
+      },
+      {
+        city: 'Jaipur',
+        event: 'Gangaur & Elephant Heritage Procession',
+        description: 'Royal palanquin parades through Tripoliya Bazaar with Kalbelia dancers and Ghewar feasts.',
+        badge: 'Royal Heritage',
+        icon: '🌸',
+        targetDate: '2026-03-20'
+      }
+    ]
+  },
+  2: {
+    monthName: 'February',
+    monthNum: 2,
+    highlightTheme: 'Vibrant Carnivals & Desert Sand Dunes',
+    topDestinations: [
+      {
+        city: 'Goa',
+        event: 'Viva Goa Carnival Street Parade',
+        description: 'Four days of open-air brass bands, King Momo floats, street dancing, and seafood fiestas.',
+        badge: '🌟 Top Pick for Feb',
+        icon: '🎭',
+        targetDate: '2026-02-14'
+      },
+      {
+        city: 'Agra',
+        event: 'Taj Mahotsav Mughal Art & Craft Fair',
+        description: '10-day extravaganza of classical arts, crafts, and Awadhi-Mughlai cuisine near the Taj Mahal.',
+        badge: 'Heritage Fair',
+        icon: '🏛️',
+        targetDate: '2026-02-18'
+      }
+    ]
+  },
+  8: {
+    monthName: 'August',
+    monthNum: 8,
+    highlightTheme: 'Monsoon Boat Races & Lush Emerald Backwaters',
+    topDestinations: [
+      {
+        city: 'Kerala',
+        event: 'Nehru Trophy Vallam Kali (Snake Boat Race)',
+        description: '100-oared snake boats competing on Punnamada Lake to the rhythm of fast Vanchipattu boat songs.',
+        badge: '🌟 Top Pick for August',
+        icon: '🛶',
+        targetDate: '2026-08-10'
+      },
+      {
+        city: 'Jaipur',
+        event: 'Monsoon Teej Procession',
+        description: 'Goddess Parvati golden palanquin procession celebrating the onset of pleasant rains.',
+        badge: 'Monsoon Joy',
+        icon: '🌧️',
+        targetDate: '2026-08-05'
+      }
+    ]
+  }
+};
+
 /**
  * Month-based cultural matcher for top Indian cities
  */
@@ -74,7 +237,111 @@ export function getCulturalTripPlan(destination: string, travelDateStr?: string,
   }
 
   // -------------------------------------------------------------
-  // 1. LUCKNOW
+  // 1. AYODHYA (Top for November Deepotsav & Ram Mandir)
+  // -------------------------------------------------------------
+  if (normalized.includes('ayodhya') || normalized.includes('ram mandir') || normalized.includes('saket')) {
+    const isNov = month === 11 || month === 10;
+
+    return {
+      destination: 'Ayodhya',
+      origin: originCity || 'Lucknow',
+      state: 'Uttar Pradesh',
+      tagline: 'The Sacred City of Lord Rama on the Banks of the Holy Saryu',
+      bestMonths: 'October to March (November Deepotsav is a world record phenomenon)',
+      bgImage: 'https://images.unsplash.com/photo-1609766857041-ed402ea8069a?w=1200&auto=format&fit=crop&q=80',
+      currentMonthHighlight: {
+        title: isNov ? 'Grand Deepotsav on Saryu Ghats (2.5 Million Diyas)' : 'Ram Mandir Darshan & Evening Saryu Aarti',
+        badge: isNov ? '🔥 November Deepotsav Special' : 'Sacred Spiritual Highlight',
+        description: isNov 
+          ? 'Ayodhya creates a world record with over 2.5 million earthen lamps lit across Ram Ki Paidi, Guptar Ghat, and the entire riverfront, synchronized with a massive 3D Ramayana laser & drone show.'
+          : 'Experience the newly consecrated Nagara-style Ram Janmabhoomi temple followed by the divine evening Maha Aarti at Naya Ghat on the river Saryu.',
+        whereToExperience: 'Ram Ki Paidi, Naya Ghat & Ram Janmabhoomi Path',
+        whySpecial: 'The epicenter of Indian spiritual civilization and the most spectacular festival of lights in human history.'
+      },
+      festivals: [
+        {
+          name: 'Ayodhya Deepotsav',
+          dates: 'November (Diwali Eve)',
+          description: '2.5 million oil lamps lit along Saryu Ghats with international Ramlila troupes from Thailand, Indonesia & Sri Lanka.',
+          insiderTip: 'Reach Ram Ki Paidi by 4:00 PM to secure prime viewing for the illuminated riverfront and laser show.',
+          significance: 'Celebrates the triumphant return of Lord Rama to Ayodhya after 14 years.'
+        },
+        {
+          name: 'Daily Maha Saryu Aarti',
+          dates: 'Every Evening at 6:00 PM',
+          description: 'Synchronized multi-tiered brass lamp aarti conducted by Vedic priests with floating floral diyas.',
+          insiderTip: 'Take an electric solar boat cruise at sunset right before the aarti starts.',
+          significance: 'Sacred worship of the holy Saryu river.'
+        }
+      ],
+      hiddenGems: [
+        {
+          title: 'Guptar Ghat Sunken Sunset Promenade',
+          category: 'Secret Trails',
+          location: '7 km downstream from Main City',
+          description: 'Serene, clean stone steps surrounded by lush gardens and historic temples where Lord Rama took Jal Samadhi.',
+          bestTimeToVisit: '4:30 PM – 6:00 PM (Sunset tranquility)'
+        },
+        {
+          title: 'Kanak Bhawan Gold-Ornamented Palace',
+          category: 'Ancient Architecture',
+          location: 'Near Hanuman Garhi',
+          description: 'A magnificent palace gifted to Devi Sita by Queen Kaikeyi with gilded sanctums and classical Bundeli architecture.',
+          bestTimeToVisit: '9:00 AM – 11:30 AM (Morning bhajans)'
+        }
+      ],
+      seasonalFoods: [
+        {
+          name: 'Ayodhya Peda & Khoya Gujiya',
+          type: 'Must-Try Specialty',
+          famousSpot: 'Maurya Misthan Bhandar (Hanuman Garhi Chowk)',
+          priceRange: '₹60 – ₹120',
+          description: 'Slow-caramelized buffalo milk fudge infused with cardamom and topped with slivered almonds.'
+        },
+        {
+          name: 'Saryu Kinare Bedmi Puri with Aloo Dum',
+          type: 'Street Food Legend',
+          famousSpot: 'Naya Ghat Food Kiosks',
+          priceRange: '₹40 – ₹60 per plate',
+          description: 'Urad-dal stuffed crispy fried pooris served with spicy hing-infused pumpkin & potato curry.'
+        }
+      ],
+      budgetStays: [
+        {
+          name: 'Saryu Riverfront Heritage Dharmashala & B&B',
+          type: 'Heritage Haveli',
+          pricePerNight: 950,
+          rating: 4.8,
+          ecoScore: 'A+ (Solar Powered & Plastic-Free)',
+          amenities: ['Direct Ghat Walking Access', 'Satvik Pure Veg Meals', 'Clean RO Water', 'WiFi']
+        }
+      ],
+      safety: [
+        {
+          score: 9.6,
+          crowdLevel: isNov ? 'High (Festive Rush)' : 'Moderate (Pleasant)',
+          emergencyContacts: [
+            { service: 'Ayodhya Tourist Police Control', number: '112' },
+            { service: 'Ram Janmabhoomi Pilgrim Desk', number: '05278-292000' }
+          ],
+          insiderSafetyTips: [
+            'Book VIP or Sugam Darshan passes on the official trust portal to avoid physical queues.',
+            'Direct Vande Bharat Express connects Delhi/Lucknow to Ayodhya in under 2 hours.'
+          ]
+        }
+      ],
+      sustainability: {
+        co2SavedKg: 5.8,
+        ecoRewardPoints: 115,
+        greenRoute: 'Lucknow-Ayodhya Vande Bharat Electric + Saryu Solar Electric Ferry',
+        recommendedTransit: 'Electric Vande Bharat + Solar River Catamaran + E-Rickshaw',
+        localInitiative: 'Zero Carbon Pilgrim Corridor with 100% solar powered street illumination along Ram Path.'
+      }
+    };
+  }
+
+  // -------------------------------------------------------------
+  // 2. LUCKNOW
   // -------------------------------------------------------------
   if (normalized.includes('lucknow') || normalized.includes('lko')) {
     const isMayJune = month === 5 || month === 6;
