@@ -926,39 +926,14 @@ const TourPackagesSection: React.FC<TourPackagesSectionProps> = ({
         </p>
       </div>
 
-      {/* Category Theme Filter Pills */}
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto">
-        {[
-          { id: 'all', label: 'All Expeditions' },
-          { id: 'wellness', label: '🌿 Wellness & Ayurveda' },
-          { id: 'royal', label: '👑 Royal & Palaces' },
-          { id: 'himalayan', label: '🏔️ Himalayan Expeditions' },
-          { id: 'workcation', label: '💻 Workcation & Solo' },
-          { id: 'family', label: '🐅 Family & Wildlife' },
-          { id: 'spiritual', label: '🪔 Sacred Pilgrimage' }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveCategory(tab.id as TourCategory)}
-            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer border ${
-              activeCategory === tab.id
-                ? 'bg-slate-900 text-white border-slate-900 shadow-sm scale-105'
-                : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:bg-stone-50'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
       {/* Active Filter Result Counter */}
-      <div className="mt-4 text-center">
-        <span className="text-xs text-stone-500 font-medium">
+      <div className="mt-6 text-center">
+        <span className="text-xs sm:text-sm text-stone-500 font-medium">
           Showing <strong>{filteredPackages.length}</strong> {filteredPackages.length === 1 ? 'curated package' : 'curated packages'}
           {activeCategory !== 'all' && (
             <button 
               onClick={() => setActiveCategory('all')}
-              className="ml-2 text-amber-700 underline font-semibold hover:text-amber-800"
+              className="ml-2 text-amber-700 underline font-semibold hover:text-amber-800 cursor-pointer"
             >
               (Show all)
             </button>

@@ -14,6 +14,16 @@ import DestinationsSection from '../components/travelhub/DestinationsSection';
 import ReviewsSection from '../components/travelhub/ReviewsSection';
 import TourPackagesSection, { TourCategory } from '../components/travelhub/TourPackagesSection';
 
+const CANONICAL_CATEGORIES: { id: TourCategory; label: string }[] = [
+  { id: 'all', label: 'All Expeditions' },
+  { id: 'wellness', label: '🌿 Wellness & Ayurveda' },
+  { id: 'royal', label: '👑 Royal & Palaces' },
+  { id: 'himalayan', label: '🏔️ Himalayan Expeditions' },
+  { id: 'workcation', label: '💻 Workcation & Solo' },
+  { id: 'family', label: '🐅 Family & Wildlife' },
+  { id: 'spiritual', label: '🪔 Sacred Pilgrimage' }
+];
+
 const TravelHub: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<TourCategory>('all');
 
@@ -29,8 +39,8 @@ const TravelHub: React.FC = () => {
   return (
     <div className="min-h-screen relative overflow-x-hidden bg-[#faf8f5] text-stone-800 font-sans">
       
-      {/* 1. CINEMATIC 4K VIDEO HERO SECTION */}
-      <div className="relative min-h-[600px] lg:min-h-[660px] flex items-center justify-center overflow-hidden bg-slate-950 text-white">
+      {/* 1. CINEMATIC FULL-BLEED VIDEO HERO SECTION (Zero gap under navbar) */}
+      <div className="relative -mt-20 sm:-mt-24 min-h-[620px] lg:min-h-[700px] flex items-center justify-center overflow-hidden bg-slate-950 text-white">
         
         {/* Full-bleed AutoPlay Looping Video */}
         <video 
@@ -41,15 +51,16 @@ const TravelHub: React.FC = () => {
           className="absolute inset-0 w-full h-full object-cover scale-105"
         >
           <source src="/videos/travel-hero.mp4" type="video/mp4" />
-          <source src="https://videos.pexels.com/video-files/4133023/4133023-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+          <source src="/videos/travel-hero.webm" type="video/webm" />
+          <source src="https://videos.pexels.com/video-files/4133023/4133023-hd_1920_1080_30fps.mp4" type="video/mp4" />
         </video>
 
         {/* Cinematic Vignette & Atmospheric Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-slate-950" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_25%,_rgba(0,0,0,0.65)_100%)]" />
 
-        {/* Hero Content Container */}
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 pt-16 pb-16">
+        {/* Hero Content Container with Top Padding for Transparent Navbar Clearance */}
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 pt-28 sm:pt-36 pb-16">
           
           {/* Top Golden Badge */}
           <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/50 px-4 py-1.5 rounded-full backdrop-blur-md shadow-lg">
@@ -69,23 +80,15 @@ const TravelHub: React.FC = () => {
             Handcrafted cultural itineraries, boutique royal stays, private AC transit, and authentic culinary trails across India.
           </p>
 
-          {/* Floating Glassmorphism Theme Bar */}
+          {/* Canonical Floating Glassmorphism Theme Bar */}
           <div className="pt-4 max-w-4xl mx-auto">
             <div className="bg-black/55 backdrop-blur-xl border border-white/20 p-2 sm:p-2.5 rounded-2xl sm:rounded-full shadow-2xl flex flex-wrap items-center justify-center gap-2">
-              {[
-                { id: 'all', label: 'All Expeditions' },
-                { id: 'royal', label: '👑 Royal Heritage' },
-                { id: 'spiritual', label: '🪔 Sacred Circuits' },
-                { id: 'himalayan', label: '🏔️ Himalayan' },
-                { id: 'wellness', label: '🌿 Wellness' },
-                { id: 'workcation', label: '💻 Workcation' },
-                { id: 'family', label: '🐅 Wildlife & Family' }
-              ].map((tab) => {
+              {CANONICAL_CATEGORIES.map((tab) => {
                 const isActive = activeCategory === tab.id;
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => handleSelectCategory(tab.id as TourCategory)}
+                    onClick={() => handleSelectCategory(tab.id)}
                     className={`px-4 py-2 rounded-xl sm:rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer border ${
                       isActive
                         ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold shadow-lg shadow-amber-500/30 scale-105'
