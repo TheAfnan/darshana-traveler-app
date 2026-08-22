@@ -2,6 +2,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { MonumentResult } from "../types/arGuide";
 import { apiClient } from "./api";
+import { fetchWikipediaMonumentData } from "./wikipediaApi";
 
 /**
  * Curated Database of Major Indian Heritage Monuments
@@ -24,7 +25,8 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     isLiveAI: false,
     imageUrl: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['Agra Fort (2.5 km)', 'Mehtab Bagh Garden', 'Itimad-ud-Daulah (Baby Taj)'],
-    travelHubTag: 'royal'
+    travelHubTag: 'royal',
+    wikipediaUrl: 'https://en.wikipedia.org/wiki/Taj_Mahal'
   },
   'bara imambara': {
     name: 'Bara Imambara & Bhul Bhulaiya',
@@ -42,7 +44,8 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     isLiveAI: false,
     imageUrl: 'https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['Rumi Darwaza', 'Chota Imambara', 'Husainabad Clock Tower'],
-    travelHubTag: 'royal'
+    travelHubTag: 'royal',
+    wikipediaUrl: 'https://en.wikipedia.org/wiki/Bara_Imambara'
   },
   'rumi darwaza': {
     name: 'Rumi Darwaza (Turkish Gate)',
@@ -60,7 +63,8 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     isLiveAI: false,
     imageUrl: 'https://media.istockphoto.com/id/2167395972/photo/lucknow-uttar-pradesh-india-19-june-2022-rumi-darwaza-gate-in-islamic-architecture-built-by.jpg?s=612x612&w=0&k=20&c=AfV0BcNrODmU4uyd63gp_kQfYB66QOUkASN9YXvzufE=',
     nearbySpots: ['Bara Imambara', 'Picture Gallery Husainabad', 'Teele Wali Masjid'],
-    travelHubTag: 'royal'
+    travelHubTag: 'royal',
+    wikipediaUrl: 'https://en.wikipedia.org/wiki/Rumi_Darwaza'
   },
   'hawa mahal': {
     name: 'Hawa Mahal (Palace of Winds)',
@@ -78,7 +82,8 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     isLiveAI: false,
     imageUrl: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['City Palace Jaipur', 'Jantar Mantar Observatory', 'Johari Bazaar'],
-    travelHubTag: 'royal'
+    travelHubTag: 'royal',
+    wikipediaUrl: 'https://en.wikipedia.org/wiki/Hawa_Mahal'
   },
   'qutub minar': {
     name: 'Qutub Minar',
@@ -96,61 +101,27 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     isLiveAI: false,
     imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['Alai Darwaza', 'Iron Pillar of Delhi', 'Mehrauli Archaeological Park'],
-    travelHubTag: 'spiritual'
+    travelHubTag: 'spiritual',
+    wikipediaUrl: 'https://en.wikipedia.org/wiki/Qutb_Minar'
   },
-  'gateway of india': {
-    name: 'Gateway of India',
-    location: 'Mumbai, Maharashtra',
-    era: '1911–1924 CE',
-    builtBy: 'Architect George Wittet',
-    architectureStyle: 'Indo-Saracenic (Yellow Basalt & Reinforced Concrete)',
-    history: 'Erected on the waterfront at Apollo Bunder to commemorate the 1911 royal visit. Later became the ceremonial exit point for the last British military troops leaving independent India in 1948.',
-    funFacts: [
-      'The central basalt dome measures 48 feet in diameter and rises 83 feet above the Arabian Sea.',
-      'Incorporates 16th-century Gujarati Sultanate perforated jali patterns with Roman triumphal arch proportions.',
-      'Serves as the departure point for boats exploring the UNESCO Elephanta Island cave temples.'
-    ],
-    confidence: 'high',
-    isLiveAI: false,
-    imageUrl: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=1200&auto=format&fit=crop&q=80',
-    nearbySpots: ['Taj Mahal Palace Hotel', 'Elephanta Caves', 'Colaba Causeway'],
-    travelHubTag: 'family'
-  },
-  'charminar': {
-    name: 'Charminar (Four Minarets)',
-    location: 'Hyderabad, Telangana',
-    era: '1591 CE',
-    builtBy: 'Muhammad Quli Qutb Shah',
-    architectureStyle: 'Qutb Shahi & Persian Indo-Islamic (Granite & Lime Mortar)',
-    history: 'Constructed at the historic center of Hyderabad to commemorate the eradication of a regional epidemic and serve as the vibrant junction of historic trade routes.',
-    funFacts: [
-      'Each of the four minarets stands 56 meters high with 149 steps leading to the upper gallery.',
-      'Positioned at the crossroads of historic trade routes connecting Golconda to the port cities.',
-      'The upper floor accommodates the oldest mosque in Hyderabad.'
-    ],
-    confidence: 'high',
-    isLiveAI: false,
-    imageUrl: 'https://images.unsplash.com/photo-1605647540924-852290f6b0d5?w=1200&auto=format&fit=crop&q=80',
-    nearbySpots: ['Laad Bazaar', 'Mecca Masjid', 'Chowmahalla Palace'],
-    travelHubTag: 'royal'
-  },
-  'amber fort': {
-    name: 'Amber Fort & Palace',
-    location: 'Amer / Jaipur, Rajasthan',
+  'amer fort': {
+    name: 'Amer Fort (Amber Palace)',
+    location: 'Amer, Jaipur, Rajasthan',
     era: '1592 CE',
     builtBy: 'Raja Man Singh I',
-    architectureStyle: 'Rajput & Mughal Defensive Architecture (Pink & Yellow Sandstone)',
-    history: 'Perched high on Cheel ka Teela overlooking Maota Lake, this massive hilltop citadel was the opulent principal residence of the Kachwaha Rajput rulers before Jaipur city was founded.',
+    architectureStyle: 'Hindu & Rajput Architecture (Yellow & Pink Sandstone)',
+    history: 'Perched on Cheel ka Teela (Hill of Eagles) overlooking Maota Lake. Famous for its opulent Sheesh Mahal (Mirror Palace) where single candle reflections illuminate entire mirrored chambers.',
     funFacts: [
-      'The Sheesh Mahal (Mirror Palace) ceiling is adorned with convex Belgian mirrors that reflect candlelight into starry constellations.',
-      'Connected to Jaigarh Fort through subterranean military tunnels used for royal security.',
-      'Overlooks the historic Maota Lake and terraced Kesar Kyari saffron gardens.'
+      'Sheesh Mahal was crafted using thousands of convex Belgian glass mirrors imported during the 16th century.',
+      'Connected via subterranean escape tunnels to the formidable military fortress of Jaigarh.',
+      'Engineered with sophisticated water-lifting wheels powered by Persian hydraulics.'
     ],
     confidence: 'high',
     isLiveAI: false,
     imageUrl: 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['Sheesh Mahal', 'Jaigarh Fort', 'Panna Meena Kund Stepwell'],
-    travelHubTag: 'royal'
+    travelHubTag: 'royal',
+    wikipediaUrl: 'https://en.wikipedia.org/wiki/Amber_Fort'
   },
   'india gate': {
     name: 'India Gate (National Memorial)',
@@ -168,33 +139,22 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     isLiveAI: false,
     imageUrl: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['National War Memorial', 'Rashtrapati Bhavan', 'National Museum New Delhi'],
-    travelHubTag: 'spiritual'
+    travelHubTag: 'spiritual',
+    wikipediaUrl: 'https://en.wikipedia.org/wiki/India_Gate'
   }
 };
 
 /**
- * Identify an Indian monument from camera frame base64 or uploaded image.
+ * Identify an Indian monument from camera frame base64 or uploaded image,
+ * and enrich with live Wikipedia authentic historical facts & Wikimedia imagery.
  */
 export async function analyzeMonumentPhoto(imageDataBase64: string): Promise<MonumentResult> {
   const base64Clean = imageDataBase64.replace(/^data:image\/[a-z]+;base64,/, '');
 
-  // 1. Backend endpoint if configured
-  try {
-    const backendRes = await apiClient.post<MonumentResult>('/ar/identify-monument', {
-      image: base64Clean
-    });
-    if (backendRes.success && backendRes.data && backendRes.data.confidence !== 'low') {
-      return {
-        ...backendRes.data,
-        isLiveAI: true
-      };
-    }
-  } catch {
-    // Continue
-  }
+  let baseResult: MonumentResult | null = null;
 
-  // 2. Direct Gemini 1.5 Flash Vision Multimodal Analysis
-  const geminiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
+  // 1. Direct Gemini 1.5 Flash Vision Multimodal Analysis
+  const geminiKey = localStorage.getItem('darshana_gemini_api_key')?.trim() || import.meta.env.VITE_GEMINI_API_KEY?.trim();
   if (geminiKey && geminiKey.length > 5) {
     try {
       const genAI = new GoogleGenerativeAI(geminiKey);
@@ -229,7 +189,7 @@ export async function analyzeMonumentPhoto(imageDataBase64: string): Promise<Mon
       const parsed = JSON.parse(cleanJson);
 
       if (parsed.name && parsed.name !== 'Unknown Structure' && parsed.confidence !== 'low') {
-        return {
+        baseResult = {
           name: parsed.name,
           location: parsed.location || 'India',
           era: parsed.era || 'Historical Indian Era',
@@ -252,13 +212,30 @@ export async function analyzeMonumentPhoto(imageDataBase64: string): Promise<Mon
     }
   }
 
-  // 3. High-Quality Curated Archive Fallback
-  const fallbackKeys = Object.keys(CURATED_MONUMENTS_DATA);
-  const selectedKey = fallbackKeys[Math.floor(Math.random() * fallbackKeys.length)];
-  const curated = CURATED_MONUMENTS_DATA[selectedKey];
+  // 2. Fallback to Curated Archive if Gemini Vision is unavailable
+  if (!baseResult) {
+    const fallbackKeys = Object.keys(CURATED_MONUMENTS_DATA);
+    const selectedKey = fallbackKeys[Math.floor(Math.random() * fallbackKeys.length)];
+    baseResult = {
+      ...CURATED_MONUMENTS_DATA[selectedKey],
+      isLiveAI: false
+    };
+  }
 
-  return {
-    ...curated,
-    isLiveAI: false
-  };
+  // 3. Enrich with Live Wikipedia REST API Summary & Wikimedia Commons Data
+  try {
+    const wikiData = await fetchWikipediaMonumentData(baseResult.name);
+    if (wikiData) {
+      baseResult.wikipediaUrl = wikiData.wikipediaUrl;
+      baseResult.wikipediaExtract = wikiData.extract;
+      baseResult.wikipediaDescription = wikiData.description;
+      if (wikiData.originalImageUrl || wikiData.thumbnailUrl) {
+        baseResult.imageUrl = baseResult.imageUrl || wikiData.originalImageUrl || wikiData.thumbnailUrl;
+      }
+    }
+  } catch (wikiErr) {
+    console.warn("Wikipedia enrichment note:", wikiErr);
+  }
+
+  return baseResult;
 }

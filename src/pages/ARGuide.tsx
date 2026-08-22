@@ -12,7 +12,9 @@ import {
   BookOpen, 
   ArrowRight,
   Sparkles,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Globe,
+  ExternalLink
 } from 'lucide-react';
 import { analyzeMonumentPhoto, CURATED_MONUMENTS_DATA } from '../services/monumentScanApi';
 import type { MonumentResult } from '../types/arGuide';
@@ -412,6 +414,18 @@ export const ARGuide: React.FC = () => {
                       <MapPin size={12} className="text-amber-400" />
                       {monumentResult.location}
                     </span>
+                    {monumentResult.wikipediaUrl && (
+                      <a
+                        href={monumentResult.wikipediaUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-semibold rounded-full flex items-center gap-1.5 shadow-sm transition"
+                      >
+                        <Globe size={12} className="text-cyan-300" />
+                        <span>Wikipedia Verified</span>
+                        <ExternalLink size={10} />
+                      </a>
+                    )}
                   </div>
 
                   <h2 className="text-2xl sm:text-4xl font-extrabold text-white mb-1 tracking-tight">
@@ -478,13 +492,40 @@ export const ARGuide: React.FC = () => {
               {/* Tab Contents (High Contrast & Clean Typography) */}
               <div className="p-6 sm:p-8 space-y-4">
                 {activeTab === 'history' && (
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      Cultural Heritage
-                    </h4>
-                    <p className="text-slate-700 text-sm leading-relaxed font-normal">
-                      {monumentResult.history}
-                    </p>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        Cultural Heritage Overview
+                      </h4>
+                      <p className="text-slate-700 text-sm leading-relaxed font-normal">
+                        {monumentResult.history}
+                      </p>
+                    </div>
+
+                    {monumentResult.wikipediaExtract && (
+                      <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 space-y-2 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                            <Globe size={13} className="text-cyan-700" />
+                            <span>Verified Wikipedia Record</span>
+                          </span>
+                          {monumentResult.wikipediaUrl && (
+                            <a
+                              href={monumentResult.wikipediaUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-cyan-800 hover:text-cyan-950 font-bold inline-flex items-center gap-1"
+                            >
+                              <span>Full Article</span>
+                              <ExternalLink size={10} />
+                            </a>
+                          )}
+                        </div>
+                        <p className="text-slate-600 leading-relaxed font-normal text-[11px]">
+                          {monumentResult.wikipediaExtract}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -16,4 +16,7 @@ export interface MonumentResult {
   imageUrl?: string;
   nearbySpots?: string[];
   travelHubTag?: string;
+  wikipediaUrl?: string;
+  wikipediaExtract?: string;
+  wikipediaDescription?: string;
 }
