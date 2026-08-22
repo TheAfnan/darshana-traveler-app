@@ -14,7 +14,7 @@ export const getRazorpayKey = (): string => {
     localStorage.getItem('darshana_razorpay_key_id')?.trim() ||
     import.meta.env.VITE_RAZORPAY_KEY_ID?.trim() ||
     import.meta.env.VITE_RAZORPAY_KEY?.trim() ||
-    ''
+    'rzp_test_TSfdKWJwijDBTO'
   );
 };
 
