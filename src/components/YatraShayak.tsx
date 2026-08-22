@@ -1,7 +1,6 @@
-import { Bot, Compass, Loader2, MessageCircle, RefreshCw, Send, Shield, Sparkles, User, X } from 'lucide-react';
+import { Bot, Compass, Loader2, MessageCircle, RefreshCw, Send, Shield, Sparkles, User, X, Key, CheckCircle2 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { yatraShayakApi } from '../services/api';
 import { getChatResponse } from '../services/geminiService';
 import darshanaIcon from '../images/darshana-icon-only.webp';
 
@@ -19,6 +18,9 @@ const QUICK_SUGGESTIONS = [
 const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [apiKeySaved, setApiKeySaved] = useState(false);
   const [message, setMessage] = useState('');
   const [history, setHistory] = useState<{ type: 'user' | 'bot'; text: string; time: string }[]>([
     { 
@@ -29,6 +31,23 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
   ]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('darshana_gemini_api_key') || '';
+    setApiKeyInput(saved);
+  }, []);
+
+  const handleSaveKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (apiKeyInput.trim()) {
+      localStorage.setItem('darshana_gemini_api_key', apiKeyInput.trim());
+      setApiKeySaved(true);
+      setTimeout(() => {
+        setApiKeySaved(false);
+        setShowKeyModal(false);
+      }, 1000);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -199,6 +218,13 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
 
             <div className="flex items-center gap-1">
               <button 
+                onClick={() => setShowKeyModal(true)}
+                className="p-1.5 text-slate-400 hover:text-amber-300 hover:bg-white/5 rounded-xl transition cursor-pointer"
+                title="Configure Gemini API Key"
+              >
+                <Key size={15} className={apiKeyInput ? 'text-emerald-400' : 'text-amber-400'} />
+              </button>
+              <button 
                 onClick={handleClearHistory}
                 className="p-1.5 text-slate-400 hover:text-amber-300 hover:bg-white/5 rounded-xl transition cursor-pointer"
                 title="Reset conversation"
@@ -214,6 +240,43 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
               </button>
             </div>
           </div>
+
+          {/* Key Setup Overlay */}
+          {showKeyModal && (
+            <div className="p-4 bg-slate-900 border-b border-amber-500/30 text-xs space-y-3 animate-in fade-in">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-amber-300 flex items-center gap-1.5">
+                  <Key size={13} />
+                  <span>Google Gemini API Key</span>
+                </span>
+                <button onClick={() => setShowKeyModal(false)} className="text-slate-400 hover:text-white">
+                  <X size={14} />
+                </button>
+              </div>
+              <form onSubmit={handleSaveKey} className="space-y-2">
+                <input
+                  type="password"
+                  value={apiKeyInput}
+                  onChange={(e) => setApiKeyInput(e.target.value)}
+                  placeholder="Paste AIzaSy... or custom key"
+                  className="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-amber-400"
+                />
+                {apiKeySaved && (
+                  <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                    <CheckCircle2 size={12} /> Key saved successfully!
+                  </p>
+                )}
+                <div className="flex justify-end gap-2 pt-1">
+                  <button
+                    type="submit"
+                    className="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition text-xs"
+                  >
+                    Save Key
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
 
           {/* Quick suggestions pills */}
           <div className="px-3 py-2 bg-slate-900/50 border-b border-white/5 flex gap-1.5 overflow-x-auto scrollbar-none">
