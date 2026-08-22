@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Camera, 
   Upload, 
@@ -14,7 +14,12 @@ import {
   Sparkles,
   Image as ImageIcon,
   Globe,
-  ExternalLink
+  ExternalLink,
+  Key,
+  AlertCircle,
+  CheckCircle2,
+  X,
+  Search
 } from 'lucide-react';
 import { analyzeMonumentPhoto, CURATED_MONUMENTS_DATA } from '../services/monumentScanApi';
 import type { MonumentResult } from '../types/arGuide';
@@ -33,6 +38,36 @@ export const ARGuide: React.FC = () => {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isRequestingCamera, setIsRequestingCamera] = useState(false);
   const [activeTab, setActiveTab] = useState<'history' | 'facts' | 'nearby'>('history');
+
+  // Gemini API Key Modal State
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [apiKeySaved, setApiKeySaved] = useState(false);
+
+  // Search filter for curated fallback
+  const [monumentSearch, setMonumentSearch] = useState('');
+
+  useEffect(() => {
+    const savedKey = localStorage.getItem('darshana_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
+    setApiKeyInput(savedKey);
+  }, []);
+
+  const handleSaveApiKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (apiKeyInput.trim()) {
+      localStorage.setItem('darshana_gemini_api_key', apiKeyInput.trim());
+      setApiKeySaved(true);
+      setTimeout(() => {
+        setApiKeySaved(false);
+        setShowApiKeyModal(false);
+      }, 1200);
+    }
+  };
+
+  const hasApiKey = Boolean(
+    localStorage.getItem('darshana_gemini_api_key')?.trim() || 
+    import.meta.env.VITE_GEMINI_API_KEY?.trim()
+  );
 
   // Multi-tier camera initialization
   const startCamera = async () => {
@@ -61,8 +96,8 @@ export const ARGuide: React.FC = () => {
       });
       attachStream(mediaStream);
       return;
-    } catch (e1) {
-      // Fallback
+    } catch {
+      // Fallback to basic constraint
     }
 
     try {
@@ -109,71 +144,75 @@ export const ARGuide: React.FC = () => {
     };
   }, []);
 
-  // Capture frame from live video
-  const handleCaptureFrame = async () => {
-    if (!videoRef.current) return;
+  const handleCaptureFrame = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
     const video = videoRef.current;
-    const canvas = canvasRef.current || document.createElement('canvas');
+    const canvas = canvasRef.current;
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
+
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-
-    setCapturedImage(dataUrl);
-    stopCamera();
-    await processMonumentScan(dataUrl);
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      setCapturedImage(dataUrl);
+      stopCamera();
+      runIdentification(dataUrl);
+    }
   };
 
-  // Upload or native camera file handler
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = async (event) => {
+    reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       setCapturedImage(dataUrl);
       stopCamera();
-      await processMonumentScan(dataUrl);
+      runIdentification(dataUrl);
     };
     reader.readAsDataURL(file);
   };
 
-  // Quick preset test
-  const handleSelectCuratedPreset = async (presetKey: string) => {
-    const curated = CURATED_MONUMENTS_DATA[presetKey];
-    if (!curated) return;
-    stopCamera();
-    setCapturedImage(null);
+  const runIdentification = async (dataUrl: string) => {
     setIsScanning(true);
-    setTimeout(() => {
-      setMonumentResult({
-        ...curated,
-        isLiveAI: false
-      });
-      setIsScanning(false);
-    }, 350);
-  };
-
-  // Scan & analyze
-  const processMonumentScan = async (imageDataUrl: string) => {
-    setIsScanning(true);
-    setMonumentResult(null);
     try {
-      const result = await analyzeMonumentPhoto(imageDataUrl);
+      const result = await analyzeMonumentPhoto(dataUrl);
       setMonumentResult(result);
-    } catch (err) {
-      console.error("Monument scan failed:", err);
-      setMonumentResult(CURATED_MONUMENTS_DATA['taj mahal']);
+    } catch {
+      setMonumentResult({
+        name: 'Could Not Identify Monument',
+        location: 'India',
+        era: 'Unknown',
+        builtBy: 'Unknown',
+        architectureStyle: 'Unidentified',
+        history: 'We could not recognize this monument automatically. Please choose from our verified heritage list below.',
+        funFacts: [],
+        confidence: 'low',
+        isLiveAI: false,
+        isIdentified: false,
+        errorReason: 'Recognition failed. Try a clearer angle.'
+      });
     } finally {
       setIsScanning(false);
     }
   };
 
-  // Reset scanner
+  const handleSelectCuratedPreset = (key: string) => {
+    const curated = CURATED_MONUMENTS_DATA[key.toLowerCase()];
+    if (curated) {
+      setCapturedImage(curated.imageUrl || null);
+      setMonumentResult({
+        ...curated,
+        isLiveAI: false,
+        isIdentified: true
+      });
+      stopCamera();
+    }
+  };
+
   const handleReset = () => {
     setCapturedImage(null);
     setMonumentResult(null);
@@ -182,105 +221,181 @@ export const ARGuide: React.FC = () => {
 
   const activePhoto = capturedImage || monumentResult?.imageUrl || CURATED_MONUMENTS_DATA['taj mahal'].imageUrl;
 
+  const filteredPresets = Object.entries(CURATED_MONUMENTS_DATA).filter(([key, val]) => {
+    if (!monumentSearch.trim()) return true;
+    return val.name.toLowerCase().includes(monumentSearch.toLowerCase()) || 
+           val.location.toLowerCase().includes(monumentSearch.toLowerCase());
+  });
+
   return (
-    <div className="min-h-screen bg-[#faf9f6] text-slate-900 py-8 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#faf9f6] text-slate-900 font-sans pb-24">
+      
+      {/* API Key Modal */}
+      {showApiKeyModal && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-stone-200 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-orange-100 text-orange-700 rounded-xl">
+                  <Key size={18} />
+                </div>
+                <h3 className="text-base font-bold text-slate-900">Gemini AI Vision Setup</h3>
+              </div>
+              <button onClick={() => setShowApiKeyModal(false)} className="p-1 text-slate-400 hover:text-slate-700">
+                <X size={18} />
+              </button>
+            </div>
 
-        {/* Page Header (Clean Modern SaaS Heading) */}
-        <div className="text-center space-y-2 mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200/80 rounded-full text-xs font-semibold shadow-2xs">
-            <Landmark size={13} className="text-amber-700" />
-            <span>Heritage Lens & Monument Identifier</span>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Enter your Google Gemini API key to enable live camera recognition for Indian monuments, palaces, and heritage architecture.
+            </p>
+
+            <form onSubmit={handleSaveApiKey} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Gemini API Key</label>
+                <input
+                  type="password"
+                  value={apiKeyInput}
+                  onChange={(e) => setApiKeyInput(e.target.value)}
+                  placeholder="AIzaSy..."
+                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs text-slate-900 font-mono focus:outline-none focus:border-orange-600"
+                />
+              </div>
+
+              <div className="text-[11px] text-slate-500">
+                <span>Get a free key from </span>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-orange-700 font-semibold underline inline-flex items-center gap-1">
+                  <span>Google AI Studio</span>
+                  <ExternalLink size={10} />
+                </a>
+              </div>
+
+              {apiKeySaved && (
+                <div className="p-2.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs flex items-center gap-1.5 font-medium">
+                  <CheckCircle2 size={15} />
+                  <span>API Key saved successfully!</span>
+                </div>
+              )}
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowApiKeyModal(false)}
+                  className="px-3.5 py-2 border border-stone-200 text-xs font-semibold text-slate-600 rounded-xl hover:bg-stone-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer"
+                >
+                  Save Key
+                </button>
+              </div>
+            </form>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Monument Scan & History Guide
-          </h1>
-          <p className="text-slate-600 text-sm max-w-xl mx-auto leading-relaxed">
-            Point your camera or upload a photo of any Indian landmark to discover its architecture, history, and key insights.
-          </p>
         </div>
+      )}
 
-        {/* VIEWPORT & SCANNER CONTAINER */}
+      {/* Hidden Canvas for Frame Capture */}
+      <canvas ref={canvasRef} className="hidden" />
+
+      {/* Top Banner */}
+      <div className="bg-white border-b border-stone-200 pt-24 pb-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto space-y-3">
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50 border border-orange-200/80 text-orange-800 rounded-full text-xs font-bold mb-2">
+                <Sparkles size={13} className="text-orange-600" />
+                <span>AI Vision & AR Heritage Scanner</span>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-serif font-extrabold text-slate-900 tracking-tight">
+                Identify Indian Monuments
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-600 max-w-xl">
+                Point your phone camera at any historical monument to reveal architectural secrets, history, and verified Wikipedia encyclopedia insights.
+              </p>
+            </div>
+
+            {/* AI Key Status Button */}
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => setShowApiKeyModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-slate-700 rounded-full text-xs font-semibold transition cursor-pointer shadow-2xs"
+                title="Configure Gemini Vision API Key"
+              >
+                <Key size={12} className={hasApiKey ? 'text-emerald-600' : 'text-amber-600'} />
+                <span>Vision AI Key</span>
+                <span className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+
         {!monumentResult ? (
+          /* SCANNER / CAMERA VIEW */
           <div className="space-y-6">
-            <div className="bg-white rounded-3xl border border-stone-200 p-4 sm:p-5 shadow-xs space-y-4">
+            
+            <div className="bg-white rounded-3xl border border-stone-200 p-5 sm:p-7 shadow-xs space-y-5">
               
-              {/* Camera Video Viewport */}
-              <div className="relative rounded-2xl overflow-hidden bg-slate-950 border border-stone-800 shadow-inner aspect-[4/3] sm:aspect-[16/9] flex items-center justify-center">
+              {/* Viewfinder Frame */}
+              <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center border border-stone-300 shadow-inner">
                 
                 {/* Live Video Feed */}
-                {cameraActive && !capturedImage && (
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                  />
+                <video
+                  ref={videoRef}
+                  playsInline
+                  muted
+                  autoPlay
+                  className={`w-full h-full object-cover ${cameraActive ? 'block' : 'hidden'}`}
+                />
+
+                {/* Viewfinder Target Reticle */}
+                {cameraActive && !isScanning && (
+                  <div className="absolute inset-8 sm:inset-14 border-2 border-dashed border-white/60 rounded-2xl pointer-events-none flex flex-col justify-between p-4">
+                    <div className="flex justify-between">
+                      <span className="w-4 h-4 border-t-2 border-l-2 border-orange-400" />
+                      <span className="w-4 h-4 border-t-2 border-r-2 border-orange-400" />
+                    </div>
+                    <p className="text-center text-xs text-white/90 font-medium bg-slate-900/60 backdrop-blur-xs py-1 px-3 rounded-full self-center">
+                      Align monument within frame
+                    </p>
+                    <div className="flex justify-between">
+                      <span className="w-4 h-4 border-b-2 border-l-2 border-orange-400" />
+                      <span className="w-4 h-4 border-b-2 border-r-2 border-orange-400" />
+                    </div>
+                  </div>
                 )}
 
-                {/* Captured Image Preview */}
-                {capturedImage && (
-                  <img
-                    src={capturedImage}
-                    alt="Captured Landmark"
-                    className="w-full h-full object-cover"
-                  />
+                {/* Scanning Animation */}
+                {isScanning && (
+                  <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center space-y-3 z-20">
+                    <div className="w-16 h-16 rounded-full border-4 border-orange-200 border-t-orange-600 animate-spin flex items-center justify-center text-orange-500">
+                      <Sparkles size={24} className="animate-pulse" />
+                    </div>
+                    <div className="space-y-1 text-white">
+                      <p className="font-bold text-base">Analyzing Monument Architecture...</p>
+                      <p className="text-xs text-slate-300">Matching with Gemini 1.5 Flash Vision & Wikipedia Database</p>
+                    </div>
+                  </div>
                 )}
 
-                {/* Hidden Canvas for capture */}
-                <canvas ref={canvasRef} className="hidden" />
-
-                {/* Viewfinder Overlay */}
-                <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-5">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium text-white shadow-sm">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      <span>{cameraActive ? 'Camera Active' : 'Ready to Scan'}</span>
+                {/* Camera Inactive Fallback Prompt */}
+                {!cameraActive && !isScanning && (
+                  <div className="p-6 text-center space-y-4 max-w-sm">
+                    <div className="w-14 h-14 rounded-2xl bg-white/10 text-amber-400 flex items-center justify-center mx-auto text-2xl">
+                      <Camera size={28} />
                     </div>
-                    <div className="text-[11px] font-mono text-slate-200 bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
-                      1.0X
-                    </div>
-                  </div>
-
-                  {/* Center Reticle */}
-                  <div className="relative w-48 sm:w-64 h-48 sm:h-64 mx-auto border border-white/30 rounded-2xl flex items-center justify-center">
-                    <div className="absolute -top-1 -left-1 w-5 h-5 border-t-2 border-l-2 border-white rounded-tl-lg" />
-                    <div className="absolute -top-1 -right-1 w-5 h-5 border-t-2 border-r-2 border-white rounded-tr-lg" />
-                    <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-2 border-l-2 border-white rounded-bl-lg" />
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-2 border-r-2 border-white rounded-br-lg" />
-
-                    {isScanning && (
-                      <motion.div
-                        animate={{ y: [-70, 70, -70] }}
-                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                        className="w-full h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"
-                      />
-                    )}
-
-                    {!isScanning && (
-                      <span className="text-xs text-white font-medium px-3 py-1 bg-slate-900/80 backdrop-blur-md rounded-full border border-white/10 shadow-sm">
-                        Align Landmark
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="text-center">
-                    <span className="text-xs text-slate-200 bg-slate-900/85 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 inline-block shadow-md">
-                      {isScanning ? 'Analyzing architecture...' : 'Point at monument facade or dome'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Camera Fallback State */}
-                {cameraError && !capturedImage && (
-                  <div className="absolute inset-0 bg-slate-950/92 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-3 z-20">
-                    <div className="w-12 h-12 rounded-full bg-stone-900 border border-stone-800 flex items-center justify-center">
-                      <Camera size={22} className="text-amber-500" />
-                    </div>
-                    <div className="space-y-1 max-w-sm">
+                    <div className="space-y-1">
                       <h3 className="text-sm font-bold text-white">Camera Access</h3>
-                      <p className="text-xs text-slate-300 leading-relaxed">{cameraError}</p>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        {cameraError || "Enable camera to identify monuments in real-time, or upload a photo."}
+                      </p>
                     </div>
                     
                     <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
@@ -364,35 +479,129 @@ export const ARGuide: React.FC = () => {
 
             {/* QUICK PRESET DEMO CARD */}
             <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-xs space-y-3">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                   <Landmark size={14} className="text-amber-600" />
-                  Popular Landmark Demos
+                  Verified Indian Heritage Presets
                 </span>
-                <span className="text-[11px] text-slate-400">Instant Preview</span>
+                <span className="text-[11px] text-slate-400">Click any landmark for instant 360° guide</span>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { name: 'Taj Mahal', key: 'taj mahal' },
-                  { name: 'Bara Imambara', key: 'bara imambara' },
-                  { name: 'Hawa Mahal', key: 'hawa mahal' },
-                  { name: 'Qutub Minar', key: 'qutub minar' },
-                  { name: 'Charminar', key: 'charminar' },
-                  { name: 'Gateway of India', key: 'gateway of india' }
-                ].map((demo) => (
+
+              <div className="flex flex-wrap gap-2 pt-1">
+                {Object.keys(CURATED_MONUMENTS_DATA).map((key) => {
+                  const mon = CURATED_MONUMENTS_DATA[key];
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleSelectCuratedPreset(key)}
+                      className="px-3 py-1.5 bg-stone-50 hover:bg-orange-50 hover:text-orange-900 border border-stone-200 hover:border-orange-300 rounded-xl text-xs text-slate-700 font-medium transition cursor-pointer"
+                    >
+                      {mon.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+        ) : monumentResult.isIdentified === false ? (
+          
+          /* UNIDENTIFIED STATE (HONEST & HELPFUL - NO RANDOM GUESSES) */
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xs text-center space-y-5">
+              
+              {/* Thumbnail of what was captured */}
+              {capturedImage && (
+                <div className="w-36 h-36 rounded-2xl overflow-hidden mx-auto border-2 border-stone-200 shadow-xs">
+                  <img src={capturedImage} alt="Scanned Photo" className="w-full h-full object-cover" />
+                </div>
+              )}
+
+              <div className="space-y-1.5 max-w-md mx-auto">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-[11px] font-bold">
+                  <AlertCircle size={13} className="text-amber-600" />
+                  <span>Monument Not Confidently Recognized</span>
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold font-serif text-slate-900">
+                  Could Not Identify This Monument
+                </h2>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {monumentResult.errorReason || "The lighting, distance, or angle was unclear. You can try capturing another photo or search our verified heritage list below."}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={handleReset}
+                  className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer shadow-xs"
+                >
+                  <RefreshCw size={13} />
+                  <span>Try Another Photo</span>
+                </button>
+                
+                {!hasApiKey && (
                   <button
-                    key={demo.key}
-                    onClick={() => handleSelectCuratedPreset(demo.key)}
-                    className="px-3 py-1.5 bg-stone-50 hover:bg-amber-50 hover:text-amber-900 border border-stone-200 hover:border-amber-300 rounded-xl text-xs text-slate-700 font-medium transition cursor-pointer"
+                    onClick={() => setShowApiKeyModal(true)}
+                    className="px-4 py-2.5 bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-900 text-xs font-bold rounded-xl transition flex items-center gap-1.5 cursor-pointer"
                   >
-                    {demo.name}
+                    <Key size={13} />
+                    <span>Set Free Gemini API Key</span>
                   </button>
+                )}
+              </div>
+            </div>
+
+            {/* Manual Selection Search from Verified Database */}
+            <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-3">
+                <div>
+                  <h3 className="font-bold text-base text-slate-900">Select From Verified Heritage Directory</h3>
+                  <p className="text-xs text-slate-500">Pick the landmark manually to view full historical architectural facts.</p>
+                </div>
+
+                <div className="relative w-full sm:w-64">
+                  <Search size={14} className="absolute left-3 top-3 text-slate-400" />
+                  <input
+                    type="text"
+                    value={monumentSearch}
+                    onChange={(e) => setMonumentSearch(e.target.value)}
+                    placeholder="Search monument or city..."
+                    className="w-full pl-8 pr-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-orange-600"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filteredPresets.map(([key, mon]) => (
+                  <div
+                    key={key}
+                    onClick={() => handleSelectCuratedPreset(key)}
+                    className="p-3.5 bg-stone-50 hover:bg-orange-50/70 border border-stone-200 hover:border-orange-300 rounded-2xl transition cursor-pointer flex items-center gap-3"
+                  >
+                    <img
+                      src={mon.imageUrl}
+                      alt={mon.name}
+                      className="w-12 h-12 rounded-xl object-cover border border-stone-200 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-xs text-slate-900 truncate">{mon.name}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{mon.location}</p>
+                    </div>
+                    <ArrowRight size={14} className="text-slate-400 shrink-0" />
+                  </div>
                 ))}
               </div>
             </div>
-          </div>
+
+          </motion.div>
         ) : (
-          /* RESULT VIEW: CLEAN MODERN SAAS MONUMENT CARD */
+          
+          /* SUCCESSFUL RECOGNITION VIEW */
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -414,6 +623,17 @@ export const ARGuide: React.FC = () => {
                       <MapPin size={12} className="text-amber-400" />
                       {monumentResult.location}
                     </span>
+
+                    {/* Live AI vs Curated Badge */}
+                    <span className={`px-3 py-1 backdrop-blur-md border text-xs font-semibold rounded-full flex items-center gap-1.5 shadow-sm ${
+                      monumentResult.isLiveAI
+                        ? 'bg-emerald-600/80 border-emerald-400/40 text-white'
+                        : 'bg-stone-800/80 border-white/20 text-slate-200'
+                    }`}>
+                      <Sparkles size={11} className={monumentResult.isLiveAI ? 'text-amber-300' : 'text-slate-300'} />
+                      <span>{monumentResult.isLiveAI ? 'Live AI Vision Identified' : 'Verified Heritage Archive'}</span>
+                    </span>
+
                     {monumentResult.wikipediaUrl && (
                       <a
                         href={monumentResult.wikipediaUrl}
@@ -489,7 +709,7 @@ export const ARGuide: React.FC = () => {
                 </div>
               </div>
 
-              {/* Tab Contents (High Contrast & Clean Typography) */}
+              {/* Tab Contents */}
               <div className="p-6 sm:p-8 space-y-4">
                 {activeTab === 'history' && (
                   <div className="space-y-4">
@@ -587,7 +807,9 @@ export const ARGuide: React.FC = () => {
             </div>
           </motion.div>
         )}
+
       </div>
+
     </div>
   );
 };

@@ -13,6 +13,8 @@ export interface MonumentResult {
   funFacts: string[];
   confidence: 'high' | 'medium' | 'low';
   isLiveAI: boolean;
+  isIdentified?: boolean;
+  errorReason?: string;
   imageUrl?: string;
   nearbySpots?: string[];
   travelHubTag?: string;

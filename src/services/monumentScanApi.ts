@@ -1,12 +1,11 @@
 // src/services/monumentScanApi.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { MonumentResult } from "../types/arGuide";
-import { apiClient } from "./api";
 import { fetchWikipediaMonumentData } from "./wikipediaApi";
 
 /**
  * Curated Database of Major Indian Heritage Monuments
- * Features high-definition verified editorial photography and historical records.
+ * Features high-definition verified editorial photography, architectural data, and historical records.
  */
 export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
   'taj mahal': {
@@ -23,6 +22,7 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     ],
     confidence: 'high',
     isLiveAI: false,
+    isIdentified: true,
     imageUrl: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['Agra Fort (2.5 km)', 'Mehtab Bagh Garden', 'Itimad-ud-Daulah (Baby Taj)'],
     travelHubTag: 'royal',
@@ -42,6 +42,7 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     ],
     confidence: 'high',
     isLiveAI: false,
+    isIdentified: true,
     imageUrl: 'https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['Rumi Darwaza', 'Chota Imambara', 'Husainabad Clock Tower'],
     travelHubTag: 'royal',
@@ -61,6 +62,7 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     ],
     confidence: 'high',
     isLiveAI: false,
+    isIdentified: true,
     imageUrl: 'https://media.istockphoto.com/id/2167395972/photo/lucknow-uttar-pradesh-india-19-june-2022-rumi-darwaza-gate-in-islamic-architecture-built-by.jpg?s=612x612&w=0&k=20&c=AfV0BcNrODmU4uyd63gp_kQfYB66QOUkASN9YXvzufE=',
     nearbySpots: ['Bara Imambara', 'Picture Gallery Husainabad', 'Teele Wali Masjid'],
     travelHubTag: 'royal',
@@ -80,6 +82,7 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     ],
     confidence: 'high',
     isLiveAI: false,
+    isIdentified: true,
     imageUrl: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['City Palace Jaipur', 'Jantar Mantar Observatory', 'Johari Bazaar'],
     travelHubTag: 'royal',
@@ -99,6 +102,7 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     ],
     confidence: 'high',
     isLiveAI: false,
+    isIdentified: true,
     imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['Alai Darwaza', 'Iron Pillar of Delhi', 'Mehrauli Archaeological Park'],
     travelHubTag: 'spiritual',
@@ -118,6 +122,7 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     ],
     confidence: 'high',
     isLiveAI: false,
+    isIdentified: true,
     imageUrl: 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['Sheesh Mahal', 'Jaigarh Fort', 'Panna Meena Kund Stepwell'],
     travelHubTag: 'royal',
@@ -137,6 +142,7 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
     ],
     confidence: 'high',
     isLiveAI: false,
+    isIdentified: true,
     imageUrl: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=1200&auto=format&fit=crop&q=80',
     nearbySpots: ['National War Memorial', 'Rashtrapati Bhavan', 'National Museum New Delhi'],
     travelHubTag: 'spiritual',
@@ -145,31 +151,42 @@ export const CURATED_MONUMENTS_DATA: Record<string, MonumentResult> = {
 };
 
 /**
- * Identify an Indian monument from camera frame base64 or uploaded image,
- * and enrich with live Wikipedia authentic historical facts & Wikimedia imagery.
+ * Identify an Indian monument from camera frame base64 or uploaded image.
+ * Uses Gemini 1.5 Flash Multimodal Vision and enriches with Wikipedia.
+ * Never falls back to a random wrong monument on failure!
  */
 export async function analyzeMonumentPhoto(imageDataBase64: string): Promise<MonumentResult> {
   const base64Clean = imageDataBase64.replace(/^data:image\/[a-z]+;base64,/, '');
 
-  let baseResult: MonumentResult | null = null;
+  const geminiKey = (
+    localStorage.getItem('darshana_gemini_api_key')?.trim() ||
+    import.meta.env.VITE_GEMINI_API_KEY?.trim() ||
+    ''
+  );
+
+  let failureReason = '';
 
   // 1. Direct Gemini 1.5 Flash Vision Multimodal Analysis
-  const geminiKey = localStorage.getItem('darshana_gemini_api_key')?.trim() || import.meta.env.VITE_GEMINI_API_KEY?.trim();
   if (geminiKey && geminiKey.length > 5) {
     try {
       const genAI = new GoogleGenerativeAI(geminiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      const prompt = `You are a heritage archaeologist. Identify the Indian monument, temple, or historical palace from this photo. Respond ONLY with JSON:
+      const prompt = `You are an expert Indian heritage archaeologist and monument identifier. 
+Analyze this photo and identify the Indian historical monument, temple, fort, or landmark shown.
+If the photo clearly shows an Indian monument (e.g. Taj Mahal, Bara Imambara, Hawa Mahal, Qutub Minar, Konark Sun Temple, Gateway of India, India Gate, etc.), respond with valid JSON only.
+If you cannot identify any monument or the photo is completely unrelated/unclear, set "name": "Unidentified Landmark" and "confidence": "low".
+
+JSON Response Format:
 {
-  "name": "Full Name of Monument",
+  "name": "Exact Name of Indian Monument",
   "location": "City, State, India",
-  "era": "Century / Dynasty",
-  "builtBy": "Ruler or Architect",
-  "architectureStyle": "Architectural style and materials",
-  "history": "Concise, professional 2-3 sentence historical overview.",
-  "funFacts": ["Key architectural insight 1", "Engineering trivia 2", "Historical detail 3"],
-  "nearbySpots": ["Nearby attraction 1", "Nearby attraction 2", "Nearby attraction 3"],
+  "era": "Century / Historical Dynasty",
+  "builtBy": "Ruler, Dynasty or Architect",
+  "architectureStyle": "Specific architectural style and stone/brick materials",
+  "history": "2-3 concise historical sentences about its cultural significance.",
+  "funFacts": ["Architectural trivia 1", "Engineering/acoustic secret 2", "Cultural detail 3"],
+  "nearbySpots": ["Attraction 1", "Attraction 2", "Attraction 3"],
   "travelHubTag": "royal" | "spiritual" | "himalayan" | "wellness" | "family",
   "confidence": "high" | "medium" | "low"
 }`;
@@ -185,57 +202,75 @@ export async function analyzeMonumentPhoto(imageDataBase64: string): Promise<Mon
       ]);
 
       const text = result.response.text();
-      const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(cleanJson);
+      const cleanJson = text.replace(/```json/gi, '').replace(/```/gi, '').trim();
+      
+      // Extract valid JSON
+      const jsonStart = cleanJson.indexOf('{');
+      const jsonEnd = cleanJson.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        const jsonString = cleanJson.substring(jsonStart, jsonEnd + 1);
+        const parsed = JSON.parse(jsonString);
 
-      if (parsed.name && parsed.name !== 'Unknown Structure' && parsed.confidence !== 'low') {
-        baseResult = {
-          name: parsed.name,
-          location: parsed.location || 'India',
-          era: parsed.era || 'Historical Indian Era',
-          builtBy: parsed.builtBy || 'Heritage Architects',
-          architectureStyle: parsed.architectureStyle || 'Traditional Indian Architecture',
-          history: parsed.history || 'An enduring landmark of Indian cultural heritage.',
-          funFacts: Array.isArray(parsed.funFacts) && parsed.funFacts.length > 0 ? parsed.funFacts : [
-            'Built using regional stone-crafting techniques.',
-            'Reflects centuries of harmonious cultural exchange.',
-            'Protected under national heritage preservation initiatives.'
-          ],
-          nearbySpots: parsed.nearbySpots || ['Heritage Walk Zone', 'Old City Bazaar', 'State Museum'],
-          travelHubTag: parsed.travelHubTag || 'royal',
-          confidence: parsed.confidence || 'high',
-          isLiveAI: true
-        };
+        if (parsed.name && parsed.name !== 'Unidentified Landmark' && parsed.confidence !== 'low') {
+          const monument: MonumentResult = {
+            name: parsed.name,
+            location: parsed.location || 'India',
+            era: parsed.era || 'Historical Indian Era',
+            builtBy: parsed.builtBy || 'Heritage Architects',
+            architectureStyle: parsed.architectureStyle || 'Traditional Indian Architecture',
+            history: parsed.history || 'An enduring landmark of Indian cultural heritage.',
+            funFacts: Array.isArray(parsed.funFacts) && parsed.funFacts.length > 0 ? parsed.funFacts : [
+              'Built using regional stone-crafting techniques.',
+              'Reflects centuries of harmonious cultural exchange.',
+              'Protected under national heritage preservation initiatives.'
+            ],
+            nearbySpots: parsed.nearbySpots || ['Heritage Walk Zone', 'Old City Bazaar', 'State Museum'],
+            travelHubTag: parsed.travelHubTag || 'royal',
+            confidence: parsed.confidence || 'high',
+            isLiveAI: true,
+            isIdentified: true
+          };
+
+          // Enrich with live Wikipedia data
+          try {
+            const wikiData = await fetchWikipediaMonumentData(monument.name);
+            if (wikiData) {
+              monument.wikipediaUrl = wikiData.wikipediaUrl;
+              monument.wikipediaExtract = wikiData.extract;
+              monument.wikipediaDescription = wikiData.description;
+              if (wikiData.originalImageUrl || wikiData.thumbnailUrl) {
+                monument.imageUrl = wikiData.originalImageUrl || wikiData.thumbnailUrl;
+              }
+            }
+          } catch {
+            // Wikipedia enrichment optional
+          }
+
+          return monument;
+        } else {
+          failureReason = "Photo could not be matched to a known Indian monument. Try a clearer angle with good lighting.";
+        }
       }
-    } catch (err) {
-      console.warn("Gemini vision analysis fallback to curated archive:", err);
+    } catch (err: any) {
+      console.warn("Gemini Vision AI call error:", err);
+      failureReason = `AI Recognition error: ${err.message || 'Network or API issue'}. Check your Gemini API Key.`;
     }
+  } else {
+    failureReason = "Gemini API key is not configured. Set your free Gemini API key to enable live camera AI identification.";
   }
 
-  // 2. Fallback to Curated Archive if Gemini Vision is unavailable
-  if (!baseResult) {
-    const fallbackKeys = Object.keys(CURATED_MONUMENTS_DATA);
-    const selectedKey = fallbackKeys[Math.floor(Math.random() * fallbackKeys.length)];
-    baseResult = {
-      ...CURATED_MONUMENTS_DATA[selectedKey],
-      isLiveAI: false
-    };
-  }
-
-  // 3. Enrich with Live Wikipedia REST API Summary & Wikimedia Commons Data
-  try {
-    const wikiData = await fetchWikipediaMonumentData(baseResult.name);
-    if (wikiData) {
-      baseResult.wikipediaUrl = wikiData.wikipediaUrl;
-      baseResult.wikipediaExtract = wikiData.extract;
-      baseResult.wikipediaDescription = wikiData.description;
-      if (wikiData.originalImageUrl || wikiData.thumbnailUrl) {
-        baseResult.imageUrl = baseResult.imageUrl || wikiData.originalImageUrl || wikiData.thumbnailUrl;
-      }
-    }
-  } catch (wikiErr) {
-    console.warn("Wikipedia enrichment note:", wikiErr);
-  }
-
-  return baseResult;
+  // 2. HONEST UNIDENTIFIED STATE (Never return a random wrong monument!)
+  return {
+    name: 'Could Not Identify Monument',
+    location: 'India',
+    era: 'Unknown',
+    builtBy: 'Unknown',
+    architectureStyle: 'Unidentified Architecture',
+    history: failureReason || 'We were unable to automatically identify the monument in this photo. Please try a closer, well-lit photo or choose from our verified heritage list below.',
+    funFacts: [],
+    confidence: 'low',
+    isLiveAI: false,
+    isIdentified: false,
+    errorReason: failureReason
+  };
 }
