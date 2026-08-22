@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, useSpring, useMotionValue, useTransform } from "framer-motion";
-import kathakali from "../images/kathakali-face.png";
+import kathakali from "../images/kathakali-face.webp";
 
 const KathakaliAssistant: React.FC = () => {
   const [isJumping, setIsJumping] = useState(false);

@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { yatraShayakApi } from '../services/api';
 import { getChatResponse } from '../services/geminiService';
-import darshanaIcon from '../images/darshana-icon-only.png';
+import darshanaIcon from '../images/darshana-icon-only.webp';
 
 interface YatraShayakProps {
   onSafetyClick?: () => void;

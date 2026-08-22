@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X, Sparkles } from 'lucide-react';
-import logoImage from '../images/images-map-logo.png';
+import logoImage from '../images/images-map-logo.webp';
 
 interface NavbarProps {
   onBookTrip?: () => void;

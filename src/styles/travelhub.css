@@ -9,13 +9,10 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url('/assets/worldmap-soft.png');
-  background-repeat: no-repeat;
-  background-size: 1500px auto;
-  background-position: center;
-  opacity: 0.12;
+  background-image: radial-gradient(rgba(14, 165, 233, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.8;
   pointer-events: none;
-  filter: brightness(0.7);
 }
 
 /* Glassmorphism cards */

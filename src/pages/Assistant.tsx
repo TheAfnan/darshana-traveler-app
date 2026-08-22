@@ -27,7 +27,7 @@ import { ASSISTANT_QA } from '../data/assistantQA';
 import { auth } from '../firebase.config';
 import { fetchQuestionsFromDB, saveChatToDB, saveFeedback } from '../services/databaseService';
 import { getApiKey, getChatResponse, setCustomApiKey, translateText } from '../services/geminiService';
-import darshanaIcon from '../images/darshana-icon-only.png';
+import darshanaIcon from '../images/darshana-icon-only.webp';
 
 interface Message {
   id: number;
