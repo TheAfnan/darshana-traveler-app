@@ -55,21 +55,17 @@ const YatraShayak: React.FC<YatraShayakProps> = ({ onSafetyClick }) => {
     setLoading(true);
 
     try {
-      const res = await yatraShayakApi.chat(query);
-      const botTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      if (res.success && res.data && (res.data as any).response) {
-        const data = res.data as { response: string };
-        setHistory(prev => [...prev, { type: 'bot', text: data.response, time: botTime }]);
-        return;
-      }
-      
       const reply = await getChatResponse(history, query);
+      const botTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setHistory(prev => [...prev, { type: 'bot', text: reply, time: botTime }]);
     } catch (error) {
-      console.warn("Backend chat unavailable, using Gemini AI service:", error);
-      const reply = await getChatResponse(history, query);
+      console.warn("Gemini AI chat error:", error);
       const botTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      setHistory(prev => [...prev, { type: 'bot', text: reply, time: botTime }]);
+      setHistory(prev => [...prev, { 
+        type: 'bot', 
+        text: 'Namaste! I am here to help you explore India. Ask me about itineraries, heritage places, street food, or travel tips!',
+        time: botTime 
+      }]);
     } finally {
       setLoading(false);
     }

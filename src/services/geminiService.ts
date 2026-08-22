@@ -95,54 +95,91 @@ function getOfflineFallbackAnswer(userInput: string, preferredLang: 'en' | 'hi' 
 // ----------------------------------------------
 export async function getChatResponse(history: any[], userInput: string, lang: 'en' | 'hi' = 'en'): Promise<string> {
   const apiKey = getApiKey();
-  const model = getGenerativeModel("gemini-1.5-flash");
 
-  if (!model || !apiKey) {
+  if (!apiKey || apiKey.length < 5) {
     return getOfflineFallbackAnswer(userInput, lang);
   }
 
+  const systemInstruction = `You are "Sarthi" (सारथी), the official AI Cultural Travel Companion for DarShana India.
+Your mission is to provide warm, knowledgeable, structured, and helpful travel advice about India.
+Cover monuments, heritage sites, street food, local etiquette, travel itineraries, trains/flights, certified local guides, and safety precautions.
+Format your responses with clean paragraphs, markdown bullet points, and relevant emojis.
+${lang === 'hi' ? 'IMPORTANT: Respond in polite, natural, beautiful Hindi (हिन्दी).' : 'Respond in clear, engaging English.'}`;
+
+  // Try direct generation with full context first for maximum reliability
   try {
-    const formattedHistory = history.reduce<Content[]>(
-      (acc, msg) => {
-        const text = typeof msg.text === "string" ? msg.text.trim() : "";
-        if (!text) {
-          return acc;
-        }
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      safetySettings 
+    });
 
-        acc.push({
-          role: msg.role === "user" ? "user" : "model",
-          parts: [{ text }],
+    // Build alternating history cleanly
+    const formattedHistory: Content[] = [];
+    let lastRole = '';
+
+    for (const msg of history || []) {
+      const text = typeof msg.text === "string" ? msg.text.trim() : "";
+      if (!text) continue;
+
+      const isUser = msg.role === 'user' || msg.type === 'user' || msg.sender === 'user';
+      const role = isUser ? 'user' : 'model';
+
+      if (role !== lastRole) {
+        formattedHistory.push({
+          role,
+          parts: [{ text }]
         });
+        lastRole = role;
+      }
+    }
 
-        return acc;
-      },
-      []
-    );
-
-    while (formattedHistory.length > 0 && formattedHistory[0]?.role !== "user") {
+    // Ensure history starts with user
+    while (formattedHistory.length > 0 && formattedHistory[0].role !== 'user') {
       formattedHistory.shift();
     }
 
-    const chatSession = model.startChat({
-      safetySettings,
-      history: formattedHistory,
-    });
+    // Attempt Multi-turn chat
+    if (formattedHistory.length > 0) {
+      try {
+        const chat = model.startChat({
+          history: formattedHistory,
+          safetySettings
+        });
+        const langNote = lang === 'hi' ? ' (कृपया हिन्दी में उत्तर दें)' : '';
+        const res = await chat.sendMessage(userInput + langNote);
+        const out = res.response.text();
+        if (out && out.trim()) return out.trim();
+      } catch (chatErr) {
+        console.warn("Multi-turn chat error, falling back to direct prompt:", chatErr);
+      }
+    }
 
-    const langInstruction = lang === 'hi' ? " (Please respond in polite, clear Hindi / हिन्दी)" : "";
-    const result = await chatSession.sendMessage(userInput + langInstruction);
-    return result.response.text();
+    // Direct Single-Turn Prompt with System Context
+    const fullPrompt = `${systemInstruction}\n\nUser Question: ${userInput}\n\nSarthi Answer:`;
+    const singleRes = await model.generateContent(fullPrompt);
+    const textOut = singleRes.response.text();
+    if (textOut && textOut.trim()) {
+      return textOut.trim();
+    }
   } catch (error: any) {
     const errMessage = error?.message || String(error);
     console.error("Gemini chat error:", errMessage);
 
-    if (errMessage.includes("429") || errMessage.includes("Quota exceeded") || errMessage.includes("quota")) {
-      return lang === 'hi' 
-        ? "⚠️ **Gemini API कोटा समाप्त**: इस API Key का फ्री कोटा समाप्त हो गया है। कृपया [Google AI Studio](https://aistudio.google.com/app/apikey) से नई फ्री API Key जनरेट करें और हेडर में 'API Setup' पर क्लिक करके अपडेट करें।"
-        : "⚠️ **Gemini API Quota Exceeded (Error 429)**: The API key has reached its free request quota. Please generate a new key from [Google AI Studio](https://aistudio.google.com/app/apikey) and add it via the 'API Setup' button in the header.";
+    if (errMessage.includes("429") || errMessage.includes("Quota") || errMessage.includes("quota")) {
+      return lang === 'hi'
+        ? "⚠️ **Gemini API कोटा समाप्त**: इस API Key का कोटा पूरा हो गया है। कृपया Google AI Studio से नई फ्री Key प्राप्त करें।"
+        : "⚠️ **Gemini API Quota Exceeded**: The API key has reached its request limit. Please update the API key via the setup modal.";
     }
 
-    return getOfflineFallbackAnswer(userInput, lang);
+    if (errMessage.includes("API key not valid") || errMessage.includes("invalid") || errMessage.includes("API_KEY_INVALID")) {
+      return lang === 'hi'
+        ? "⚠️ **अमान्य API Key**: दर्ज की गई Gemini API Key अमान्य है। कृपया [Google AI Studio](https://aistudio.google.com/app/apikey) से सही API Key कॉपी करके 'API Setup' में पेस्ट करें।"
+        : "⚠️ **Invalid API Key**: The configured Gemini API key is not valid. Please copy a valid key from [Google AI Studio](https://aistudio.google.com/app/apikey) and update it.";
+    }
   }
+
+  return getOfflineFallbackAnswer(userInput, lang);
 }
 
 // -----------------------------------------------------
