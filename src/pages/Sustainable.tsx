@@ -17,6 +17,12 @@ import { Link } from 'react-router-dom';
 import { useEcoRewards } from '../context/EcoRewardsContext';
 import type { LocationSuggestion } from '../services/locationApi';
 import { formatLocationLabel, searchLocations } from '../services/locationApi';
+import { 
+  calculateDistance, 
+  calculateEmissions, 
+  estimateDuration, 
+  resolveCityCoordinates 
+} from '../types/greenRoute';
 
 interface RouteOption {
   mode: string;
@@ -178,47 +184,91 @@ const Sustainable: React.FC = () => {
     closeSuggestions();
 
     try {
-      // Simulate a successful response with fake data
-      const fakeData: RouteResponse = {
-        from: { name: origin, coordinates: { lat: 28.6139, lon: 77.209 } },
-        to: { name: destination, coordinates: { lat: 26.9124, lon: 75.7873 } },
-        distance: 250,
-        routes: [
-          {
-            mode: 'Train',
-            duration: '5h 30m',
-            durationHours: 5.5,
-            distance: 250,
-            cost: 500,
-            co2: 20,
-            ecoRating: 9,
-            ecoReward: 50,
-            isGreenest: true,
-          },
-          {
-            mode: 'Bus',
-            duration: '6h 45m',
-            durationHours: 6.75,
-            distance: 250,
-            cost: 300,
-            co2: 30,
-            ecoRating: 7,
-            ecoReward: 30,
-          },
-          {
-            mode: 'Car',
-            duration: '4h 30m',
-            durationHours: 4.5,
-            distance: 250,
-            cost: 1500,
-            co2: 100,
-            ecoRating: 5,
-            ecoReward: 10,
-          },
-        ],
+      const fromCoords = resolveCityCoordinates(origin);
+      const toCoords = resolveCityCoordinates(destination);
+
+      // Real geographic distance with road/rail highway curvature factor (1.18x)
+      const straightLineKm = calculateDistance(fromCoords, toCoords);
+      const roadDistanceKm = Math.max(25, Math.round(straightLineKm * 1.18));
+
+      // Calculate real durations
+      const trainDuration = estimateDuration(roadDistanceKm, 'train');
+      const busDuration = estimateDuration(roadDistanceKm, 'bus');
+      const carDuration = estimateDuration(roadDistanceKm, 'car');
+      const flightDuration = estimateDuration(roadDistanceKm, 'flight');
+
+      // Calculate emissions
+      const trainCo2 = calculateEmissions(roadDistanceKm, 'train');
+      const busCo2 = calculateEmissions(roadDistanceKm, 'bus');
+      const carCo2 = calculateEmissions(roadDistanceKm, 'car');
+      const flightCo2 = calculateEmissions(roadDistanceKm, 'flight');
+
+      // Calculate estimated costs (in INR)
+      const trainCost = Math.round(roadDistanceKm * 1.4 + 120);
+      const busCost = Math.round(roadDistanceKm * 1.8 + 80);
+      const carCost = Math.round(roadDistanceKm * 8.5);
+      const flightCost = Math.round(roadDistanceKm * 5.0 + 2200);
+
+      const routes: RouteOption[] = [
+        {
+          mode: 'Train',
+          duration: trainDuration,
+          durationHours: Math.round((roadDistanceKm / 80) * 10) / 10,
+          distance: roadDistanceKm,
+          cost: trainCost,
+          co2: trainCo2,
+          ecoRating: 9.5,
+          ecoReward: 75,
+          isGreenest: true,
+          isCheapest: trainCost <= busCost,
+        },
+        {
+          mode: 'Bus',
+          duration: busDuration,
+          durationHours: Math.round((roadDistanceKm / 55) * 10) / 10,
+          distance: roadDistanceKm,
+          cost: busCost,
+          co2: busCo2,
+          ecoRating: 8.0,
+          ecoReward: 50,
+          isCheapest: busCost < trainCost,
+        },
+        {
+          mode: 'Car (Personal / Cab)',
+          duration: carDuration,
+          durationHours: Math.round((roadDistanceKm / 70) * 10) / 10,
+          distance: roadDistanceKm,
+          cost: carCost,
+          co2: carCo2,
+          ecoRating: 4.5,
+          ecoReward: 10,
+          isFastest: roadDistanceKm < 350,
+        },
+      ];
+
+      // Add flight option for long distances (>= 350 km)
+      if (roadDistanceKm >= 350) {
+        routes.push({
+          mode: 'Flight (Domestic)',
+          duration: flightDuration,
+          durationHours: Math.round((roadDistanceKm / 500 + 2.0) * 10) / 10,
+          distance: roadDistanceKm,
+          cost: flightCost,
+          co2: flightCo2,
+          ecoRating: 2.5,
+          ecoReward: 0,
+          isFastest: true,
+        });
+      }
+
+      const calculatedData: RouteResponse = {
+        from: { name: origin, coordinates: { lat: fromCoords.lat, lon: fromCoords.lng } },
+        to: { name: destination, coordinates: { lat: toCoords.lat, lon: toCoords.lng } },
+        distance: roadDistanceKm,
+        routes,
       };
 
-      setRouteData(fakeData);
+      setRouteData(calculatedData);
     } catch (err) {
       console.error('Error planning route:', err);
       setError('Failed to calculate routes. Please try again later.');

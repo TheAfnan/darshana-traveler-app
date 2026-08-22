@@ -20,6 +20,7 @@ import type {
 import { 
   INDIAN_CITIES, 
   getCityByName,
+  resolveCityCoordinates,
   calculateDistance,
   calculateEmissions,
   calculateGreenScore,
@@ -112,29 +113,30 @@ const RouteFormPanel: React.FC<RouteFormPanelProps> = ({
         }
         originCoords = userLocation;
       } else {
-        const originCity = getCityByName(originInput);
-        if (!originCity) {
-          throw new Error('Please select a valid origin city');
+        if (!originInput.trim()) {
+          throw new Error('Please enter an origin city');
         }
-        originCoords = originCity.coordinates;
+        originCoords = resolveCityCoordinates(originInput);
         originLabel = originInput;
       }
 
       // Get destination coordinates
-      const destCity = getCityByName(destinationInput);
-      if (!destCity) {
-        throw new Error('Please select a valid destination');
+      if (!destinationInput.trim()) {
+        throw new Error('Please enter a destination city');
       }
+      const destCoords = resolveCityCoordinates(destinationInput);
 
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 600));
 
-      // Calculate route details
-      const distanceKm = calculateDistance(originCoords, destCity.coordinates);
+      // Calculate real route distance with road curvature factor (1.18x)
+      const straightLineKm = calculateDistance(originCoords, destCoords);
+      const distanceKm = Math.max(25, Math.round(straightLineKm * 1.18));
+
       const emissionsKg = calculateEmissions(distanceKm, selectedMode);
       const greenScore = calculateGreenScore(selectedMode);
       const duration = estimateDuration(distanceKm, selectedMode);
-      const coordinates = generateRouteCoordinates(originCoords, destCity.coordinates);
+      const coordinates = generateRouteCoordinates(originCoords, destCoords);
       const alternatives = getModeComparison(distanceKm);
 
       const result: RouteResult = {
