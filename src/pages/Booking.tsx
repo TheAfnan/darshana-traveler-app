@@ -23,18 +23,19 @@ import {
   Building,
   Plane,
   RotateCcw,
-  Leaf
+  Leaf,
+  Key,
+  X,
+  ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useEcoRewards } from '../context/EcoRewardsContext';
 import { bookingApi } from '../services/api';
-import { createRazorpayOrder } from '../services/razorpay';
-
-declare global {
-  interface Window {
-    Razorpay?: any;
-  }
-}
+import { 
+  getRazorpayKey, 
+  setCustomRazorpayKey, 
+  launchRazorpayCheckout 
+} from '../services/razorpay';
 
 interface PackageOption {
   id: string;
@@ -131,6 +132,11 @@ export const Booking: React.FC = () => {
   const [paymentError, setPaymentError] = useState<string>('');
   const [bookingSuccessData, setBookingSuccessData] = useState<any>(null);
 
+  // Razorpay API Setup Modal State
+  const [showRzpModal, setShowRzpModal] = useState<boolean>(false);
+  const [rzpKeyInput, setRzpKeyInput] = useState<string>(getRazorpayKey());
+  const [rzpKeySaved, setRzpKeySaved] = useState<boolean>(false);
+
   // Validate form fields
   const validateForm = () => {
     const errs: Record<string, string> = {};
@@ -175,20 +181,6 @@ export const Booking: React.FC = () => {
   const taxesGst = Math.round(subtotal * 0.05); // 5% GST
   const grandTotal = subtotal + taxesGst;
 
-  // Load Razorpay Script helper
-  const loadRazorpay = () => {
-    return new Promise<boolean>((resolve) => {
-      if (window.Razorpay) {
-        return resolve(true);
-      }
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
   // Main Checkout Flow
   const handleProceedToPay = async () => {
     setTouched({
@@ -206,61 +198,25 @@ export const Booking: React.FC = () => {
     setIsProcessing(true);
     setPaymentError('');
 
-    const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID || import.meta.env.VITE_RAZORPAY_KEY;
-
-    try {
-      const isLoaded = await loadRazorpay();
-
-      if (isLoaded && razorpayKey) {
-        const order = await createRazorpayOrder(grandTotal * 100, 'INR');
-
-        const options = {
-          key: razorpayKey,
-          amount: order?.amount || grandTotal * 100,
-          currency: order?.currency || 'INR',
-          name: 'DarShana Cultural Travel',
-          description: `${activePackage.name} - ${destination}`,
-          order_id: order?.id,
-          prefill: {
-            name: fullName,
-            email: email,
-            contact: `${countryCode}${phone}`
-          },
-          notes: {
-            destination: destination,
-            package: activePackage.name,
-            guests: guestCount.toString(),
-            travelDate: travelDate
-          },
-          theme: {
-            color: '#EA580C'
-          },
-          handler: async (response: any) => {
-            await finalizeBooking(response?.razorpay_payment_id || `RZP-PAY-${Math.floor(100000 + Math.random() * 900000)}`);
-          },
-          modal: {
-            ondismiss: () => {
-              setIsProcessing(false);
-              setPaymentError('Payment window was closed. You can review your details and try again anytime.');
-            }
-          }
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', (resp: any) => {
-          setIsProcessing(false);
-          setPaymentError(resp.error?.description || 'Payment did not go through. Please try another payment method.');
-        });
-        rzp.open();
-      } else {
-        setTimeout(async () => {
-          await finalizeBooking(`DEMO-TXN-${Math.floor(100000 + Math.random() * 900000)}`);
-        }, 1200);
+    await launchRazorpayCheckout({
+      amount: grandTotal,
+      packageName: activePackage.name,
+      destination: destination,
+      userName: fullName,
+      userEmail: email,
+      userPhone: `${countryCode}${phone}`,
+      onSuccess: async (paymentId, orderId) => {
+        await finalizeBooking(paymentId);
+      },
+      onFailure: (errorMsg) => {
+        setIsProcessing(false);
+        setPaymentError(errorMsg || 'Payment was not completed. You can try again safely.');
+      },
+      onDismiss: () => {
+        setIsProcessing(false);
+        setPaymentError('Razorpay payment modal closed. Review your details and click below to try again.');
       }
-    } catch (err: any) {
-      console.warn('Payment initialization error:', err);
-      await finalizeBooking(`CONF-${Math.floor(100000 + Math.random() * 900000)}`);
-    }
+    });
   };
 
   const finalizeBooking = async (transactionId: string) => {
@@ -305,6 +261,18 @@ export const Booking: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleSaveRzpKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCustomRazorpayKey(rzpKeyInput);
+    setRzpKeySaved(true);
+    setTimeout(() => {
+      setRzpKeySaved(false);
+      setShowRzpModal(false);
+    }, 1200);
+  };
+
+  const currentRzpKey = getRazorpayKey();
+
   // SUCCESS SCREEN
   if (bookingSuccessData) {
     return (
@@ -317,7 +285,7 @@ export const Booking: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">Payment & Reservation Confirmed</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">Razorpay Payment & Reservation Confirmed</span>
               <h1 className="text-2xl sm:text-4xl font-serif font-extrabold text-slate-900">Your Journey is Booked!</h1>
               <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
                 Thank you, <strong>{bookingSuccessData.contactName}</strong>. A confirmation voucher has been dispatched to <strong>{bookingSuccessData.contactEmail}</strong>.
@@ -410,6 +378,78 @@ export const Booking: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#faf9f6] text-slate-900 font-sans pb-24">
       
+      {/* Razorpay Setup Modal */}
+      {showRzpModal && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-stone-200 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-orange-100 text-orange-700 rounded-xl">
+                  <CreditCard size={18} />
+                </div>
+                <h3 className="text-base font-bold text-slate-900">Razorpay API Configuration</h3>
+              </div>
+              <button onClick={() => setShowRzpModal(false)} className="p-1 text-slate-400 hover:text-slate-700">
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Enter your Razorpay Key ID (starting with <code>rzp_test_...</code> or <code>rzp_live_...</code>) for live UPI QR, Debit/Credit Card, and NetBanking payments.
+            </p>
+
+            <form onSubmit={handleSaveRzpKey} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Razorpay Key ID</label>
+                <input
+                  type="text"
+                  value={rzpKeyInput}
+                  onChange={(e) => setRzpKeyInput(e.target.value)}
+                  placeholder="e.g. rzp_test_1DP5mmOlF5G5ag"
+                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs text-slate-900 font-mono focus:outline-none focus:border-orange-600"
+                />
+              </div>
+
+              <div className="text-[11px] text-slate-500">
+                <span>Get free test key: </span>
+                <a href="https://dashboard.razorpay.com/app/keys" target="_blank" rel="noreferrer" className="text-orange-700 font-semibold underline inline-flex items-center gap-1">
+                  <span>Razorpay Dashboard</span>
+                  <ExternalLink size={10} />
+                </a>
+              </div>
+
+              {rzpKeySaved && (
+                <div className="p-2.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs flex items-center gap-1.5 font-medium">
+                  <CheckCircle2 size={15} />
+                  <span>Razorpay key saved successfully!</span>
+                </div>
+              )}
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRzpKeyInput('');
+                    setCustomRazorpayKey('');
+                    setRzpKeySaved(true);
+                    setTimeout(() => { setRzpKeySaved(false); setShowRzpModal(false); }, 1000);
+                  }}
+                  className="px-3.5 py-2 border border-stone-200 text-xs font-semibold text-slate-600 rounded-xl hover:bg-stone-50"
+                >
+                  Reset Demo Mode
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl transition shadow-xs"
+                >
+                  Save Key
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Top Slim Context Header */}
       <div className="bg-white border-b border-stone-200 pt-24 pb-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto space-y-3">
@@ -433,9 +473,22 @@ export const Booking: React.FC = () => {
               </p>
             </div>
 
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-xs font-bold shrink-0">
-              <ShieldCheck size={14} className="text-emerald-600" />
-              <span>100% Guaranteed Booking</span>
+            <div className="flex items-center gap-2">
+              {/* Razorpay Config Pill */}
+              <button
+                onClick={() => setShowRzpModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-slate-700 rounded-full text-xs font-semibold transition cursor-pointer shadow-2xs"
+                title="Configure Razorpay Gateway Key"
+              >
+                <Key size={12} className={currentRzpKey ? 'text-emerald-600' : 'text-amber-600'} />
+                <span>Razorpay Key</span>
+                <span className={`w-2 h-2 rounded-full ${currentRzpKey ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+              </button>
+
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-xs font-bold shrink-0">
+                <ShieldCheck size={14} className="text-emerald-600" />
+                <span>100% Guaranteed</span>
+              </div>
             </div>
           </div>
 
@@ -467,7 +520,7 @@ export const Booking: React.FC = () => {
           <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 flex items-start gap-2.5 shadow-xs">
             <AlertCircle size={16} className="text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-bold">Notice</p>
+              <p className="font-bold">Payment Notice</p>
               <p className="text-[11px] leading-relaxed">{paymentError}</p>
             </div>
           </div>
@@ -504,7 +557,7 @@ export const Booking: React.FC = () => {
                           : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/50'
                       }`}
                     >
-                      {/* Top Right Badge (Properly Spaced, No Overlap) */}
+                      {/* Top Right Badge */}
                       {pkg.badge && (
                         <div className="mb-2 self-end">
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
@@ -831,7 +884,7 @@ export const Booking: React.FC = () => {
                 {isProcessing ? (
                   <>
                     <RotateCcw size={16} className="animate-spin" />
-                    <span>Processing Secure Payment...</span>
+                    <span>Launching Razorpay Checkout...</span>
                   </>
                 ) : (
                   <>
@@ -843,12 +896,17 @@ export const Booking: React.FC = () => {
 
               {/* Trust & Badges */}
               <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-2 text-[11px] text-slate-500">
-                <div className="flex items-center gap-2 text-emerald-800 font-semibold">
-                  <ShieldCheck size={14} className="text-emerald-600 shrink-0" />
-                  <span>100% Safe Checkout via Razorpay</span>
+                <div className="flex items-center justify-between text-emerald-800 font-semibold">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck size={14} className="text-emerald-600 shrink-0" />
+                    <span>100% Safe via Razorpay</span>
+                  </div>
+                  <span className="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
+                    {currentRzpKey ? 'LIVE/TEST KEY' : 'DEMO MODE'}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-stone-200/60">
-                  <span>UPI • GPay • PhonePe</span>
+                  <span>UPI • QR • GPay • PhonePe</span>
                   <span>Cards • NetBanking</span>
                 </div>
               </div>
