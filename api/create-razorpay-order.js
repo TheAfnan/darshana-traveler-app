@@ -1,6 +1,5 @@
 // Vercel Serverless Function: Create Razorpay Order
 export default async function handler(req, res) {
-  // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -43,24 +42,13 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.warn('Razorpay API order creation note:', data);
-      return res.status(200).json({
-        id: `order_test_${Date.now()}`,
-        amount: Math.round(Number(amount)),
-        currency,
-        receipt,
-        status: 'created'
-      });
+      console.warn('Razorpay server order error:', data);
+      return res.status(response.status).json(data);
     }
 
     return res.status(200).json(data);
   } catch (error) {
     console.error('Razorpay order creation error:', error);
-    return res.status(200).json({
-      id: `order_test_${Date.now()}`,
-      amount: Math.round(Number(req.body?.amount || 50000)),
-      currency: 'INR',
-      status: 'created'
-    });
+    return res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 }

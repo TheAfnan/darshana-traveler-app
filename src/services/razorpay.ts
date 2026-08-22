@@ -7,7 +7,7 @@ declare global {
 }
 
 /**
- * Get active Razorpay Key ID from localStorage or environment
+ * Get active Razorpay Key ID from localStorage, environment, or default test key
  */
 export const getRazorpayKey = (): string => {
   return (
@@ -49,18 +49,17 @@ export const loadRazorpayScript = (): Promise<boolean> => {
 };
 
 /**
- * Create a Razorpay order on backend serverless API or server
+ * Create a Razorpay order on backend serverless API or server (optional)
  */
 export async function createRazorpayOrder(amountInPaise: number, currency = 'INR'): Promise<RazorpayOrder | null> {
   const backendBase = (import.meta.env.VITE_BACKEND_URL || '').replace(/\/+$/, '');
   const endpoints = [
-    '/api/create-razorpay-order', // Vercel Serverless Function
-    `${backendBase}/api/payments/razorpay/order`, // Optional external backend
-    `${backendBase}/api/razorpay/order`
+    '/api/create-razorpay-order',
+    `${backendBase}/api/payments/razorpay/order`,
   ];
 
   for (const endpoint of endpoints) {
-    if (!endpoint || endpoint.startsWith('http://localhost') && window.location.hostname !== 'localhost') {
+    if (!endpoint || (endpoint.startsWith('http://localhost') && window.location.hostname !== 'localhost')) {
       continue;
     }
 
@@ -75,19 +74,18 @@ export async function createRazorpayOrder(amountInPaise: number, currency = 'INR
 
       if (response.ok) {
         const payload = await response.json();
-        return (payload?.order as RazorpayOrder) || (payload as RazorpayOrder);
+        const orderData = payload?.order || payload;
+        // Only return if it is a genuine Razorpay server order ID
+        if (orderData?.id && !orderData.id.includes('mock') && !orderData.id.includes('client') && !orderData.id.includes('test_1')) {
+          return orderData as RazorpayOrder;
+        }
       }
-    } catch (err) {
-      // Try next endpoint
+    } catch {
+      // Continue to next endpoint
     }
   }
 
-  // Fallback client order ID
-  return {
-    id: `order_client_${Date.now()}`,
-    amount: amountInPaise,
-    currency
-  };
+  return null;
 }
 
 /**
@@ -148,55 +146,66 @@ export async function launchRazorpayCheckout(opts: CheckoutOptions): Promise<voi
   const amountPaise = Math.round(opts.amount * 100);
 
   try {
+    // Attempt real server-side order (optional in standard checkout)
     const order = await createRazorpayOrder(amountPaise, 'INR');
 
-    // If key is set or available
-    if (keyId) {
-      const rzpOptions = {
-        key: keyId,
-        amount: order?.amount || amountPaise,
-        currency: order?.currency || 'INR',
-        name: 'DarShana Cultural Travel',
-        description: `${opts.packageName} - ${opts.destination}`,
-        order_id: order?.id && !order.id.startsWith('order_client_') ? order.id : undefined,
-        prefill: {
-          name: opts.userName,
-          email: opts.userEmail,
-          contact: opts.userPhone,
-        },
-        notes: {
-          destination: opts.destination,
-          package: opts.packageName,
-        },
-        theme: {
-          color: '#EA580C', // DarShana brand orange
-        },
-        modal: {
-          ondismiss: () => {
-            if (opts.onDismiss) {
-              opts.onDismiss();
-            }
-          },
-        },
-        handler: async (response: any) => {
-          const paymentId = response?.razorpay_payment_id || `RZP-PAY-${Math.floor(100000 + Math.random() * 900000)}`;
-          opts.onSuccess(paymentId, response?.razorpay_order_id);
-        },
-      };
-
-      const rzp = new window.Razorpay(rzpOptions);
-      rzp.on('payment.failed', (resp: any) => {
-        opts.onFailure(resp.error?.description || 'Payment did not go through. Please try another card or UPI.');
-      });
-      rzp.open();
-    } else {
-      // Demo test checkout mode when no key is set yet
+    if (!keyId) {
+      // Fallback demo mode if no key is configured
       setTimeout(() => {
         const demoPaymentId = `RZP-DEMO-${Math.floor(100000 + Math.random() * 900000)}`;
         opts.onSuccess(demoPaymentId);
       }, 1000);
+      return;
     }
+
+    // Standard Razorpay Checkout Options
+    // NOTE: If order is not registered on Razorpay servers, DO NOT pass order_id to avoid "Uh! oh! Something went wrong" crash
+    const rzpOptions: any = {
+      key: keyId,
+      amount: amountPaise,
+      currency: 'INR',
+      name: 'DarShana Cultural Travel',
+      description: `${opts.packageName} - ${opts.destination}`,
+      prefill: {
+        name: opts.userName,
+        email: opts.userEmail,
+        contact: opts.userPhone,
+      },
+      notes: {
+        destination: opts.destination,
+        package: opts.packageName,
+      },
+      theme: {
+        color: '#EA580C', // DarShana brand orange
+      },
+      modal: {
+        ondismiss: () => {
+          if (opts.onDismiss) {
+            opts.onDismiss();
+          }
+        },
+      },
+      handler: async (response: any) => {
+        const paymentId = response?.razorpay_payment_id || `RZP-PAY-${Math.floor(100000 + Math.random() * 900000)}`;
+        opts.onSuccess(paymentId, response?.razorpay_order_id);
+      },
+    };
+
+    // Only attach order_id if it was verified from Razorpay API
+    if (order?.id && order.id.startsWith('order_') && !order.id.includes('mock') && !order.id.includes('test_1') && !order.id.includes('client')) {
+      rzpOptions.order_id = order.id;
+    }
+
+    const rzp = new window.Razorpay(rzpOptions);
+    
+    rzp.on('payment.failed', (resp: any) => {
+      console.warn('Razorpay payment failed event:', resp);
+      opts.onFailure(resp.error?.description || 'Payment did not go through. Please try another card or UPI.');
+    });
+
+    rzp.open();
   } catch (error: any) {
+    console.error('Razorpay launch error:', error);
     opts.onFailure(error?.message || 'Error launching Razorpay payment checkout.');
   }
 }
