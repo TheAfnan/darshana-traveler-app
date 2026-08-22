@@ -210,11 +210,19 @@ export const Booking: React.FC = () => {
       },
       onFailure: (errorMsg) => {
         setIsProcessing(false);
-        setPaymentError(errorMsg || 'Payment was not completed. You can try again safely.');
+        setPaymentError(errorMsg || 'Payment did not go through. Please try another card or UPI method.');
+        setTimeout(() => {
+          const banner = document.getElementById('booking-payment-error-banner');
+          if (banner) banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
       },
       onDismiss: () => {
         setIsProcessing(false);
-        setPaymentError('Razorpay payment modal closed. Review your details and click below to try again.');
+        setPaymentError('Payment window was dismissed. You can review your details and try again anytime.');
+        setTimeout(() => {
+          const banner = document.getElementById('booking-payment-error-banner');
+          if (banner) banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
       }
     });
   };
@@ -517,11 +525,30 @@ export const Booking: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         
         {paymentError && (
-          <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 flex items-start gap-2.5 shadow-xs">
-            <AlertCircle size={16} className="text-rose-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-bold">Payment Notice</p>
-              <p className="text-[11px] leading-relaxed">{paymentError}</p>
+          <div id="booking-payment-error-banner" className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 flex items-start justify-between gap-3 shadow-xs">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle size={18} className="text-rose-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-sm text-rose-900">Payment Notice</p>
+                <p className="text-xs text-rose-700 leading-relaxed mt-0.5">{paymentError}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleProceedToPay}
+                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs shadow-2xs transition cursor-pointer"
+              >
+                Retry
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentError('')}
+                className="p-1.5 text-rose-500 hover:text-rose-800 rounded-lg hover:bg-rose-100 transition cursor-pointer"
+                title="Dismiss Notice"
+              >
+                <X size={16} />
+              </button>
             </div>
           </div>
         )}
